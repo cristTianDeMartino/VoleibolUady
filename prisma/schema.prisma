@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Atleta {
+  id         Int             @id @default(autoincrement())
+  nombre     String
+  apellido   String
+  numero     Int?
+  posicion   String
+  carrera    String
+  semestre   Int?
+  foto       String?
+  activo     Boolean         @default(true)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  lesiones   ReporteLesion[]
+}
+
+model Evento {
+  id          Int      @id @default(autoincrement())
+  titulo      String
+  descripcion String?
+  tipo        String   // entrenamiento | partido | torneo | reunion
+  fecha       DateTime
+  horaInicio  String?
+  horaFin     String?
+  lugar       String?
+  createdAt   DateTime @default(now())
+}
+
+model EjercicioFisico {
+  id           Int      @id @default(autoincrement())
+  nombre       String
+  descripcion  String?
+  tipo         String   // duela | gimnasio
+  series       Int?
+  repeticiones Int?
+  duracion     String?
+  videoUrl     String?
+  createdAt    DateTime @default(now())
+}
+
+model SesionPsicologia {
+  id          Int      @id @default(autoincrement())
+  titulo      String
+  descripcion String?
+  videoUrl    String?
+  videoFile   String?
+  tipo        String?  // tecnica | mental | motivacional
+  duracion    String?
+  createdAt   DateTime @default(now())
+}
+
+model ReporteLesion {
+  id           Int      @id @default(autoincrement())
+  atletaId     Int?
+  atleta       Atleta?  @relation(fields: [atletaId], references: [id])
+  nombreAtleta String
+  zonaAfectada String
+  nivelDolor   Int
+  fecha        DateTime @default(now())
+  descripcion  String?
+  estado       String   @default("activo") // activo | recuperado
+  createdAt    DateTime @default(now())
+}
