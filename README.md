@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Plan Rector - Selecciones de Voleibol UADY 🏐
 
-## Getting Started
+Plataforma web integral para la gestión, monitoreo y seguimiento técnico, estadístico y médico de los atletas pertenecientes a las selecciones representativas de voleibol de la **Universidad Autónoma de Yucatán (UADY)**. 
 
-First, run the development server:
+Este sistema digitaliza los procesos clave del cuerpo técnico y automatiza el flujo de información de los jugadores bajo una arquitectura moderna, segura y de alto rendimiento.
 
+## 🚀 Características del Proyecto
+
+La plataforma está dividida estructuralmente según los roles del sistema (**Administrador / Cuerpo Técnico** y **Jugadores**), ofreciendo las siguientes soluciones:
+
+* 👥 **Gestión de Plantilla (Roster):** Control total de los atletas inscritos, filtrado dinámico en tiempo real por Rama (Varonil/Femenil) y Posición de juego. Los administradores disponen de herramientas para actualizar la fotografía de perfil de cada jugador directamente desde la vista detallada.
+* 📅 **Registro de Asistencia Automatizado:** Sistema de "autoservicio" diario donde los jugadores confirman su asistencia desde su dispositivo móvil. El administrador visualiza una matriz interactiva estilo hoja de cálculo organizada por meses y días de entrenamiento para facilitar la exportación de reportes institucionales.
+* ⚕️ **Módulo de Gestión de Lesiones:** Máquina de estados clínicos que permite a los atletas reportar diagnósticos y tratamientos en tiempo real. Las lesiones permanecen "Activas" con alertas visuales hasta que el cuerpo técnico otorga el "Alta", estampando automáticamente la fecha de recuperación y moviendo el registro al historial médico protegido del perfil del atleta.
+* 📊 **Récord de Temporada:** Bitácora histórica de partidos jugados. Cuenta con filtros avanzados por torneo y rama, acompañados de un formulario reactivo e intuitivo que genera dinámicamente casillas numéricas set por set (máximo 5) para evitar errores de captura manual en los marcadores parciales.
+* 🏢 **Sección Institucional (Sobre el Plan Rector):** Vista de presentación de la filosofía, objetivos metodológicos, pedagógicos y tecnológicos del proyecto, estructurada mediante un diseño responsivo y alternado de imágenes y texto extenso.
+
+## 🛠️ Stack Tecnológico
+
+* **Framework:** [Next.js](https://nextjs.org/) (App Router)
+* **Biblioteca Frontend:** [React.js](https://react.dev/)
+* **Estilos y UI:** [Tailwind CSS](https://tailwindcss.com/) & [Lucide React](https://lucide.dev/) (Iconografía)
+* **ORM:** [Prisma](https://www.prisma.io/)
+* **Base de Datos (Desarrollo):** SQLite (Local)
+
+## 💻 Instalación y Configuración Local
+
+Sigue estos pasos para levantar el entorno de desarrollo en tu computadora local sin necesidad de una conexión activa a internet (salvo para la instalación inicial de dependencias):
+
+### 1. Clonar el repositorio e ingresar al directorio
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+git clone [https://github.com/tu-usuario/uady-volleyball.git](https://github.com/tu-usuario/uady-volleyball.git)
+cd uady-volleyball
