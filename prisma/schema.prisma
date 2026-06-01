@@ -4,68 +4,63 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model Atleta {
-  id         Int             @id @default(autoincrement())
-  nombre     String
-  apellido   String
-  numero     Int?
-  posicion   String
-  carrera    String
-  semestre   Int?
-  foto       String?
-  activo     Boolean         @default(true)
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
-  lesiones   ReporteLesion[]
+  id               String   @id @default(cuid())
+  nombre           String
+  apellidos        String
+  genero           String   @default("F")   // "M" = Masculino, "F" = Femenino
+  rama             String   @default("Femenil") // "Femenil" | "Varonil"
+  posicion         String
+  facultad         String
+  directorFacultad String
+  semestre         Int
+  telefonoPersonal String
+  telefonoTutor    String
+  nss              String
+  seguroPrivado    String?
+  codigoAcceso     String   @unique
+  rol              String   @default("JUGADOR")
+  fotoUrl          String?
+  lesiones         Lesion[]
+  asistencias      Asistencia[]
+  createdAt        DateTime @default(now())
 }
 
-model Evento {
-  id          Int      @id @default(autoincrement())
-  titulo      String
-  descripcion String?
-  tipo        String   // entrenamiento | partido | torneo | reunion
-  fecha       DateTime
-  horaInicio  String?
-  horaFin     String?
-  lugar       String?
-  createdAt   DateTime @default(now())
+model Partido {
+  id             String   @id @default(cuid())
+  rama           String   // "Varonil" o "Femenil"
+  torneo         String   // Nombre del torneo o liga
+  fecha          DateTime // Fecha del partido
+  hora           String   // Hora del partido (ej. "18:00")
+  sede           String   // Lugar donde se jugó
+  rival          String   // Nombre del equipo contrario
+  numeroSets     Int      // Cantidad de sets jugados (ej. 3, 4, 5)
+  resultadoSets  String   // Parciales del partido (ej. "25-23, 22-25, 15-11")
+  resultadoFinal String   // "Ganado" o "Perdido"
+  createdAt      DateTime @default(now())
 }
 
-model EjercicioFisico {
-  id           Int      @id @default(autoincrement())
-  nombre       String
-  descripcion  String?
-  tipo         String   // duela | gimnasio
-  series       Int?
-  repeticiones Int?
-  duracion     String?
-  videoUrl     String?
-  createdAt    DateTime @default(now())
+model Asistencia {
+  id        String   @id @default(cuid())
+  atletaId  String
+  atleta    Atleta   @relation(fields: [atletaId], references: [id], onDelete: Cascade)
+  fecha     DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([atletaId, fecha])
 }
 
-model SesionPsicologia {
-  id          Int      @id @default(autoincrement())
-  titulo      String
-  descripcion String?
-  videoUrl    String?
-  videoFile   String?
-  tipo        String?  // tecnica | mental | motivacional
-  duracion    String?
-  createdAt   DateTime @default(now())
-}
-
-model ReporteLesion {
-  id           Int      @id @default(autoincrement())
-  atletaId     Int?
-  atleta       Atleta?  @relation(fields: [atletaId], references: [id])
-  nombreAtleta String
-  zonaAfectada String
-  nivelDolor   Int
-  fecha        DateTime @default(now())
-  descripcion  String?
-  estado       String   @default("activo") // activo | recuperado
-  createdAt    DateTime @default(now())
+model Lesion {
+  id            String    @id @default(cuid())
+  atletaId      String
+  atleta        Atleta    @relation(fields: [atletaId], references: [id], onDelete: Cascade)
+  fechaConsulta DateTime  // Ingresada en el formulario
+  diagnostico   String    // Ingresado en el formulario
+  tratamiento   String    // Descripción a seguir
+  estatus       String    @default("Activo") // Valores controlados: "Activo" o "Alta"
+  fechaAlta     DateTime? // Registrada automáticamente por el sistema
+  createdAt     DateTime  @default(now())
 }

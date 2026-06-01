@@ -1,4 +1,7 @@
 import Link from 'next/link'
+import { Suspense } from 'react'
+import { ArrowRight } from 'lucide-react'
+import HeroCarousel from '@/components/HeroCarousel'
 
 const pillars = [
   {
@@ -42,34 +45,41 @@ const stats = [
 export default function HomePage() {
   return (
     <div>
-      {/* Hero */}
-      <section className="bg-uady-blue text-white py-16 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-uady-gold/40 text-uady-gold text-xs font-semibold px-3 py-1 rounded-full mb-4 uppercase tracking-widest">
-            <span className="w-1.5 h-1.5 bg-uady-gold rounded-full" />
-            Plan Rector 2024–2026
-          </div>
-          <h1 className="text-4xl md:text-5xl font-black leading-tight mb-4">
-            Selecciones de Voleibol
-            <span className="block text-uady-gold">UADY</span>
-          </h1>
-          <p className="text-lg text-blue-100 max-w-2xl leading-relaxed mb-8">
-            Plataforma integral de gestión deportiva universitaria. Centraliza el control de
-            atletas, entrenamiento físico, psicología y salud del equipo bajo un solo sistema.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/atletas"
-              className="bg-uady-gold text-uady-blue font-bold px-6 py-3 rounded-lg hover:brightness-110 transition-all duration-200 text-sm"
-            >
-              Ver Roster →
-            </Link>
-            <Link
-              href="/cronograma"
-              className="border border-white/30 text-white font-semibold px-6 py-3 rounded-lg hover:bg-white/10 transition-all duration-200 text-sm"
-            >
-              Ver Cronograma
-            </Link>
+      {/* Hero with Carousel */}
+      <section className="relative bg-uady-blue text-white overflow-hidden">
+        <Suspense fallback={<div className="h-96 bg-uady-blue" />}>
+          <HeroCarousel />
+        </Suspense>
+
+        {/* Content overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-uady-blue via-uady-blue/80 to-transparent flex items-center">
+          <div className="max-w-5xl mx-auto px-4 py-16">
+            <div className="inline-flex items-center gap-2 bg-white/10 border border-uady-gold/40 text-uady-gold text-xs font-semibold px-3 py-1 rounded-full mb-4 uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 bg-uady-gold rounded-full" />
+              Plan Rector 2026–2027 
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black leading-tight mb-4">
+              Selecciones de Voleibol
+              <span className="block text-uady-gold">UADY</span>
+            </h1>
+            <p className="text-lg text-blue-100 max-w-2xl leading-relaxed mb-8">
+              Plataforma integral de gestión deportiva universitaria. Centraliza el control de
+              atletas, entrenamiento físico, psicología y salud del equipo bajo un solo sistema.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/atletas"
+                className="bg-uady-gold text-uady-blue font-bold px-6 py-3 rounded-lg hover:brightness-110 transition-all duration-200 text-sm"
+              >
+                Ver Roster →
+              </Link>
+              <Link
+                href="/cronograma"
+                className="border border-white/30 text-white font-semibold px-6 py-3 rounded-lg hover:bg-white/10 transition-all duration-200 text-sm"
+              >
+                Ver Cronograma
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -137,21 +147,23 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* About banner */}
+        {/* About banner — CTA */}
         <section className="bg-uady-blue rounded-2xl p-8 text-white">
           <div className="flex flex-col md:flex-row gap-8 items-center">
             <div className="flex-1">
               <h2 className="text-xl font-black text-uady-gold mb-3">Sobre el Plan Rector</h2>
               <p className="text-sm text-blue-100 leading-relaxed">
-                El Plan Rector de las Selecciones de Voleibol de la UADY es un documento vivo que guía
-                el desarrollo deportivo institucional. Integra la gestión de recursos humanos, la
-                planificación técnico-táctica, el seguimiento médico y el desarrollo psicológico de
-                cada atleta universitaria.
+                El desarrollo de las selecciones de voleibol de la UADY se ha sustentado en una visión integral que combina planeación deportiva, trabajo multidisciplinario, captación de talento, preparación física especializada y seguimiento académico y humano de los atletas. Gracias a este modelo de trabajo, los equipos universitarios han logrado consolidarse entre los más competitivos de la región y mantenerse como protagonistas en el ámbito nacional.
               </p>
-              <p className="text-sm text-blue-100 leading-relaxed mt-3">
-                Esta plataforma digitaliza y centraliza todos los procesos para facilitar la toma de
-                decisiones por parte del cuerpo técnico y la dirección deportiva.
-              </p>
+              <div className="mt-6">
+                <Link
+                  href="/plan-rector"
+                  className="inline-flex items-center gap-2 bg-uady-orange-cta hover:brightness-110 transition-all duration-200 text-white font-bold text-sm px-5 py-3 rounded-lg shadow-md shadow-black/20"
+                >
+                  Leer más sobre el Plan Rector
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
             <div className="flex-shrink-0 text-center">
               <div className="bg-uady-gold/20 border-2 border-uady-gold rounded-2xl p-6">
