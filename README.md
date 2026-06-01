@@ -30,7 +30,10 @@ Sigue estos pasos para levantar el entorno de desarrollo en tu computadora local
 ```bash
 git clone [https://github.com/tu-usuario/uady-volleyball.git](https://github.com/tu-usuario/uady-volleyball.git)
 cd uady-volleyball
-
+```
 ### 2.  Instalar las dependencias del proyecto
 ```bash
 npm install
+```
+### 3. Inicializar la base de datos local y Prisma
+Asegúrate de que tu archivo .env en la raíz contenga la ruta correcta para el entorno SQLite local:
