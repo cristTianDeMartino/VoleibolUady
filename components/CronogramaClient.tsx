@@ -170,7 +170,7 @@ function WeekRow({ week, eventos, month, year }: {
         return (
           <div key={i} className={`border-r border-slate-200 last:border-r-0 ${!isCurrentMonth ? 'bg-slate-50/70' : 'bg-white'}`}>
             <div className="flex justify-end pt-1 pr-1.5">
-              <span className={`w-6 h-6 text-xs flex items-center justify-center rounded-full font-medium leading-none select-none ${isToday ? 'bg-uady-orange-cta text-white font-bold' : isCurrentMonth ? 'text-slate-700' : 'text-slate-300'}`}>
+              <span className={`w-6 h-6 text-xs flex items-center justify-center rounded-full font-medium leading-none select-none ${isToday ? 'bg-accent-green text-primary-blue font-bold' : isCurrentMonth ? 'text-slate-700' : 'text-slate-300'}`}>
                 {day.getDate()}
               </span>
             </div>
@@ -255,9 +255,9 @@ function EventoModal({
     >
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
         {/* Header */}
-        <div className="bg-uady-blue px-6 py-4 flex items-center justify-between">
+        <div className="bg-primary-blue px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CalendarDays className="w-4 h-4 text-uady-gold" />
+            <CalendarDays className="w-4 h-4 text-accent-green" />
             <h2 className="text-white font-bold text-base">
               {isEdit ? 'Editar Evento' : 'Agregar Evento'}
             </h2>
@@ -275,7 +275,7 @@ function EventoModal({
               name="titulo" type="text" required maxLength={120}
               defaultValue={eventoEditar?.titulo ?? ''}
               placeholder="Ej. Torneo JUPLAV"
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-uady-blue/30 focus:border-uady-blue transition-all"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all"
             />
           </div>
 
@@ -286,7 +286,7 @@ function EventoModal({
               name="descripcion" rows={2} maxLength={300}
               defaultValue={eventoEditar?.descripcion ?? ''}
               placeholder="Descripción breve del evento..."
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-uady-blue/30 focus:border-uady-blue transition-all resize-none"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all resize-none"
             />
           </div>
 
@@ -297,7 +297,7 @@ function EventoModal({
               <input
                 name="fechaInicio" type="date" required
                 defaultValue={eventoEditar ? isoToDateInput(eventoEditar.fechaInicio) : ''}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-uady-blue/30 focus:border-uady-blue transition-all"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all"
               />
             </div>
             <div>
@@ -305,7 +305,7 @@ function EventoModal({
               <input
                 name="fechaFin" type="date" required
                 defaultValue={eventoEditar ? isoToDateInput(eventoEditar.fechaFin) : ''}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-uady-blue/30 focus:border-uady-blue transition-all"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all"
               />
             </div>
           </div>
@@ -316,7 +316,7 @@ function EventoModal({
             <select
               value={grupoSel}
               onChange={e => setGrupoSel(e.target.value)}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-uady-blue/30 focus:border-uady-blue transition-all bg-white"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all bg-white"
             >
               {gruposDisponibles.map(g => (
                 <option key={g} value={g}>{g}</option>
@@ -330,7 +330,7 @@ function EventoModal({
                 onChange={e => setNuevoGrupo(e.target.value)}
                 placeholder="Nombre del nuevo grupo (ej. AMISTOSOS)"
                 maxLength={60}
-                className="mt-2 w-full border border-uady-blue/40 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-uady-blue/30 focus:border-uady-blue transition-all"
+                className="mt-2 w-full border border-primary-blue/40 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all"
                 autoFocus
               />
             )}
@@ -362,7 +362,7 @@ function EventoModal({
               Cancelar
             </button>
             <button type="submit" disabled={isPending}
-              className="flex-1 bg-uady-orange-cta text-white rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+              className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
               {isPending
                 ? <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</>
                 : isEdit ? 'Actualizar Evento' : 'Guardar Evento'}
@@ -389,13 +389,13 @@ function EventoPanelItem({ evento, isAdmin, onEditar, onEliminar }: {
     <div className="group flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0">
       <div className="w-1 h-8 rounded-full flex-shrink-0" style={{ backgroundColor: evento.color }} />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-uady-blue leading-tight truncate">{evento.titulo}</p>
+        <p className="text-sm font-bold text-primary-blue leading-tight truncate">{evento.titulo}</p>
         <p className="text-[11px] text-slate-400 mt-0.5 tabular-nums">{formatDateRangeShort(start, end)}</p>
       </div>
       {isAdmin && (
         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
           <button onClick={() => onEditar(evento)} title="Editar"
-            className="p-1.5 rounded hover:bg-uady-blue/10 text-slate-400 hover:text-uady-blue transition-colors">
+            className="p-1.5 rounded hover:bg-primary-blue/10 text-slate-400 hover:text-primary-blue transition-colors">
             <Pencil className="w-3.5 h-3.5" />
           </button>
           <button onClick={() => onEliminar(evento.id)} title="Eliminar"
@@ -424,7 +424,7 @@ function ProximoEventoCard({ evento }: { evento: EventoData }) {
         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-0.5">
           {MESES_CORTOS[start.getMonth()]}
         </span>
-        <span className="text-2xl font-black text-uady-blue leading-none">
+        <span className="text-2xl font-black text-primary-blue leading-none">
           {start.getDate()}
         </span>
       </div>
@@ -432,7 +432,7 @@ function ProximoEventoCard({ evento }: { evento: EventoData }) {
       <div className="flex-1 px-4 py-3 flex flex-col justify-center min-w-0 gap-0.5">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: evento.color }} />
-          <h3 className="font-bold text-uady-blue text-sm leading-snug truncate">{evento.titulo}</h3>
+          <h3 className="font-bold text-primary-blue text-sm leading-snug truncate">{evento.titulo}</h3>
         </div>
         {evento.descripcion && (
           <p className="text-xs text-slate-400 pl-4 line-clamp-1">{evento.descripcion}</p>
@@ -552,8 +552,8 @@ export default function CronogramaClient({
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-1 h-7 bg-uady-gold rounded-full" />
-            <h1 className="text-3xl font-black text-uady-blue">Cronograma</h1>
+            <div className="w-1 h-7 bg-accent-green rounded-full" />
+            <h1 className="text-3xl font-black text-primary-blue">Cronograma</h1>
           </div>
           <p className="text-slate-500 text-sm ml-3">
             Periodización deportiva, torneos y entrenamientos del equipo.
@@ -562,7 +562,7 @@ export default function CronogramaClient({
         {isAdmin && (
           <button
             onClick={abrirModalCrear}
-            className="flex items-center gap-2 bg-uady-orange-cta text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:brightness-110 transition-all shadow-md shadow-uady-orange-cta/20 self-start sm:self-auto flex-shrink-0"
+            className="flex items-center gap-2 bg-accent-green text-primary-blue px-5 py-2.5 rounded-xl text-sm font-bold hover:brightness-110 transition-all shadow-md shadow-accent-green/20 self-start sm:self-auto flex-shrink-0"
           >
             <Plus className="w-4 h-4" />
             Agregar Evento
@@ -584,7 +584,7 @@ export default function CronogramaClient({
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <div className="text-center min-w-[160px]">
-                <p className="text-uady-blue font-black text-lg leading-tight">{MESES[mes - 1]}</p>
+                <p className="text-primary-blue font-black text-lg leading-tight">{MESES[mes - 1]}</p>
                 <p className="text-slate-400 text-sm leading-tight">{anio}</p>
               </div>
               <button onClick={() => cambiarMes(1)} disabled={cargandoMes}
@@ -611,7 +611,7 @@ export default function CronogramaClient({
 
             {cargandoMes && (
               <div className="flex items-center justify-center py-4 -mt-4">
-                <Loader2 className="w-5 h-5 text-uady-blue animate-spin" />
+                <Loader2 className="w-5 h-5 text-primary-blue animate-spin" />
               </div>
             )}
 
@@ -636,8 +636,8 @@ export default function CronogramaClient({
             {/* Header del catálogo */}
             <div className="px-4 py-3.5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FolderOpen className="w-4 h-4 text-uady-gold" />
-                <h2 className="text-xs font-black text-uady-blue uppercase tracking-wider">
+                <FolderOpen className="w-4 h-4 text-accent-green" />
+                <h2 className="text-xs font-black text-primary-blue uppercase tracking-wider">
                   Catálogo de Eventos
                 </h2>
               </div>
@@ -687,8 +687,8 @@ export default function CronogramaClient({
       {/* ══ BLOQUE INFERIOR: Próximos Eventos ══ */}
       <section>
         <div className="flex items-center gap-2 mb-5">
-          <div className="w-1 h-6 bg-uady-orange-cta rounded-full" />
-          <h2 className="text-xl font-black text-uady-blue">Próximos Eventos</h2>
+          <div className="w-1 h-6 bg-accent-green rounded-full" />
+          <h2 className="text-xl font-black text-primary-blue">Próximos Eventos</h2>
         </div>
 
         {proximosEventos.length === 0 ? (
@@ -709,7 +709,7 @@ export default function CronogramaClient({
                 <button
                   onClick={cargarMasEventos}
                   disabled={loadingMas}
-                  className="flex items-center gap-2 text-slate-500 hover:text-uady-blue text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-slate-100 transition-all disabled:opacity-50 border border-slate-200 hover:border-uady-blue/30"
+                  className="flex items-center gap-2 text-slate-500 hover:text-primary-blue text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-slate-100 transition-all disabled:opacity-50 border border-slate-200 hover:border-primary-blue/30"
                 >
                   {loadingMas ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronDown className="w-4 h-4" />}
                   {loadingMas ? 'Cargando…' : 'Cargar más eventos'}

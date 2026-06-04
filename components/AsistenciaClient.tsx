@@ -58,8 +58,8 @@ function JugadorView({ atletaId, nombre, yaTieneAsistenciaHoy }: JugadorViewProp
       <div className="w-full max-w-md">
         {/* Card principal */}
         <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
-          {/* Header con color UADY */}
-          <div className="bg-uady-blue px-8 py-6 text-white text-center">
+          {/* Header con color principal */}
+          <div className="bg-primary-blue px-8 py-6 text-white text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
               <CalendarDays className="w-5 h-5 opacity-80" />
               <span className="text-sm font-medium opacity-80 uppercase tracking-wider">
@@ -76,7 +76,7 @@ function JugadorView({ atletaId, nombre, yaTieneAsistenciaHoy }: JugadorViewProp
             <p className="text-slate-400 text-sm font-medium uppercase tracking-wider mb-1">
               Hoy es
             </p>
-            <p className="text-uady-blue text-xl font-bold mb-10">
+            <p className="text-primary-blue text-xl font-bold mb-10">
               {formatearFechaElegante(hoy)}
             </p>
 
@@ -98,7 +98,7 @@ function JugadorView({ atletaId, nombre, yaTieneAsistenciaHoy }: JugadorViewProp
                 <button
                   onClick={handleRegistrar}
                   disabled={isPending}
-                  className="w-full bg-uady-blue hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-base py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 shadow-md shadow-uady-blue/20"
+                  className="w-full bg-primary-blue hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-base py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 shadow-md shadow-primary-blue/20"
                 >
                   {isPending ? (
                     <>
@@ -184,8 +184,8 @@ export function AdminView({ atletas, registros, mesInicial, anioInicial }: Admin
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-1 h-7 bg-uady-orange-cta rounded-full" />
-          <h1 className="text-3xl font-black text-uady-blue">Registro de Asistencia</h1>
+          <div className="w-1 h-7 bg-accent-green rounded-full" />
+          <h1 className="text-3xl font-black text-primary-blue">Registro de Asistencia</h1>
         </div>
         <p className="text-slate-500 text-sm ml-3">Hoja de asistencia mensual del equipo.</p>
       </div>
@@ -201,7 +201,7 @@ export function AdminView({ atletas, registros, mesInicial, anioInicial }: Admin
         </button>
 
         <div className="text-center">
-          <p className="text-uady-blue font-black text-xl">{MESES[mes - 1]}</p>
+          <p className="text-primary-blue font-black text-xl">{MESES[mes - 1]}</p>
           <p className="text-slate-400 text-sm">{anio}</p>
         </div>
 
@@ -222,7 +222,7 @@ export function AdminView({ atletas, registros, mesInicial, anioInicial }: Admin
             <tr className="border-b border-slate-200">
               <th
                 scope="col"
-                className="sticky left-0 z-10 bg-uady-blue text-white text-left px-4 py-3 font-semibold min-w-[200px] rounded-tl-2xl"
+                className="sticky left-0 z-10 bg-primary-blue text-white text-left px-4 py-3 font-semibold min-w-[200px] rounded-tl-2xl"
               >
                 Atleta
               </th>
@@ -234,7 +234,7 @@ export function AdminView({ atletas, registros, mesInicial, anioInicial }: Admin
                     key={d}
                     scope="col"
                     className={`text-center px-1 py-2 font-medium min-w-[36px] ${
-                      esDomingo ? 'bg-slate-100 text-slate-400' : 'bg-uady-blue/5 text-slate-500'
+                      esDomingo ? 'bg-slate-100 text-slate-400' : 'bg-primary-blue/5 text-slate-500'
                     }`}
                   >
                     <div className="text-[10px] leading-none">{DIAS_SEMANA[fecha.getDay()]}</div>
@@ -244,7 +244,7 @@ export function AdminView({ atletas, registros, mesInicial, anioInicial }: Admin
               })}
               <th
                 scope="col"
-                className="text-center px-3 py-3 font-semibold bg-uady-blue text-white min-w-[60px] rounded-tr-2xl"
+                className="text-center px-3 py-3 font-semibold bg-primary-blue text-white min-w-[60px] rounded-tr-2xl"
               >
                 Total
               </th>
@@ -259,7 +259,7 @@ export function AdminView({ atletas, registros, mesInicial, anioInicial }: Admin
                 }`}
               >
                 {/* Nombre del atleta */}
-                <td className="sticky left-0 z-10 bg-inherit px-4 py-2.5 font-medium text-uady-blue whitespace-nowrap border-r border-slate-100">
+                <td className="sticky left-0 z-10 bg-inherit px-4 py-2.5 font-medium text-primary-blue whitespace-nowrap border-r border-slate-100">
                   <div className="leading-tight">
                     <span className="font-bold">{atleta.apellidos}</span>
                     <span className="text-slate-400 font-normal">, {atleta.nombre}</span>
@@ -278,7 +278,7 @@ export function AdminView({ atletas, registros, mesInicial, anioInicial }: Admin
                       key={d}
                       className={`text-center px-0.5 py-2 ${
                         esDomingo ? 'bg-slate-100/60' : ''
-                      } ${presente ? 'bg-uady-blue/10' : ''}`}
+                      } ${presente ? 'bg-primary-blue/10' : ''}`}
                     >
                       {presente ? (
                         <Check className="w-3.5 h-3.5 text-green-600 mx-auto" strokeWidth={3} />
@@ -290,8 +290,8 @@ export function AdminView({ atletas, registros, mesInicial, anioInicial }: Admin
                 })}
 
                 {/* Total */}
-                <td className="text-center px-3 py-2 font-bold text-uady-blue border-l border-slate-100">
-                  <span className="bg-uady-blue/10 text-uady-blue text-xs font-bold px-2 py-1 rounded-full">
+                <td className="text-center px-3 py-2 font-bold text-primary-blue border-l border-slate-100">
+                  <span className="bg-primary-blue/10 text-primary-blue text-xs font-bold px-2 py-1 rounded-full">
                     {asistenciasPorAtleta[atleta.id] ?? 0}
                   </span>
                 </td>
@@ -314,7 +314,7 @@ export function AdminView({ atletas, registros, mesInicial, anioInicial }: Admin
       {/* Leyenda */}
       <div className="flex items-center gap-6 mt-4 text-xs text-slate-400">
         <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded bg-uady-blue/10 flex items-center justify-center">
+          <div className="w-5 h-5 rounded bg-primary-blue/10 flex items-center justify-center">
             <Check className="w-3 h-3 text-green-600" strokeWidth={3} />
           </div>
           <span>Presente</span>

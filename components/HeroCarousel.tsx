@@ -7,13 +7,13 @@ const slides = [
   {
     id: 1,
     src: '/images/equipo-femenil.jpg',
-    alt: 'Equipo Femenil de Voleibol UADY',
+    alt: 'Equipo Femenil de Voleibol',
     title: 'Rama Femenil',
   },
   {
     id: 2,
     src: '/images/equipo-varonil.jpg',
-    alt: 'Equipo Varonil de Voleibol UADY',
+    alt: 'Equipo Varonil de Voleibol',
     title: '',
   },
 ]

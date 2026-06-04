@@ -4,7 +4,7 @@ import { getSession } from '@/lib/auth'
 import RegistrarLesionForm from '@/components/RegistrarLesionForm'
 import LesionesSeguimiento from '@/components/LesionesSeguimiento'
 
-export const metadata = { title: 'Lesiones — UADY Voleibol' }
+export const metadata = { title: 'Lesiones — Sistema de Voleibol' }
 
 export default async function LesionesPage() {
   const session = await getSession()
@@ -14,13 +14,13 @@ export default async function LesionesPage() {
     return (
       <div className="max-w-md mx-auto px-4 py-24 text-center">
         <p className="text-5xl mb-4">🔒</p>
-        <h1 className="text-xl font-black text-uady-blue mb-2">Módulo Privado</h1>
+        <h1 className="text-xl font-black text-primary-blue mb-2">Módulo Privado</h1>
         <p className="text-gray-500 text-sm mb-6">
           El seguimiento de lesiones contiene información médica. Inicia sesión para continuar.
         </p>
         <Link
           href="/login"
-          className="inline-block bg-uady-blue text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:brightness-110 transition-all"
+          className="inline-block bg-primary-blue text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:brightness-110 transition-all"
         >
           Iniciar Sesión
         </Link>
@@ -53,8 +53,8 @@ export default async function LesionesPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-1 h-7 bg-uady-orange-cta rounded-full" />
-          <h1 className="text-3xl font-black text-uady-blue">
+          <div className="w-1 h-7 bg-accent-green rounded-full" />
+          <h1 className="text-3xl font-black text-primary-blue">
             Prevención y Seguimiento de Lesiones
           </h1>
         </div>

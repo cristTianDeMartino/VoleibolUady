@@ -3,9 +3,9 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata = {
-  title: 'Plan Rector — Selecciones de Voleibol UADY',
+  title: 'Plan Rector — Selecciones de Voleibol',
   description:
-    'Filosofía, objetivos y estructura del Plan Rector de las Selecciones de Voleibol de la Universidad Autónoma de Yucatán.',
+    'Filosofía, objetivos y estructura del Plan Rector de las Selecciones de Voleibol del club.',
 }
 
 // ─── Imagen reutilizable para bloques ─────────────────────────────────────────
@@ -19,7 +19,7 @@ function BlockImage({
   objectPosition?: string
 }) {
   return (
-    <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-uady-gold/30 shadow-xl shadow-black/20">
+    <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-accent-green/30 shadow-xl shadow-black/20">
       <Image src={src} alt={alt} fill className="object-cover" style={{ objectPosition }} />
     </div>
   )
@@ -47,7 +47,7 @@ function ContentBlock({
 }: ContentBlockProps) {
   const textContent = (
     <div className="flex flex-col justify-center">
-      <span className="text-uady-gold text-xs font-bold uppercase tracking-widest mb-2">
+      <span className="text-accent-green text-xs font-bold uppercase tracking-widest mb-2">
         {eyebrow}
       </span>
       <h2 className="text-2xl md:text-3xl font-black text-white mb-4 leading-tight">
@@ -75,20 +75,20 @@ function ContentBlock({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function PlanRectorPage() {
   return (
-    <div className="bg-uady-blue text-white">
+    <div className="bg-primary-blue text-white">
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
-      <section className="bg-uady-gold text-uady-blue">
+      <section className="bg-accent-green text-primary-blue">
         <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/25 border border-uady-blue/20 text-uady-blue text-xs font-semibold px-3 py-1 rounded-full mb-6 uppercase tracking-widest">
-            <span className="w-1.5 h-1.5 bg-uady-blue rounded-full" />
+          <div className="inline-flex items-center gap-2 bg-white/25 border border-primary-blue/20 text-primary-blue text-xs font-semibold px-3 py-1 rounded-full mb-6 uppercase tracking-widest">
+            <span className="w-1.5 h-1.5 bg-primary-blue rounded-full" />
             Documento Institucional 2026–2027
           </div>
           <h1 className="text-4xl md:text-5xl font-black leading-tight mb-5">
             Plan Rector de las
-            <span className="block text-white">Selecciones de Voleibol UADY</span>
+            <span className="block text-white">Selecciones de Voleibol</span>
           </h1>
-          <p className="text-uady-blue/90 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto">
-            Formación integral, excelencia deportiva e identidad universitaria como ejes de un
+          <p className="text-primary-blue/90 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto">
+            Formación integral, excelencia deportiva e identidad como ejes de un
             modelo que trasciende la cancha.
           </p>
         </div>
@@ -97,7 +97,7 @@ export default function PlanRectorPage() {
 
       {/* Onda decorativa */}
       <div
-        className="relative z-10 -mt-8 h-16 bg-uady-gold"
+        className="relative z-10 -mt-8 h-16 bg-accent-green"
         style={{ clipPath: 'ellipse(55% 100% at 50% 0%)' }}
       />
 
@@ -107,35 +107,35 @@ export default function PlanRectorPage() {
         {/* Bloque 1: Imagen izquierda — Texto derecha */}
         <ContentBlock
           imageLeft
-          eyebrow="Trayectoria y resultados"
+          eyebrow="Trayectoria y resultados,
+           Mi visión : Jesus Emilio Mijangos Noh"
           title="Resultados que respaldan el proyecto"
           imageSrc="/images/voleiplaya.jpg"
           imageAlt="Equipo de voleibol de playa"
           imagePosition="center 18%"
         >
           <p>
-            A partir de mi ingreso como entrenador del equipo femenil de voleibol de la
-            Universidad Autónoma de Yucatán, en el año 2017, se ha calificado a todas las
-            ediciones de la Universiada en su fase nacional, habiendo logrado una medalla de
-            plata en voleibol de playa femenino en los Juegos Nacionales Universitarios en Puerto
-            Vallarta 2021.
+            A partir de mi ingreso como entrenador del equipo femenil de voleibol del club, en el
+            año 2017, se ha calificado a todas las ediciones de la Universiada en su fase nacional,
+            habiendo logrado una medalla de plata en voleibol de playa femenino en los Juegos
+            Nacionales Universitarios en Puerto Vallarta 2021.
           </p>
           <p>
             Posterior a mi incorporación como entrenador al equipo varonil, se obtuvo una medalla
-            de broce en la Universiada Nacional 2025 en la disciplina de voleibol. Me permito
+            de bronce en la Universiada Nacional 2025 en la disciplina de voleibol. Me permito
             compartir con ustedes los puntos que nos han permitido fundamentar el trabajo
             realizado.
           </p>
           <p>
-            Como antecedente, los equipos femeniles de la UADY no habían podido calificar a la
+            Como antecedente, los equipos femeniles del club no habían podido calificar a la
             Universiada Nacional en mucho tiempo. En años anteriores, el voleibol femenino
-            universitario en la región había sido dominado por el Tecnológico de Mérida y la
+            en la región había sido dominado por el Tecnológico de Mérida y la
             Universidad Marista, mientras que en la rama varonil la hegemonía la había tenido el
             Tecnológico de Mérida durante muchos años.
           </p>
           <p>
             Desde el inicio de mi participación con los equipos de voleibol ha existido una
-            comunicación permanente con los responsables de todas las áreas del PICFIDE, con los
+            comunicación permanente con los responsables de todas las áreas del programa, con los
             integrantes del cuerpo técnico y con las y los atletas, lo que ha permitido sostener un
             proyecto ordenado y competitivo.
           </p>
@@ -144,9 +144,9 @@ export default function PlanRectorPage() {
         {/* Separador decorativo */}
         <div className="flex items-center gap-4">
           <div className="flex-1 h-px bg-white/15" />
-          <div className="w-2 h-2 rounded-full bg-uady-gold" />
+          <div className="w-2 h-2 rounded-full bg-accent-green" />
           <div className="w-2 h-2 rounded-full bg-white/70" />
-          <div className="w-2 h-2 rounded-full bg-uady-gold/70" />
+          <div className="w-2 h-2 rounded-full bg-accent-green/70" />
           <div className="flex-1 h-px bg-white/15" />
         </div>
 
@@ -166,11 +166,11 @@ export default function PlanRectorPage() {
             con los equipos.
           </p>
           <p>
-            Si bien UAIS ha existido desde antes de mi incorporación a los equipos, no participaba
-            directamente en cancha con las selecciones de voleibol. A través de gestiones con el
-            responsable del área, se pudo acceder a un plan de voluntariado en la especialidad de
-            fisioterapia, y ese acompañamiento, junto con el manejo de todas las áreas de UAIS, ha
-            influido positivamente en el desempeño de los equipos.
+            El área de salud institucional ha existido desde antes de nuestra incorporación a los
+            equipos, pero no participaba directamente en cancha con las selecciones de voleibol. A
+            través de gestiones con el responsable del área, se pudo acceder a un plan de
+            voluntariado en la especialidad de fisioterapia, y ese acompañamiento ha influido
+            positivamente en el desempeño de los equipos.
           </p>
           <p>
             La preparación física se ha centrado en el trabajo de fuerza como base, promoviendo y
@@ -182,9 +182,9 @@ export default function PlanRectorPage() {
         {/* Separador decorativo */}
         <div className="flex items-center gap-4">
           <div className="flex-1 h-px bg-white/15" />
-          <div className="w-2 h-2 rounded-full bg-uady-gold" />
+          <div className="w-2 h-2 rounded-full bg-accent-green" />
           <div className="w-2 h-2 rounded-full bg-white/70" />
-          <div className="w-2 h-2 rounded-full bg-uady-gold/70" />
+          <div className="w-2 h-2 rounded-full bg-accent-green/70" />
           <div className="flex-1 h-px bg-white/15" />
         </div>
 
@@ -198,8 +198,7 @@ export default function PlanRectorPage() {
         >
           <p>
             Al no contar con un programa de becas deportivas, implementamos un seguimiento
-            permanente a las y los prospectos detectados con intenciones de ingresar a alguna
-            carrera que oferta la UADY.
+            permanente a las y los prospectos detectados con intenciones de unirse al club.
           </p>
           <p>
             Hemos desarrollado la detección y el contacto personalizado de talentos en torneos
@@ -209,10 +208,9 @@ export default function PlanRectorPage() {
           </p>
           <p>
             A esos prospectos se les integra a un grupo de WhatsApp creado específicamente para dar
-            seguimiento y compartir información, asesoramiento para su preparación para el examen y
-            apoyo en los pasos administrativos de ingreso a la UADY. Además, se implementa un
-            programa de asesorías impartido por integrantes de los equipos cuando los prospectos lo
-            necesitan o lo desean.
+            seguimiento y compartir información, asesoramiento y apoyo en los pasos administrativos
+            de ingreso al equipo. Además, se implementa un programa de asesorías impartido por
+            integrantes de los equipos cuando los prospectos lo necesitan o lo desean.
           </p>
           <p>
             El reclutamiento también se realiza a través de las convocatorias a visorias del
@@ -238,8 +236,7 @@ export default function PlanRectorPage() {
           </p>
           <p>
             Estos son algunos de los puntos básicos que han permitido que los equipos de voleibol
-            de la Universidad Autónoma de Yucatán se mantengan vigentes y competitivos en el ámbito
-            del voleibol universitario del país.
+            del club se mantengan vigentes y competitivos en el ámbito del voleibol del país.
           </p>
         </ContentBlock>
 
@@ -250,7 +247,7 @@ export default function PlanRectorPage() {
       <div className="max-w-5xl mx-auto px-4 pb-16 flex justify-center">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 bg-red-600 text-white font-bold text-sm px-6 py-3 rounded-lg shadow-lg shadow-red-950/30 hover:bg-red-500 hover:shadow-red-900/40 transition-all duration-200"
+          className="inline-flex items-center gap-2 bg-accent-green text-primary-blue font-bold text-sm px-6 py-3 rounded-lg shadow-lg shadow-primary-blue/30 hover:brightness-110 hover:shadow-primary-blue/40 transition-all duration-200"
         >
           <ArrowLeft className="w-4 h-4" />
           Regresar al Inicio

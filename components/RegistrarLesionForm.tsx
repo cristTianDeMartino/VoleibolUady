@@ -17,7 +17,7 @@ export default function RegistrarLesionForm() {
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-8">
-      <div className="bg-uady-orange-cta px-5 py-3 flex items-center gap-2">
+      <div className="bg-accent-green px-5 py-3 flex items-center gap-2">
         <span>🩹</span>
         <h2 className="font-bold text-white text-sm">Reportar Nueva Lesión</h2>
       </div>
@@ -37,7 +37,7 @@ export default function RegistrarLesionForm() {
         <form ref={formRef} action={formAction} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-gray-600 mb-1">
-              Fecha de Consulta <span className="text-uady-orange-cta">*</span>
+              Fecha de Consulta <span className="text-accent-green">*</span>
             </label>
             <input
               type="date"
@@ -45,33 +45,33 @@ export default function RegistrarLesionForm() {
               required
               defaultValue={hoy}
               max={hoy}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-uady-blue focus:ring-1 focus:ring-uady-blue transition-all text-gray-700"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-all text-gray-700"
             />
           </div>
 
           <div>
             <label className="block text-xs font-bold text-gray-600 mb-1">
-              Diagnóstico <span className="text-uady-orange-cta">*</span>
+              Diagnóstico <span className="text-accent-green">*</span>
             </label>
             <input
               type="text"
               name="diagnostico"
               required
               placeholder="Ej. Esguince de tobillo grado I"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-uady-blue focus:ring-1 focus:ring-uady-blue transition-all"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-all"
             />
           </div>
 
           <div>
             <label className="block text-xs font-bold text-gray-600 mb-1">
-              Tratamiento a Seguir <span className="text-uady-orange-cta">*</span>
+              Tratamiento a Seguir <span className="text-accent-green">*</span>
             </label>
             <textarea
               name="tratamiento"
               required
               rows={3}
               placeholder="Describe el tratamiento, reposo o terapia indicada..."
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-uady-blue focus:ring-1 focus:ring-uady-blue transition-all resize-none"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-all resize-none"
             />
           </div>
 
@@ -79,7 +79,7 @@ export default function RegistrarLesionForm() {
             <button
               type="submit"
               disabled={isPending}
-              className="bg-uady-orange-cta text-white font-bold px-6 py-2.5 rounded-lg text-sm hover:brightness-110 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+              className="bg-accent-green text-primary-blue font-bold px-6 py-2.5 rounded-lg text-sm hover:brightness-110 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isPending ? (
                 <>

@@ -44,8 +44,8 @@ export default function WorkoutTabs() {
           onClick={() => setActiveTab('duela')}
           className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${
             activeTab === 'duela'
-              ? 'bg-uady-blue text-white shadow-sm'
-              : 'text-gray-500 hover:text-uady-blue'
+              ? 'bg-primary-blue text-white shadow-sm'
+              : 'text-gray-500 hover:text-primary-blue'
           }`}
         >
           🏐 Ejercicios en Duela
@@ -54,8 +54,8 @@ export default function WorkoutTabs() {
           onClick={() => setActiveTab('gimnasio')}
           className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${
             activeTab === 'gimnasio'
-              ? 'bg-uady-blue text-white shadow-sm'
-              : 'text-gray-500 hover:text-uady-blue'
+              ? 'bg-primary-blue text-white shadow-sm'
+              : 'text-gray-500 hover:text-primary-blue'
           }`}
         >
           🏋️ Gimnasio y Pesas
@@ -66,13 +66,13 @@ export default function WorkoutTabs() {
       <div
         className={`rounded-xl p-4 mb-6 flex items-center gap-4 ${
           activeTab === 'duela'
-            ? 'bg-uady-blue/5 border border-uady-blue/10'
-            : 'bg-uady-gold/10 border border-uady-gold/20'
+            ? 'bg-primary-blue/5 border border-primary-blue/10'
+            : 'bg-accent-green/10 border border-accent-green/20'
         }`}
       >
         <span className="text-3xl">{activeTab === 'duela' ? '🏐' : '🏋️'}</span>
         <div>
-          <p className={`font-bold text-sm ${activeTab === 'duela' ? 'text-uady-blue' : 'text-amber-700'}`}>
+          <p className={`font-bold text-sm ${activeTab === 'duela' ? 'text-primary-blue' : 'text-amber-700'}`}>
             {activeTab === 'duela' ? 'Sesión en Duela' : 'Sesión de Gimnasio y Pesas'}
           </p>
           <p className="text-xs text-gray-500">
@@ -93,19 +93,19 @@ export default function WorkoutTabs() {
             <div className="flex items-start gap-3">
               <div
                 className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0 ${
-                  activeTab === 'duela' ? 'bg-uady-blue/10' : 'bg-uady-gold/10'
+                  activeTab === 'duela' ? 'bg-primary-blue/10' : 'bg-accent-green/10'
                 }`}
               >
                 {ej.icono}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-bold text-uady-blue text-sm leading-snug">{ej.nombre}</h3>
+                  <h3 className="font-bold text-primary-blue text-sm leading-snug">{ej.nombre}</h3>
                   <span
                     className={`text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${
                       activeTab === 'duela'
-                        ? 'bg-uady-blue/10 text-uady-blue'
-                        : 'bg-uady-gold/20 text-amber-700'
+                        ? 'bg-primary-blue/10 text-primary-blue'
+                        : 'bg-accent-green/20 text-amber-700'
                     }`}
                   >
                     {ej.categoria}
@@ -116,7 +116,7 @@ export default function WorkoutTabs() {
                 <div className="flex gap-4 mt-3">
                   {ej.series && (
                     <div className="text-center">
-                      <p className="text-lg font-black text-uady-blue leading-none">{ej.series}</p>
+                      <p className="text-lg font-black text-primary-blue leading-none">{ej.series}</p>
                       <p className="text-xs text-gray-400">Series</p>
                     </div>
                   )}
@@ -143,7 +143,7 @@ export default function WorkoutTabs() {
       <div className="mt-6 text-center">
         <button
           disabled
-          className="bg-uady-orange-cta text-white px-6 py-3 rounded-lg font-semibold text-sm opacity-50 cursor-not-allowed"
+          className="bg-accent-green text-primary-blue px-6 py-3 rounded-lg font-semibold text-sm opacity-50 cursor-not-allowed"
         >
           + Agregar Ejercicio
         </button>

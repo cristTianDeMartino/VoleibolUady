@@ -54,7 +54,7 @@ export default function EditFotoAtleta({ atletaId, fotoActualUrl, isAdmin }: Pro
   }
 
   return (
-    <div className="relative w-28 h-28 rounded-2xl overflow-hidden flex-shrink-0 border-2 border-uady-gold bg-blue-800 group/photo">
+    <div className="relative w-28 h-28 rounded-2xl overflow-hidden flex-shrink-0 border-2 border-accent-green bg-blue-800 group/photo">
 
       {/* Photo or emoji placeholder */}
       {preview ? (
@@ -100,7 +100,7 @@ export default function EditFotoAtleta({ atletaId, fotoActualUrl, isAdmin }: Pro
             type="button"
             title="Cambiar foto"
             onClick={() => inputRef.current?.click()}
-            className="absolute bottom-1.5 right-1.5 w-7 h-7 rounded-full bg-uady-gold text-uady-blue flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition-transform cursor-pointer opacity-0 group-hover/photo:opacity-100 focus:opacity-100"
+            className="absolute bottom-1.5 right-1.5 w-7 h-7 rounded-full bg-accent-green text-primary-blue flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition-transform cursor-pointer opacity-0 group-hover/photo:opacity-100 focus:opacity-100"
           >
             <Pencil className="w-3.5 h-3.5" strokeWidth={2.5} />
           </button>

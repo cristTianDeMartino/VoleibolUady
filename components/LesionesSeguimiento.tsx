@@ -84,7 +84,7 @@ export default function LesionesSeguimiento({ lesiones, isAdmin }: Props) {
         <button
           onClick={() => setTab('activas')}
           className={`px-5 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
-            tab === 'activas' ? 'bg-uady-blue text-white shadow-sm' : 'text-gray-500 hover:text-uady-blue'
+            tab === 'activas' ? 'bg-primary-blue text-white shadow-sm' : 'text-gray-500 hover:text-primary-blue'
           }`}
         >
           🩹 Lesiones Activas
@@ -93,7 +93,7 @@ export default function LesionesSeguimiento({ lesiones, isAdmin }: Props) {
         <button
           onClick={() => setTab('historial')}
           className={`px-5 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
-            tab === 'historial' ? 'bg-uady-blue text-white shadow-sm' : 'text-gray-500 hover:text-uady-blue'
+            tab === 'historial' ? 'bg-primary-blue text-white shadow-sm' : 'text-gray-500 hover:text-primary-blue'
           }`}
         >
           📋 Historial
@@ -122,13 +122,13 @@ export default function LesionesSeguimiento({ lesiones, isAdmin }: Props) {
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="min-w-0">
                       {isAdmin && nombreAtleta(l) && (
-                        <p className="font-black text-uady-blue text-sm truncate">{nombreAtleta(l)}</p>
+                        <p className="font-black text-primary-blue text-sm truncate">{nombreAtleta(l)}</p>
                       )}
                       <p className="text-xs text-gray-400 mt-0.5">
                         Consulta: {fmtFecha(l.fechaConsulta)}
                       </p>
                     </div>
-                    <span className="bg-uady-orange-cta text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                    <span className="bg-accent-green text-primary-blue text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
                       Activo
                     </span>
                   </div>
@@ -177,7 +177,7 @@ export default function LesionesSeguimiento({ lesiones, isAdmin }: Props) {
                     {historial.map((l) => (
                       <tr key={l.id} className="hover:bg-gray-50/50 transition-colors">
                         {isAdmin && (
-                          <td className="px-5 py-3 font-medium text-uady-blue whitespace-nowrap">
+                          <td className="px-5 py-3 font-medium text-primary-blue whitespace-nowrap">
                             {nombreAtleta(l) ?? '—'}
                           </td>
                         )}

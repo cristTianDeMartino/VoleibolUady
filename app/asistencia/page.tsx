@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { obtenerMatrizAsistencia } from '@/actions/asistencia'
 import AsistenciaClient from '@/components/AsistenciaClient'
 
-export const metadata = { title: 'Asistencia — UADY Voleibol' }
+export const metadata = { title: 'Asistencia — Sistema de Voleibol' }
 
 function normalizarFecha(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate())
@@ -17,13 +17,13 @@ export default async function AsistenciaPage() {
     return (
       <div className="max-w-md mx-auto px-4 py-24 text-center">
         <p className="text-5xl mb-4">🔒</p>
-        <h1 className="text-xl font-black text-uady-blue mb-2">Módulo Privado</h1>
+        <h1 className="text-xl font-black text-primary-blue mb-2">Módulo Privado</h1>
         <p className="text-gray-500 text-sm mb-6">
           Inicia sesión para registrar o consultar la asistencia.
         </p>
         <Link
           href="/login"
-          className="inline-block bg-uady-blue text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:brightness-110 transition-all"
+          className="inline-block bg-primary-blue text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:brightness-110 transition-all"
         >
           Iniciar Sesión
         </Link>

@@ -75,3 +75,22 @@ model Evento {
   grupo       String   @default("GENERAL") // Ej. "TORNEOS", "PREPARACIÓN O ENTRENAMIENTOS"
   createdAt   DateTime @default(now())
 }
+
+model SesionGimnasio {
+  id          String   @id @default(cuid())
+  titulo      String
+  descripcion String?
+  fechaInicio DateTime
+  fechaFin    DateTime
+  color       String
+  createdAt   DateTime @default(now())
+}
+
+model VideoGimnasio {
+  id          String   @id @default(cuid())
+  titulo      String
+  descripcion String?
+  url         String
+  categoria   String
+  createdAt   DateTime @default(now())
+}

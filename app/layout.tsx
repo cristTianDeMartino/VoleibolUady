@@ -8,9 +8,9 @@ import { getSession } from '@/lib/auth'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Plan Rector UADY Voleibol',
+  title: 'Sistema de Voleibol',
   description:
-    'Plataforma de gestión del Plan Rector de las Selecciones de Voleibol de la Universidad Autónoma de Yucatán',
+    'Plataforma integral de gestión del Plan Rector de las Selecciones de Voleibol del club.',
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

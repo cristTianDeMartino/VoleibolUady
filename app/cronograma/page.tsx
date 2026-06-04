@@ -9,7 +9,7 @@ import {
 } from '@/actions/cronograma'
 import CronogramaClient from '@/components/CronogramaClient'
 
-export const metadata: Metadata = { title: 'Cronograma — UADY Voleibol' }
+export const metadata: Metadata = { title: 'Cronograma — Sistema de Voleibol' }
 
 export default async function CronogramaPage() {
   const session = await getSession()
