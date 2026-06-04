@@ -189,6 +189,94 @@ const atletasSeed = [
   },
 ]
 
+// ─── Eventos del Macrociclo ───────────────────────────────────────────────────
+// Temporada Junio–Agosto 2026
+// JUPLAV: Vie–Sáb 17–18 jul (misma semana). CIVOLSUR: Vie–Sáb 14–15 ago.
+const eventosSeed = [
+  {
+    titulo: 'Adaptación Anatómica',
+    descripcion: 'Fase de adaptación progresiva al trabajo físico estructurado. Volumen bajo, intensidad baja.',
+    fechaInicio: new Date(2026, 5, 1),
+    fechaFin:    new Date(2026, 5, 28),
+    color: '#eab308',
+    grupo: 'PREPARACIÓN O ENTRENAMIENTOS',
+  },
+  {
+    titulo: 'Hipertrofia',
+    descripcion: 'Ciclo de aumento de masa muscular funcional orientado al rendimiento en voleibol.',
+    fechaInicio: new Date(2026, 5, 29),
+    fechaFin:    new Date(2026, 6, 26),
+    color: '#06b6d4',
+    grupo: 'PREPARACIÓN O ENTRENAMIENTOS',
+  },
+  {
+    titulo: 'Fuerza Máxima',
+    descripcion: 'Desarrollo de la fuerza máxima para potenciar el rendimiento explosivo en salto y saque.',
+    fechaInicio: new Date(2026, 6, 27),
+    fechaFin:    new Date(2026, 7, 23),
+    color: '#3b82f6',
+    grupo: 'PREPARACIÓN O ENTRENAMIENTOS',
+  },
+  {
+    titulo: 'Preparación Psicológica',
+    descripcion: 'Sesión de cohesión grupal y entrenamiento de mentalidad competitiva.',
+    fechaInicio: new Date(2026, 6, 6),
+    fechaFin:    new Date(2026, 6, 6),
+    color: '#ec4899',
+    grupo: 'PREPARACIÓN O ENTRENAMIENTOS',
+  },
+  {
+    titulo: 'Preparación Psicológica',
+    descripcion: 'Sesión de cohesión grupal y entrenamiento de mentalidad competitiva.',
+    fechaInicio: new Date(2026, 6, 13),
+    fechaFin:    new Date(2026, 6, 13),
+    color: '#ec4899',
+    grupo: 'PREPARACIÓN O ENTRENAMIENTOS',
+  },
+  {
+    titulo: 'Preparación Psicológica',
+    descripcion: 'Sesión de cohesión grupal y entrenamiento de mentalidad competitiva.',
+    fechaInicio: new Date(2026, 6, 20),
+    fechaFin:    new Date(2026, 6, 20),
+    color: '#ec4899',
+    grupo: 'PREPARACIÓN O ENTRENAMIENTOS',
+  },
+  {
+    titulo: 'Preparación Psicológica',
+    descripcion: 'Sesión de cohesión grupal y entrenamiento de mentalidad competitiva.',
+    fechaInicio: new Date(2026, 6, 27),
+    fechaFin:    new Date(2026, 6, 27),
+    color: '#ec4899',
+    grupo: 'PREPARACIÓN O ENTRENAMIENTOS',
+  },
+  {
+    titulo: 'Torneo JUPLAV',
+    descripcion: 'Juegos Universitarios y Preparatorianos de la Liga Asociada de Voleibol — fase regional UADY.',
+    fechaInicio: new Date(2026, 6, 17),
+    fechaFin:    new Date(2026, 6, 18),
+    color: '#ef4444',
+    grupo: 'TORNEOS',
+  },
+  {
+    titulo: 'CIVOLSUR',
+    descripcion: 'Circuito de Voleibol del Sureste — fase regional clasificatoria al nacional.',
+    fechaInicio: new Date(2026, 7, 14),
+    fechaFin:    new Date(2026, 7, 15),
+    color: '#22c55e',
+    grupo: 'TORNEOS',
+  },
+]
+
+// Mapa para migrar grupos de eventos que ya existían con grupo='GENERAL'
+const gruposPorTitulo: Record<string, string> = {
+  'Adaptación Anatómica':   'PREPARACIÓN O ENTRENAMIENTOS',
+  'Hipertrofia':            'PREPARACIÓN O ENTRENAMIENTOS',
+  'Fuerza Máxima':          'PREPARACIÓN O ENTRENAMIENTOS',
+  'Preparación Psicológica':'PREPARACIÓN O ENTRENAMIENTOS',
+  'Torneo JUPLAV':          'TORNEOS',
+  'CIVOLSUR':               'TORNEOS',
+}
+
 async function main() {
   console.log('🌱 Seeding database...')
 
@@ -239,6 +327,30 @@ async function main() {
   }
 
   console.log(`\n🏐 Seed completo: ${created} registros creados, ${skipped} ya existían.`)
+
+  // Eventos del macrociclo (idempotente: solo si no existe ningún evento)
+  const eventosCount = await prisma.evento.count()
+  if (eventosCount === 0) {
+    await prisma.evento.createMany({ data: eventosSeed })
+    console.log(`  ✅ ${eventosSeed.length} eventos del macrociclo creados`)
+  } else {
+    console.log(`  ⏭️  Eventos ya existentes (${eventosCount}), omitiendo seed inicial`)
+  }
+
+  // Migrar grupos: asignar grupo correcto a eventos que aún tienen el valor por defecto
+  let actualizados = 0
+  for (const [titulo, grupo] of Object.entries(gruposPorTitulo)) {
+    const result = await prisma.evento.updateMany({
+      where: { titulo, grupo: 'GENERAL' },
+      data: { grupo },
+    })
+    actualizados += result.count
+  }
+  if (actualizados > 0) {
+    console.log(`  ✅ ${actualizados} eventos actualizados con grupo correcto`)
+  } else {
+    console.log(`  ⏭️  Grupos ya asignados, sin cambios`)
+  }
 }
 
 main()
