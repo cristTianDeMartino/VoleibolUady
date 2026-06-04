@@ -8,14 +8,14 @@ const pillars = [
     icon: '📋',
     title: 'Metodológico',
     description:
-      'Estructura sistemática de planificación deportiva: periodización, microciclos y macrociclos orientados al alto rendimiento universitario.',
+      'Estructura sistematica de planificación depoprtiva enfocado en la planeación, ejecución y evaluación de los modelos del desarrollo de los equipos',
     color: 'bg-uady-blue',
   },
   {
     icon: '🎓',
     title: 'Pedagógico',
     description:
-      'Desarrollo integral del atleta-estudiante: formación técnica, táctica y humana en equilibrio con la excelencia académica.',
+      'Desarrollo integral del estudiante-atleta: formación técnica, táctica y humana en equilibrio con la excelencia académica.',
     color: 'bg-uady-gold',
   },
   {
@@ -63,8 +63,7 @@ export default function HomePage() {
               <span className="block text-uady-gold">UADY</span>
             </h1>
             <p className="text-lg text-blue-100 max-w-2xl leading-relaxed mb-8">
-              Plataforma integral de gestión deportiva universitaria. Centraliza el control de
-              atletas, entrenamiento físico, psicología y salud del equipo bajo un solo sistema.
+              plataforma integral de gestión del voleibol universitario centralizada en la gestión de atletas en entrenamiento físico, tecnicotactico y de las ciencias aplicadas al deporte
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
@@ -106,7 +105,7 @@ export default function HomePage() {
             Los Tres Pilares del Plan Rector
           </h2>
           <p className="text-gray-500 text-sm mb-6">
-            El modelo de desarrollo deportivo de la UADY se sustenta en tres ejes fundamentales.
+            El modelo de desarrollo deportivo del equipo de voleibol se sustenta en tres ejes fundamentales.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {pillars.map((p) => (
@@ -152,9 +151,12 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row gap-8 items-center">
             <div className="flex-1">
               <h2 className="text-xl font-black text-uady-gold mb-3">Sobre el Plan Rector</h2>
-              <p className="text-sm text-blue-100 leading-relaxed">
-                El desarrollo de las selecciones de voleibol de la UADY se ha sustentado en una visión integral que combina planeación deportiva, trabajo multidisciplinario, captación de talento, preparación física especializada y seguimiento académico y humano de los atletas. Gracias a este modelo de trabajo, los equipos universitarios han logrado consolidarse entre los más competitivos de la región y mantenerse como protagonistas en el ámbito nacional.
+              <p className="text-sm text-blue-100 leading-7 text-justify">
+                El desarrollo de las selecciones de voleibol de la UADY se ha sustentado en una visión integral que combina la planeación deportiva, el trabajo multidisciplinario, la captación de talento, la preparación física especializada y el seguimiento académico y humano, con una profunda adaptación a la realidad socioeconómica de nuestro entorno.
+
+                Gracias a este modelo de trabajo, los equipos representativos de voleibol de la UADY han logrado consolidarse entre los más competitivos de la región y mantenerse como protagonistas en el ámbito nacional.
               </p>
+
               <div className="mt-6">
                 <Link
                   href="/plan-rector"

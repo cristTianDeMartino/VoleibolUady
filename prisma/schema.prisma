@@ -64,3 +64,14 @@ model Lesion {
   fechaAlta     DateTime? // Registrada automáticamente por el sistema
   createdAt     DateTime  @default(now())
 }
+
+model Evento {
+  id          String   @id @default(cuid())
+  titulo      String
+  descripcion String?
+  fechaInicio DateTime
+  fechaFin    DateTime
+  color       String   // Código hexadecimal, ej. "#ef4444"
+  grupo       String   @default("GENERAL") // Ej. "TORNEOS", "PREPARACIÓN O ENTRENAMIENTOS"
+  createdAt   DateTime @default(now())
+}
