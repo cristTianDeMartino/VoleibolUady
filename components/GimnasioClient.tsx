@@ -1,94 +1,85 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useMemo } from 'react'
 import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  ChevronUp,
-  Plus,
-  X,
-  Loader2,
-  Dumbbell,
-  Video,
-  Pencil,
-  Trash2,
-  PlayCircle,
+  Plus, X, Loader2, Trash2, Dumbbell, Video,
+  Pencil, PlayCircle, ChevronDown, ChevronUp, Info, Activity, AlertTriangle,
 } from 'lucide-react'
 import {
-  crearSesion,
-  actualizarSesion,
-  eliminarSesion,
-  obtenerSesionesMes,
-  crearVideo,
-  actualizarVideo,
-  eliminarVideo,
-  obtenerVideosAgrupados,
+  obtenerMatriz, obtenerEtapas, obtenerCatalogoEjercicios, obtenerNombresEjercicios,
+  crearEtapaConEjercicios, actualizarEtapa, actualizarDetalleSemana, eliminarEtapa,
+  eliminarEjercicioPrincipal, actualizarNombreEjercicioPrincipal,
+  agregarEjercicioAEtapaExistente,
+  obtenerAccesorios, crearEjercicioAccesorio, eliminarEjercicioAccesorio,
+  crearVideo, actualizarVideo, eliminarVideo, obtenerVideosAgrupados,
 } from '@/actions/gimnasio'
-import type { SesionData, VideoData } from '@/actions/gimnasio'
+import type {
+  EjercicioPrincipalData, DetalleSemanaData, AccesorioData, VideoData,
+  EtapaData, EjercicioInput, CatalogoData, SemanaSeleccionada,
+} from '@/actions/gimnasio'
 
-// ─── Constantes ────────────────────────────────────────────────────────────────
-
-const MESES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-]
-
-const DIAS_SEMANA = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+// ─── Constantes ───────────────────────────────────────────────────────────────
 
 const CATEGORIAS_FIJAS = [
-  'Tren Inferior',
-  'Tren Superior',
-  'Core y Estabilidad',
-  'Levantamientos Olímpicos',
+  'Estabilidad',
+  'Funcionales',
+  'Movilidad',
+  'Potencia',
+  'Psicomotriz',
+  'Técnica de carrera',
+  'Técnica Volleyball',
 ]
 
-// ─── Helpers de fecha ─────────────────────────────────────────────────────────
+const SUBCATEGORIA_LATERALIDAD = 'Lateralidad'
 
-function toLocalDate(isoStr: string): Date {
-  const d = new Date(isoStr)
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+const NOTAS_INFO = [
+  { id: 1, text: 'RIR: Repeticiones en reserva.' },
+  { id: 2, text: 'El peso que permita llegar a las RPT indicadas con los RIR de reserva propuestos.' },
+  { id: 3, text: 'En todos los ejercicios cuidar que el peso utilizado NO deforme la técnica, pero que sea suficientemente intenso para reproducir un esfuerzo significativo.' },
+  { id: 4, text: 'Los ejercicios accesorios se deberán hacer semanalmente en relación al tiempo con el que dispongan, SIN sobrepasar las 16 series semanales por tren (ejemplo: 4 de Bíceps, 4 de Tríceps, 4 de Dorsal y 4 de Hombro = 16 series).' },
+  { id: 5, text: 'Las series de potencia se ejecutarán con el peso que permita realizar el número de repeticiones indicado, de manera explosiva, sin deformar la técnica.' },
+]
+
+const EJERCICIO_COLORS = [
+  'bg-primary-blue text-white',
+  'bg-slate-700 text-white',
+  'bg-indigo-800 text-white',
+  'bg-teal-700 text-white',
+  'bg-violet-700 text-white',
+  'bg-emerald-800 text-white',
+]
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+const MS_DIA = 86_400_000
+
+function formatearFechaSemana(inicioIso: string, finIso: string): string {
+  const [, m1, d1] = inicioIso.substring(0, 10).split('-').map(Number)
+  const [, m2, d2] = finIso.substring(0, 10).split('-').map(Number)
+  return `${d1} ${MESES_CORTOS[m1 - 1]} – ${d2} ${MESES_CORTOS[m2 - 1]}`
 }
 
-function daysBetween(a: Date, b: Date): number {
-  return Math.round((b.getTime() - a.getTime()) / 86_400_000)
+function dateKey(iso: string): string {
+  return iso.substring(0, 10)
 }
 
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  )
-}
-
-function isoToDateInput(isoStr: string): string {
-  const d = toLocalDate(isoStr)
-  return [
-    d.getFullYear(),
-    String(d.getMonth() + 1).padStart(2, '0'),
-    String(d.getDate()).padStart(2, '0'),
-  ].join('-')
-}
-
-function getCalendarGrid(year: number, month: number): Date[][] {
-  const firstDay = new Date(year, month - 1, 1)
-  const lastDay = new Date(year, month, 0)
-  const start = new Date(firstDay)
-  start.setDate(start.getDate() - start.getDay())
-  const end = new Date(lastDay)
-  end.setDate(end.getDate() + (6 - end.getDay()))
-  const weeks: Date[][] = []
-  const cur = new Date(start)
-  while (cur <= end) {
-    const week: Date[] = []
-    for (let i = 0; i < 7; i++) {
-      week.push(new Date(cur))
-      cur.setDate(cur.getDate() + 1)
-    }
-    weeks.push(week)
+function generarSemanasCliente(fechaInicioIso: string, fechaFinIso: string): SemanaSeleccionada[] {
+  const t0 = new Date(fechaInicioIso).getTime()
+  const tN = new Date(fechaFinIso).getTime()
+  const semanas: SemanaSeleccionada[] = []
+  let weekStart = t0
+  let num = 1
+  while (weekStart <= tN) {
+    const weekEnd = Math.min(weekStart + 6 * MS_DIA, tN)
+    semanas.push({
+      numeroSemana: num++,
+      fechaInicioSemana: new Date(weekStart).toISOString(),
+      fechaFinSemana: new Date(weekEnd).toISOString(),
+    })
+    weekStart += 7 * MS_DIA
   }
-  return weeks
+  return semanas
 }
 
 function getYouTubeEmbedUrl(url: string): string {
@@ -98,240 +89,968 @@ function getYouTubeEmbedUrl(url: string): string {
     /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^&\n?#]+)/,
     /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^&\n?#]+)/,
   ]
-  for (const pattern of patterns) {
-    const match = url.match(pattern)
-    if (match?.[1]) return `https://www.youtube.com/embed/${match[1]}`
+  for (const p of patterns) {
+    const m = url.match(p)
+    if (m?.[1]) return `https://www.youtube.com/embed/${m[1]}`
   }
   return url
 }
 
-// ─── Lane assignment (Google Calendar style) ──────────────────────────────────
+// ─── Shared UI primitives ─────────────────────────────────────────────────────
 
-interface WeekSesionLayout {
-  sesion: SesionData
-  col: number
-  endCol: number
-  span: number
-  lane: number
-  isStart: boolean
-}
+const inputCls = 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all'
+const labelCls = 'block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide'
 
-function assignLanes(sesiones: SesionData[], weekStart: Date, weekEnd: Date): WeekSesionLayout[] {
-  const positioned = sesiones
-    .map(s => {
-      const ss = toLocalDate(s.fechaInicio)
-      const sf = toLocalDate(s.fechaFin)
-      const col = Math.max(0, daysBetween(weekStart, ss))
-      const endCol = Math.min(6, daysBetween(weekStart, sf))
-      const span = endCol - col + 1
-      const isStart = ss >= weekStart
-      return { sesion: s, col, endCol, span, isStart }
-    })
-    .filter(p => p.span > 0)
-    .sort((a, b) => a.col - b.col || b.span - a.span)
-
-  const laneEnds: number[] = []
-  return positioned.map(p => {
-    let lane = laneEnds.findIndex(ec => ec < p.col)
-    if (lane === -1) { lane = laneEnds.length; laneEnds.push(p.endCol) }
-    else laneEnds[lane] = p.endCol
-    return { ...p, lane }
-  })
-}
-
-// ─── WeekRow ──────────────────────────────────────────────────────────────────
-
-function WeekRow({ week, sesiones, month, year }: {
-  week: Date[]
-  sesiones: SesionData[]
-  month: number
-  year: number
+function ModalShell({
+  title,
+  icon,
+  onClose,
+  children,
+  maxW = 'max-w-xl',
+}: {
+  title: string
+  icon: React.ReactNode
+  onClose: () => void
+  children: React.ReactNode
+  maxW?: string
 }) {
-  const weekStart = week[0]
-  const weekEnd = week[6]
-  const now = new Date()
-  const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-
-  const weekSesiones = sesiones.filter(s => {
-    const start = toLocalDate(s.fechaInicio)
-    const end = toLocalDate(s.fechaFin)
-    return start <= weekEnd && end >= weekStart
-  })
-
-  const laidOut = assignLanes(weekSesiones, weekStart, weekEnd)
-  const maxLane = laidOut.length > 0 ? Math.max(...laidOut.map(s => s.lane)) : -1
-  const rowHeight = Math.max(72, 28 + (maxLane + 1) * 22 + 6)
-
   return (
     <div
-      className="relative grid grid-cols-7 border-b border-slate-200 last:border-b-0"
-      style={{ minHeight: `${rowHeight}px` }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      {week.map((day, i) => {
-        const isCurrentMonth = day.getMonth() === month - 1 && day.getFullYear() === year
-        const isToday = isSameDay(day, todayLocal)
-        return (
-          <div
-            key={i}
-            className={`border-r border-slate-200 last:border-r-0 ${!isCurrentMonth ? 'bg-slate-50/70' : 'bg-white'}`}
-          >
-            <div className="flex justify-end pt-1 pr-1.5">
-              <span
-                className={`w-6 h-6 text-xs flex items-center justify-center rounded-full font-medium leading-none select-none ${
-                  isToday
-                    ? 'bg-accent-green text-primary-blue font-bold'
-                    : isCurrentMonth
-                    ? 'text-slate-700'
-                    : 'text-slate-300'
-                }`}
-              >
-                {day.getDate()}
-              </span>
-            </div>
+      <div className={`bg-white rounded-2xl shadow-2xl w-full ${maxW} overflow-hidden max-h-[90vh] flex flex-col`}>
+        <div className="bg-primary-blue px-6 py-4 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-2">
+            {icon}
+            <h2 className="text-white font-bold text-base">{title}</h2>
           </div>
-        )
-      })}
-      {laidOut.map((item, idx) => (
-        <div
-          key={item.sesion.id + '-' + idx}
-          title={item.sesion.titulo}
-          style={{
-            position: 'absolute',
-            top: `${28 + item.lane * 22}px`,
-            left: `calc(${(item.col / 7) * 100}% + 2px)`,
-            width: `calc(${(item.span / 7) * 100}% - 4px)`,
-            backgroundColor: item.sesion.color,
-          }}
-          className="h-[18px] rounded text-white text-[10px] font-semibold px-1.5 truncate leading-[18px] cursor-default hover:brightness-110 transition-all"
-        >
-          {item.isStart ? item.sesion.titulo : ''}
+          <button type="button" onClick={onClose} className="text-white/60 hover:text-white p-1 rounded transition-colors">
+            <X className="w-4 h-4" />
+          </button>
         </div>
-      ))}
+        {children}
+      </div>
     </div>
   )
 }
 
-// ─── SesionModal ──────────────────────────────────────────────────────────────
+// ─── ConfirmDeleteModal (popup de confirmación de borrado) ───────────────────
 
-function SesionModal({
+function ConfirmDeleteModal({
+  title,
+  description,
+  isPending,
+  error,
+  onConfirm,
+  onCancel,
+}: {
+  title: string
+  description: string
+  isPending: boolean
+  error: string | null
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={e => { if (e.target === e.currentTarget && !isPending) onCancel() }}
+    >
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+          </div>
+          <div>
+            <h2 className="font-bold text-primary-blue text-base">{title}</h2>
+            <p className="text-slate-500 text-sm mt-1">{description}</p>
+          </div>
+        </div>
+        {error && (
+          <div className="mt-4 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">{error}</div>
+        )}
+        <div className="flex gap-4 mt-6 justify-end">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isPending}
+            className="px-4 py-2 rounded-lg text-sm font-medium text-primary-blue bg-slate-100 hover:bg-slate-200 disabled:opacity-60 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isPending}
+            className="px-4 py-2 rounded-lg text-sm font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-60 transition-colors flex items-center gap-2"
+          >
+            {isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Eliminando…</> : 'Confirmar Eliminación'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── EtapaModal (crear etapa + ejercicios) ────────────────────────────────────
+
+interface EjercicioRow { _key: number; nombre: string; series: string; rpt: string; rir: string }
+
+function EtapaModal({
+  nombres,
   onClose,
   onSuccess,
-  sesionEditar = null,
 }: {
+  nombres: string[]
   onClose: () => void
-  onSuccess: () => void
-  sesionEditar?: SesionData | null
+  onSuccess: () => Promise<void>
 }) {
-  const isEdit = sesionEditar !== null
-  const [colorValue, setColorValue] = useState(sesionEditar?.color ?? '#9B0014')
+  const [error, setError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+  const [etapaNombre, setEtapaNombre] = useState('')
+  const [inicio, setInicio] = useState('')
+  const [fin, setFin] = useState('')
+  const [rows, setRows] = useState<EjercicioRow[]>([{ _key: 0, nombre: '', series: '', rpt: '', rir: '' }])
+  const [nextKey, setNextKey] = useState(1)
+
+  const semanaCount = useMemo(() => {
+    if (!inicio || !fin) return 0
+    const ms = new Date(fin + 'T00:00:00').getTime() - new Date(inicio + 'T00:00:00').getTime()
+    return ms < 0 ? 0 : Math.floor(ms / (7 * MS_DIA)) + 1
+  }, [inicio, fin])
+
+  function addRow() {
+    setRows(p => [...p, { _key: nextKey, nombre: '', series: '', rpt: '', rir: '' }])
+    setNextKey(k => k + 1)
+  }
+  function removeRow(key: number) { setRows(p => p.filter(r => r._key !== key)) }
+  function updateRow(key: number, field: keyof Omit<EjercicioRow, '_key'>, value: string) {
+    setRows(p => p.map(r => r._key === key ? { ...r, [field]: value } : r))
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    if (!etapaNombre.trim() || !inicio || !fin) { setError('Nombre de etapa, fecha inicio y fecha fin son requeridos.'); return }
+    if (semanaCount === 0) { setError('La fecha fin no puede ser anterior al inicio.'); return }
+    const ejerciciosInput: EjercicioInput[] = rows.map(r => ({
+      nombre: r.nombre.trim(), series: parseInt(r.series), rpt: r.rpt.trim(),
+      rir: r.rir !== '' ? parseInt(r.rir) : null,
+    }))
+    const invalid = ejerciciosInput.find(ej => !ej.nombre || isNaN(ej.series) || !ej.rpt)
+    if (invalid) { setError('Todos los ejercicios deben tener nombre, series y RPT.'); return }
+    startTransition(async () => {
+      const result = await crearEtapaConEjercicios(etapaNombre.trim(), inicio, fin, ejerciciosInput)
+      if (result.error) setError(result.error)
+      else { await onSuccess(); onClose() }
+    })
+  }
+
+  return (
+    <ModalShell title="Nueva Etapa de Entrenamiento" icon={<Dumbbell className="w-4 h-4 text-accent-green" />} onClose={onClose}>
+      <datalist id="cat-etapa">
+        {nombres.map(n => <option key={n} value={n} />)}
+      </datalist>
+      <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+        <div className="overflow-y-auto flex-1 p-6 space-y-6">
+          {/* Etapa */}
+          <div className="space-y-4">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Datos de la Etapa</p>
+            <div>
+              <label className={labelCls}>Nombre de la Etapa *</label>
+              <input type="text" required maxLength={80} value={etapaNombre} onChange={e => setEtapaNombre(e.target.value)} placeholder="Ej. Adaptación Anatómica" className={inputCls} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls}>Fecha inicio *</label>
+                <input type="date" required value={inicio} onChange={e => setInicio(e.target.value)} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Fecha fin *</label>
+                <input type="date" required value={fin} onChange={e => setFin(e.target.value)} className={inputCls} />
+              </div>
+            </div>
+            {semanaCount > 0 && (
+              <div className="bg-accent-green/10 border border-accent-green/30 rounded-lg px-3 py-2 text-xs font-semibold text-primary-blue">
+                Se generarán <span className="text-accent-green">{semanaCount} semana{semanaCount !== 1 ? 's' : ''}</span> por ejercicio automáticamente.
+              </div>
+            )}
+          </div>
+          {/* Ejercicios */}
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ejercicios</p>
+            {rows.map((row, idx) => (
+              <div key={row._key} className="border border-slate-200 rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Ejercicio {idx + 1}</span>
+                  {rows.length > 1 && (
+                    <button type="button" onClick={() => removeRow(row._key)} className="p-1 rounded-lg text-slate-300 hover:text-red-400 hover:bg-red-50 transition-all">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+                <div>
+                  <label className={labelCls}>Nombre *</label>
+                  <input list="cat-etapa" type="text" required maxLength={80} value={row.nombre}
+                    onChange={e => updateRow(row._key, 'nombre', e.target.value)}
+                    placeholder="Ej. Sentadilla, Remo, Peso Muerto…" className={inputCls} />
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className={labelCls}>Series *</label>
+                    <input type="number" required min={1} max={20} value={row.series} onChange={e => updateRow(row._key, 'series', e.target.value)} placeholder="4" className={inputCls + ' text-center'} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>RPT *</label>
+                    <input type="text" required maxLength={20} value={row.rpt} onChange={e => updateRow(row._key, 'rpt', e.target.value)} placeholder="16-18" className={inputCls + ' text-center'} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>RIR</label>
+                    <input type="number" min={0} max={5} value={row.rir} onChange={e => updateRow(row._key, 'rir', e.target.value)} placeholder="3" className={inputCls + ' text-center'} />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <button type="button" onClick={addRow} className="w-full border-2 border-dashed border-slate-200 hover:border-accent-green/50 text-slate-400 hover:text-accent-green rounded-xl py-3 text-sm font-medium transition-all flex items-center justify-center gap-2">
+              <Plus className="w-4 h-4" />
+              Añadir otro ejercicio a esta etapa
+            </button>
+          </div>
+          {error && <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">{error}</div>}
+        </div>
+        <div className="flex gap-3 px-6 py-4 border-t border-slate-100 flex-shrink-0">
+          <button type="button" onClick={onClose} className="flex-1 border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">Cancelar</button>
+          <button type="submit" disabled={isPending || semanaCount === 0}
+            className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
+            {isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Creando…</> : `Crear Etapa (${rows.length} ej. × ${semanaCount} sem.)`}
+          </button>
+        </div>
+      </form>
+    </ModalShell>
+  )
+}
+
+// ─── EditarEtapaModal ─────────────────────────────────────────────────────────
+
+function EditarEtapaModal({
+  etapa,
+  onClose,
+  onSuccess,
+}: {
+  etapa: EtapaData
+  onClose: () => void
+  onSuccess: () => Promise<void>
+}) {
+  const [nombre, setNombre] = useState(etapa.nombre)
+  const [inicio, setInicio] = useState(dateKey(etapa.fechaInicio))
+  const [fin, setFin] = useState(dateKey(etapa.fechaFin))
+  const [error, setError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    startTransition(async () => {
+      const result = await actualizarEtapa(etapa.id, nombre, inicio, fin)
+      if (result.error) setError(result.error)
+      else { await onSuccess(); onClose() }
+    })
+  }
+
+  return (
+    <ModalShell title="Editar Etapa" icon={<Pencil className="w-4 h-4 text-accent-green" />} onClose={onClose} maxW="max-w-md">
+      <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <div>
+          <label className={labelCls}>Nombre de la Etapa *</label>
+          <input type="text" required maxLength={80} value={nombre} onChange={e => setNombre(e.target.value)} className={inputCls} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Fecha inicio *</label>
+            <input type="date" required value={inicio} onChange={e => setInicio(e.target.value)} className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Fecha fin *</label>
+            <input type="date" required value={fin} onChange={e => setFin(e.target.value)} className={inputCls} />
+          </div>
+        </div>
+        <p className="text-[11px] text-slate-400 bg-slate-50 rounded-lg px-3 py-2">
+          Cambiar fechas actualiza la etapa pero no regenera las semanas de los ejercicios existentes.
+        </p>
+        {error && <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">{error}</div>}
+        <div className="flex gap-3 pt-1">
+          <button type="button" onClick={onClose} className="flex-1 border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">Cancelar</button>
+          <button type="submit" disabled={isPending} className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
+            {isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</> : 'Guardar Cambios'}
+          </button>
+        </div>
+      </form>
+    </ModalShell>
+  )
+}
+
+// ─── EditarNombreEjercicioModal ───────────────────────────────────────────────
+
+function EditarNombreEjercicioModal({
+  ejercicioId,
+  nombreActual,
+  catalogo,
+  onClose,
+  onSuccess,
+}: {
+  ejercicioId: string
+  nombreActual: string
+  catalogo: CatalogoData[]
+  onClose: () => void
+  onSuccess: () => Promise<void>
+}) {
+  const [nombre, setNombre] = useState(nombreActual)
+  const [error, setError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    startTransition(async () => {
+      const result = await actualizarNombreEjercicioPrincipal(ejercicioId, nombre)
+      if (result.error) setError(result.error)
+      else { await onSuccess(); onClose() }
+    })
+  }
+
+  return (
+    <ModalShell title="Editar Nombre del Ejercicio" icon={<Pencil className="w-4 h-4 text-accent-green" />} onClose={onClose} maxW="max-w-sm">
+      <datalist id="cat-edit-nombre">
+        {catalogo.map(c => <option key={c.id} value={c.nombre} />)}
+      </datalist>
+      <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <div>
+          <label className={labelCls}>Nuevo Nombre *</label>
+          <input list="cat-edit-nombre" type="text" required maxLength={80} value={nombre}
+            onChange={e => setNombre(e.target.value)}
+            placeholder="Ej. Sentadilla, Remo…" className={inputCls} />
+        </div>
+        {error && <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">{error}</div>}
+        <div className="flex gap-3 pt-1">
+          <button type="button" onClick={onClose} className="flex-1 border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">Cancelar</button>
+          <button type="submit" disabled={isPending} className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
+            {isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</> : 'Actualizar'}
+          </button>
+        </div>
+      </form>
+    </ModalShell>
+  )
+}
+
+// ─── AgregarEjercicioEtapaModal ───────────────────────────────────────────────
+
+function AgregarEjercicioEtapaModal({
+  etapa,
+  catalogo,
+  onClose,
+  onSuccess,
+}: {
+  etapa: EtapaData
+  catalogo: CatalogoData[]
+  onClose: () => void
+  onSuccess: () => Promise<void>
+}) {
+  const semanas = useMemo(() => generarSemanasCliente(etapa.fechaInicio, etapa.fechaFin), [etapa])
+  const [selected, setSelected] = useState<Set<number>>(() => new Set(semanas.map(s => s.numeroSemana)))
+  const [nombre, setNombre] = useState('')
+  const [series, setSeries] = useState('')
+  const [rpt, setRpt] = useState('')
+  const [rir, setRir] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+
+  function toggleWeek(num: number) {
+    setSelected(prev => {
+      const next = new Set(prev)
+      next.has(num) ? next.delete(num) : next.add(num)
+      return next
+    })
+  }
+  function toggleAll(val: boolean) {
+    setSelected(val ? new Set(semanas.map(s => s.numeroSemana)) : new Set())
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    if (selected.size === 0) { setError('Selecciona al menos una semana.'); return }
+    const semanasSeleccionadas = semanas.filter(s => selected.has(s.numeroSemana))
+    startTransition(async () => {
+      const result = await agregarEjercicioAEtapaExistente(
+        etapa.id, nombre, parseInt(series), rpt,
+        rir !== '' ? parseInt(rir) : null,
+        semanasSeleccionadas,
+      )
+      if (result.error) setError(result.error)
+      else { await onSuccess(); onClose() }
+    })
+  }
+
+  const allSelected = selected.size === semanas.length
+  const noneSelected = selected.size === 0
+
+  return (
+    <ModalShell
+      title={`Añadir Ejercicio — ${etapa.nombre}`}
+      icon={<Plus className="w-4 h-4 text-accent-green" />}
+      onClose={onClose}
+    >
+      <datalist id="cat-agregar">
+        {catalogo.map(c => <option key={c.id} value={c.nombre} />)}
+      </datalist>
+      <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+        <div className="overflow-y-auto flex-1 p-6 space-y-5">
+
+          {/* Nombre */}
+          <div>
+            <label className={labelCls}>Nombre del Ejercicio *</label>
+            <input list="cat-agregar" type="text" required maxLength={80} value={nombre}
+              onChange={e => setNombre(e.target.value)}
+              placeholder="Escribe o selecciona del catálogo…" className={inputCls} />
+          </div>
+
+          {/* Carga base */}
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className={labelCls}>Series *</label>
+              <input type="number" required min={1} max={20} value={series} onChange={e => setSeries(e.target.value)} placeholder="4" className={inputCls + ' text-center'} />
+            </div>
+            <div>
+              <label className={labelCls}>RPT *</label>
+              <input type="text" required maxLength={20} value={rpt} onChange={e => setRpt(e.target.value)} placeholder="16-18" className={inputCls + ' text-center'} />
+            </div>
+            <div>
+              <label className={labelCls}>RIR</label>
+              <input type="number" min={0} max={5} value={rir} onChange={e => setRir(e.target.value)} placeholder="3" className={inputCls + ' text-center'} />
+            </div>
+          </div>
+
+          {/* Semanas */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className={labelCls + ' mb-0'}>Semanas de Aplicación *</label>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={() => toggleAll(true)}
+                  disabled={allSelected}
+                  className="text-[10px] text-accent-green font-semibold disabled:opacity-40 hover:underline">Todas</button>
+                <span className="text-slate-300 text-xs">|</span>
+                <button type="button" onClick={() => toggleAll(false)}
+                  disabled={noneSelected}
+                  className="text-[10px] text-slate-400 font-semibold disabled:opacity-40 hover:underline">Ninguna</button>
+              </div>
+            </div>
+            <div className="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-52 overflow-y-auto">
+              {semanas.map(s => (
+                <label key={s.numeroSemana}
+                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(s.numeroSemana)}
+                    onChange={() => toggleWeek(s.numeroSemana)}
+                    className="w-4 h-4 rounded accent-[#72D611] cursor-pointer"
+                  />
+                  <span className="text-sm text-slate-700">
+                    <span className="font-semibold text-primary-blue">Sem. {s.numeroSemana}</span>
+                    {' '}
+                    <span className="text-slate-400 text-xs">({formatearFechaSemana(s.fechaInicioSemana, s.fechaFinSemana)})</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+            {selected.size > 0 && (
+              <p className="text-[11px] text-slate-400 mt-1.5">
+                {selected.size} de {semanas.length} semana{semanas.length !== 1 ? 's' : ''} seleccionada{selected.size !== 1 ? 's' : ''}.
+              </p>
+            )}
+          </div>
+
+          {error && <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">{error}</div>}
+        </div>
+        <div className="flex gap-3 px-6 py-4 border-t border-slate-100 flex-shrink-0">
+          <button type="button" onClick={onClose} className="flex-1 border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">Cancelar</button>
+          <button type="submit" disabled={isPending || selected.size === 0}
+            className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
+            {isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Creando…</> : `Agregar (${selected.size} sem.)`}
+          </button>
+        </div>
+      </form>
+    </ModalShell>
+  )
+}
+
+// ─── EditarCeldaModal ─────────────────────────────────────────────────────────
+
+interface EditarCeldaState { detalle: DetalleSemanaData; ejercicioNombre: string }
+
+function EditarCeldaModal({
+  estado, onClose, onSuccess,
+}: { estado: EditarCeldaState; onClose: () => void; onSuccess: () => Promise<void> }) {
+  const { detalle, ejercicioNombre } = estado
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
-    const formData = new FormData(e.currentTarget)
-    formData.set('color', colorValue)
+    const fd = new FormData(e.currentTarget)
     startTransition(async () => {
-      const result = isEdit
-        ? await actualizarSesion(sesionEditar!.id, formData)
-        : await crearSesion(formData)
+      const result = await actualizarDetalleSemana(detalle.id, fd)
       if (result.error) setError(result.error)
-      else { onSuccess(); onClose() }
+      else { await onSuccess(); onClose() }
     })
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}
-    >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="bg-primary-blue px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Dumbbell className="w-4 h-4 text-accent-green" />
-            <h2 className="text-white font-bold text-base">
-              {isEdit ? 'Editar Sesión' : 'Agregar Sesión de Gimnasio'}
-            </h2>
+    <ModalShell title={ejercicioNombre} icon={<Pencil className="w-4 h-4 text-accent-green" />} onClose={onClose} maxW="max-w-sm">
+        <form onSubmit={handleSubmit} className="px-6 pb-6 pt-3 space-y-4">
+        <p className="text-slate-400 text-[11px]">
+          Sem. {detalle.numeroSemana} · {formatearFechaSemana(detalle.fechaInicioSemana, detalle.fechaFinSemana)}
+        </p>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <label className={labelCls}>Series *</label>
+            <input name="series" type="number" required min={1} max={20} defaultValue={detalle.series} className={inputCls + ' text-center font-bold'} />
           </div>
-          <button type="button" onClick={onClose} className="text-white/60 hover:text-white p-1 rounded transition-colors">
-            <X className="w-4 h-4" />
+          <div>
+            <label className={labelCls}>RPT *</label>
+            <input name="rpt" type="text" required maxLength={20} defaultValue={detalle.rpt} className={inputCls + ' text-center'} />
+          </div>
+          <div>
+            <label className={labelCls}>RIR</label>
+            <input name="rir" type="number" min={0} max={5} defaultValue={detalle.rir ?? ''} className={inputCls + ' text-center'} />
+          </div>
+        </div>
+        {error && <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">{error}</div>}
+        <div className="flex gap-3 pt-1">
+          <button type="button" onClick={onClose} className="flex-1 border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">Cancelar</button>
+          <button type="submit" disabled={isPending} className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
+            {isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</> : 'Actualizar Semana'}
           </button>
         </div>
+      </form>
+    </ModalShell>
+  )
+}
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Título *</label>
-            <input
-              name="titulo" type="text" required maxLength={120}
-              defaultValue={sesionEditar?.titulo ?? ''}
-              placeholder="Ej. Semana Hipertrofia"
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all"
-            />
-          </div>
+// ─── TablaMatriz ──────────────────────────────────────────────────────────────
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Descripción</label>
-            <textarea
-              name="descripcion" rows={2} maxLength={300}
-              defaultValue={sesionEditar?.descripcion ?? ''}
-              placeholder="Descripción del bloque de entrenamiento..."
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all resize-none"
-            />
-          </div>
+function TablaMatriz({
+  ejercicios,
+  etapas,
+  catalogo,
+  isAdmin,
+  onRefresh,
+}: {
+  ejercicios: EjercicioPrincipalData[]
+  etapas: EtapaData[]
+  catalogo: CatalogoData[]
+  isAdmin: boolean
+  onRefresh: () => Promise<void>
+}) {
+  const [editarCelda, setEditarCelda] = useState<EditarCeldaState | null>(null)
+  const [editarEtapa, setEditarEtapa] = useState<EtapaData | null>(null)
+  const [editarNombreEj, setEditarNombreEj] = useState<{ id: string; nombre: string } | null>(null)
+  const [agregarEjEtapa, setAgregarEjEtapa] = useState<EtapaData | null>(null)
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Fecha inicio *</label>
-              <input
-                name="fechaInicio" type="date" required
-                defaultValue={sesionEditar ? isoToDateInput(sesionEditar.fechaInicio) : ''}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Fecha fin *</label>
-              <input
-                name="fechaFin" type="date" required
-                defaultValue={sesionEditar ? isoToDateInput(sesionEditar.fechaFin) : ''}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all"
-              />
-            </div>
-          </div>
+  const [itemToDelete, setItemToDelete] = useState<{ type: 'etapa' | 'ejercicio'; id: string; nombre: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Color del bloque</label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={colorValue}
-                onChange={e => setColorValue(e.target.value)}
-                className="w-10 h-10 rounded-lg border border-slate-200 cursor-pointer p-0.5 bg-white"
-              />
-              <span className="text-xs text-slate-400 leading-tight">
-                Identifica el bloque visualmente en el calendario
-              </span>
-            </div>
-          </div>
+  const globalWeeks = useMemo(() => {
+    const map = new Map<string, { key: string; inicio: string; fin: string }>()
+    ejercicios.forEach(ej =>
+      ej.semanas.forEach(s => {
+        const k = dateKey(s.fechaInicioSemana)
+        if (!map.has(k)) map.set(k, { key: k, inicio: s.fechaInicioSemana, fin: s.fechaFinSemana })
+      })
+    )
+    return Array.from(map.values()).sort((a, b) => a.key.localeCompare(b.key))
+  }, [ejercicios])
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">{error}</div>
-          )}
+  const detalleMap = useMemo(() => {
+    const map = new Map<string, DetalleSemanaData>()
+    ejercicios.forEach(ej =>
+      ej.semanas.forEach(s => map.set(`${ej.id}::${dateKey(s.fechaInicioSemana)}`, s))
+    )
+    return map
+  }, [ejercicios])
 
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose}
-              className="flex-1 border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">
-              Cancelar
-            </button>
-            <button type="submit" disabled={isPending}
-              className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
-              {isPending
-                ? <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</>
-                : isEdit ? 'Actualizar Sesión' : 'Guardar Sesión'}
-            </button>
-          </div>
-        </form>
+  const etapaGroups = useMemo(() => {
+    type Group = { etapa: EtapaData | null; count: number }
+    const groups: Group[] = []
+    for (const w of globalWeeks) {
+      const etapa = etapas.find(e => dateKey(e.fechaInicio) <= w.key && w.key <= dateKey(e.fechaFin)) ?? null
+      const last = groups[groups.length - 1]
+      if (last && last.etapa?.id === etapa?.id) last.count++
+      else groups.push({ etapa, count: 1 })
+    }
+    return groups
+  }, [globalWeeks, etapas])
+
+  function handleEliminarEjercicio(id: string, nombre: string) {
+    setDeleteError(null)
+    setItemToDelete({ type: 'ejercicio', id, nombre })
+  }
+
+  function handleEliminarEtapa(id: string, nombre: string) {
+    setDeleteError(null)
+    setItemToDelete({ type: 'etapa', id, nombre })
+  }
+
+  async function handleConfirmDelete() {
+    if (!itemToDelete) return
+    setIsDeleting(true)
+    setDeleteError(null)
+    try {
+      const result = itemToDelete.type === 'etapa'
+        ? await eliminarEtapa(itemToDelete.id)
+        : await eliminarEjercicioPrincipal(itemToDelete.id)
+      if (result.error) { setDeleteError(result.error); return }
+      await onRefresh()
+      setItemToDelete(null)
+    } catch {
+      setDeleteError('Ocurrió un error al eliminar. Inténtalo de nuevo.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  if (ejercicios.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <Activity className="w-12 h-12 text-slate-200 mb-3" />
+        <p className="text-slate-400 text-sm font-medium">Sin ejercicios en la matriz.</p>
+        {isAdmin && <p className="text-slate-300 text-xs mt-1">Usa &quot;+ Nueva Etapa&quot; para comenzar.</p>}
       </div>
+    )
+  }
+
+  const totalCols = 1 + globalWeeks.length * 3
+
+  return (
+    <>
+      <div className="overflow-x-auto rounded-xl border border-slate-200">
+        <table className="min-w-full border-collapse text-sm">
+          <thead>
+            {/* ── Fila 0: Etapas ── */}
+            <tr>
+              <th rowSpan={3} className="min-w-[160px] w-[180px] text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide border-r border-slate-200 align-middle">
+                EJERCICIO
+              </th>
+              {etapaGroups.map((g, i) => {
+                const etapa = g.etapa
+                return etapa ? (
+                  <th
+                    key={etapa.id}
+                    colSpan={g.count * 3}
+                    className="px-2 py-1.5 text-center border-l border-white/20 bg-[#72D611] text-[#0F2540] group/etapa"
+                  >
+                    <div className="flex flex-col items-center gap-0.5">
+                      {/* Nombre + lápiz de edición */}
+                      <div className="flex items-center justify-center gap-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-widest leading-none">
+                          {etapa.nombre.toUpperCase()}
+                        </span>
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => setEditarEtapa(etapa)}
+                            className="opacity-0 group-hover/etapa:opacity-100 p-0.5 rounded bg-[#0F2540]/10 hover:bg-[#0F2540]/20 transition-all"
+                            title="Editar etapa"
+                          >
+                            <Pencil className="w-2.5 h-2.5 text-[#0F2540]" />
+                          </button>
+                        )}
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => handleEliminarEtapa(etapa.id, etapa.nombre)}
+                            className="opacity-0 group-hover/etapa:opacity-100 p-0.5 rounded bg-[#0F2540]/10 hover:bg-red-500/20 transition-all"
+                            title="Eliminar etapa"
+                          >
+                            <Trash2 className="w-2.5 h-2.5 text-[#0F2540] hover:text-red-600" />
+                          </button>
+                        )}
+                      </div>
+                      {/* Añadir ejercicio a esta etapa */}
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => setAgregarEjEtapa(etapa)}
+                          className="opacity-0 group-hover/etapa:opacity-100 flex items-center gap-0.5 text-[9px] font-semibold text-[#0F2540]/70 hover:text-[#0F2540] transition-all"
+                          title="Añadir ejercicio a esta etapa"
+                        >
+                          <Plus className="w-2.5 h-2.5" />
+                          Añadir ejercicio
+                        </button>
+                      )}
+                    </div>
+                  </th>
+                ) : (
+                  <th key={`orphan-${i}`} colSpan={g.count * 3} className="px-2 py-2.5 border-l border-slate-200 bg-slate-50" />
+                )
+              })}
+            </tr>
+
+            {/* ── Fila 1: Semanas con fechas ── */}
+            <tr className="bg-slate-50">
+              {globalWeeks.map((w, i) => (
+                <th key={w.key} colSpan={3} className="px-2 py-2.5 text-center border-l border-slate-200 bg-primary-blue/5 whitespace-nowrap">
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-[9px] font-bold text-slate-400 tracking-widest uppercase">S{i + 1}</span>
+                    <span className="text-[10px] font-semibold text-primary-blue tracking-wide">
+                      {formatearFechaSemana(w.inicio, w.fin)}
+                    </span>
+                  </div>
+                </th>
+              ))}
+            </tr>
+
+            {/* ── Fila 2: SERIES / RPT / RIR ── */}
+            <tr>
+              {globalWeeks.flatMap(w => [
+                <th key={`${w.key}-ser`} className="px-3 py-2 text-center text-[10px] font-bold text-white uppercase tracking-wide bg-primary-blue border-l border-primary-blue/30 min-w-[52px]">SERIES</th>,
+                <th key={`${w.key}-rpt`} className="px-3 py-2 text-center text-[10px] font-bold text-white uppercase tracking-wide bg-primary-blue border-l border-primary-blue/30 min-w-[60px]">RPT</th>,
+                <th key={`${w.key}-rir`} className="px-3 py-2 text-center text-[10px] font-bold text-white uppercase tracking-wide bg-primary-blue border-l border-primary-blue/30 min-w-[46px]">RIR</th>,
+              ])}
+            </tr>
+          </thead>
+          <tbody>
+            {ejercicios.length === 0 ? (
+              <tr>
+                <td colSpan={totalCols} className="text-center py-10 text-slate-400 text-sm italic">Sin ejercicios planificados.</td>
+              </tr>
+            ) : (
+              ejercicios.map((ej, idx) => {
+                const colorClass = EJERCICIO_COLORS[idx % EJERCICIO_COLORS.length]
+                return (
+                  <tr key={ej.id} className="group/row border-t border-slate-100 hover:bg-slate-50/50 transition-colors">
+                    {/* Nombre + lápiz + borrar */}
+                    <td className={`${colorClass} px-4 py-3 font-semibold text-sm border-r border-slate-200`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="leading-tight">{ej.nombre}</span>
+                        {isAdmin && (
+                          <div className="opacity-0 group-hover/row:opacity-100 flex items-center gap-1 flex-shrink-0 transition-opacity">
+                            <button
+                              type="button"
+                              onClick={() => setEditarNombreEj({ id: ej.id, nombre: ej.nombre })}
+                              className="p-1 rounded hover:bg-white/20 transition-all"
+                              title="Editar nombre"
+                            >
+                              <Pencil className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleEliminarEjercicio(ej.id, ej.nombre)}
+                              className="p-1 rounded hover:bg-white/20 transition-all"
+                              title="Eliminar ejercicio"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    {globalWeeks.flatMap(w => {
+                      const det = detalleMap.get(`${ej.id}::${w.key}`)
+                      return [
+                        <td key={`${w.key}-ser`} className="relative group/cell px-3 py-3 text-center font-bold text-primary-blue text-sm border-l border-slate-100 min-w-[52px]">
+                          {det ? (
+                            <>
+                              {det.series}
+                              {isAdmin && (
+                                <button
+                                  type="button"
+                                  onClick={() => setEditarCelda({ detalle: det, ejercicioNombre: ej.nombre })}
+                                  className="absolute top-1 right-1 opacity-0 group-hover/cell:opacity-100 p-0.5 rounded bg-white/80 hover:bg-accent-green/20 border border-slate-200 hover:border-accent-green/40 transition-all shadow-sm"
+                                  title={`Editar Sem. ${det.numeroSemana}`}
+                                >
+                                  <Pencil className="w-2.5 h-2.5 text-slate-500" />
+                                </button>
+                              )}
+                            </>
+                          ) : <span className="text-slate-200 font-normal">—</span>}
+                        </td>,
+                        <td key={`${w.key}-rpt`} className="px-3 py-3 text-center text-slate-700 text-sm border-l border-slate-100 whitespace-nowrap">
+                          {det ? det.rpt : <span className="text-slate-200">—</span>}
+                        </td>,
+                        <td key={`${w.key}-rir`} className="px-3 py-3 text-center text-slate-500 text-sm border-l border-slate-100">
+                          {det ? (det.rir !== null ? det.rir : <span className="text-slate-300">—</span>) : <span className="text-slate-200">—</span>}
+                        </td>,
+                      ]
+                    })}
+                  </tr>
+                )
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {editarCelda && (
+        <EditarCeldaModal estado={editarCelda} onClose={() => setEditarCelda(null)} onSuccess={onRefresh} />
+      )}
+      {editarEtapa && (
+        <EditarEtapaModal etapa={editarEtapa} onClose={() => setEditarEtapa(null)} onSuccess={onRefresh} />
+      )}
+      {editarNombreEj && (
+        <EditarNombreEjercicioModal
+          ejercicioId={editarNombreEj.id}
+          nombreActual={editarNombreEj.nombre}
+          catalogo={catalogo}
+          onClose={() => setEditarNombreEj(null)}
+          onSuccess={onRefresh}
+        />
+      )}
+      {agregarEjEtapa && (
+        <AgregarEjercicioEtapaModal
+          etapa={agregarEjEtapa}
+          catalogo={catalogo}
+          onClose={() => setAgregarEjEtapa(null)}
+          onSuccess={onRefresh}
+        />
+      )}
+      {itemToDelete && (
+        <ConfirmDeleteModal
+          title={itemToDelete.type === 'etapa' ? '¿Eliminar Etapa?' : '¿Eliminar Ejercicio?'}
+          description={
+            itemToDelete.type === 'etapa'
+              ? `¿Estás seguro de que deseas eliminar la etapa "${itemToDelete.nombre}" y todos sus ejercicios planificados? Esta acción no se puede deshacer.`
+              : `¿Estás seguro de que deseas eliminar "${itemToDelete.nombre}" y todas sus semanas planificadas? Esta acción no se puede deshacer.`
+          }
+          isPending={isDeleting}
+          error={deleteError}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => { if (!isDeleting) { setItemToDelete(null); setDeleteError(null) } }}
+        />
+      )}
+    </>
+  )
+}
+
+// ─── AccesoriosPanel ──────────────────────────────────────────────────────────
+
+function AccesoriosPanel({
+  accesorios, isAdmin, onRefresh,
+}: { accesorios: AccesorioData[]; isAdmin: boolean; onRefresh: () => Promise<void> }) {
+  const [nombre, setNombre] = useState('')
+  const [tipo, setTipo] = useState<'TREN_INFERIOR' | 'TREN_SUPERIOR'>('TREN_INFERIOR')
+  const [addPending, startAddTransition] = useTransition()
+
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; nombre: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  const inferior = accesorios.filter(a => a.tipo === 'TREN_INFERIOR')
+  const superior = accesorios.filter(a => a.tipo === 'TREN_SUPERIOR')
+
+  function handleEliminar(id: string, nombreAcc: string) {
+    setDeleteError(null)
+    setItemToDelete({ id, nombre: nombreAcc })
+  }
+
+  async function handleConfirmDelete() {
+    if (!itemToDelete) return
+    setIsDeleting(true)
+    setDeleteError(null)
+    try {
+      const result = await eliminarEjercicioAccesorio(itemToDelete.id)
+      if (result.error) { setDeleteError(result.error); return }
+      await onRefresh()
+      setItemToDelete(null)
+    } catch {
+      setDeleteError('Ocurrió un error al eliminar. Inténtalo de nuevo.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+  function handleAgregar(e: React.FormEvent) {
+    e.preventDefault()
+    if (!nombre.trim()) return
+    const fd = new FormData(); fd.set('nombre', nombre.trim()); fd.set('tipo', tipo)
+    startAddTransition(async () => { await crearEjercicioAccesorio(fd); setNombre(''); await onRefresh() })
+  }
+
+  const renderLista = (titulo: string, items: AccesorioData[], headerClass: string) => (
+    <div className="rounded-xl overflow-hidden border border-slate-200">
+      <div className={`px-4 py-2.5 font-bold text-sm uppercase tracking-wide ${headerClass}`}>{titulo}</div>
+      {items.length === 0 ? (
+        <div className="px-4 py-5 text-center text-slate-400 text-xs">Sin ejercicios accesorios.</div>
+      ) : (
+        <ul className="divide-y divide-slate-100">
+          {items.map(a => (
+            <li key={a.id} className="group/acc flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 transition-colors">
+              <span className="text-slate-700 text-sm">{a.nombre}</span>
+              {isAdmin && (
+                <button type="button" onClick={() => handleEliminar(a.id, a.nombre)}
+                  className="opacity-0 group-hover/acc:opacity-100 p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all disabled:cursor-not-allowed">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+
+  return (
+    <div className="space-y-4">
+      {renderLista('Tren Inferior', inferior, 'bg-pink-100 text-pink-800')}
+      {renderLista('Tren Superior', superior, 'bg-red-700 text-white')}
+      {isAdmin && (
+        <form onSubmit={handleAgregar} className="flex flex-col sm:flex-row gap-2 pt-1">
+          <input type="text" value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre del ejercicio…"
+            className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all" />
+          <select value={tipo} onChange={e => setTipo(e.target.value as 'TREN_INFERIOR' | 'TREN_SUPERIOR')}
+            className="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all">
+            <option value="TREN_INFERIOR">Tren Inferior</option>
+            <option value="TREN_SUPERIOR">Tren Superior</option>
+          </select>
+          <button type="submit" disabled={addPending || !nombre.trim()}
+            className="px-4 py-2 bg-accent-green text-primary-blue text-sm font-bold rounded-lg hover:brightness-110 disabled:opacity-60 transition-all flex items-center gap-1.5 justify-center">
+            {addPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            Agregar
+          </button>
+        </form>
+      )}
+      {itemToDelete && (
+        <ConfirmDeleteModal
+          title="¿Eliminar Ejercicio?"
+          description={`¿Estás seguro de que deseas eliminar "${itemToDelete.nombre}" de los ejercicios accesorios? Esta acción no se puede deshacer.`}
+          isPending={isDeleting}
+          error={deleteError}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => { if (!isDeleting) { setItemToDelete(null); setDeleteError(null) } }}
+        />
+      )}
+    </div>
+  )
+}
+
+// ─── PanelInformativo ─────────────────────────────────────────────────────────
+
+function PanelInformativo() {
+  return (
+    <div className="bg-primary-blue/5 border border-primary-blue/15 rounded-2xl p-6 h-full">
+      <div className="flex items-center gap-2 mb-5">
+        <Info className="w-5 h-5 text-primary-blue flex-shrink-0" />
+        <h3 className="font-black text-primary-blue text-base">Notas de Programación</h3>
+      </div>
+      <ol className="space-y-4">
+        {NOTAS_INFO.map(nota => (
+          <li key={nota.id} className="flex gap-3">
+            <span className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-accent-green text-primary-blue text-[11px] font-bold flex items-center justify-center leading-none">{nota.id}</span>
+            <p className="text-slate-700 text-sm leading-relaxed">{nota.text}</p>
+          </li>
+        ))}
+      </ol>
     </div>
   )
 }
@@ -339,162 +1058,85 @@ function SesionModal({
 // ─── VideoModal ───────────────────────────────────────────────────────────────
 
 function VideoModal({
-  onClose,
-  onSuccess,
-  videoEditar = null,
-}: {
-  onClose: () => void
-  onSuccess: () => void
-  videoEditar?: VideoData | null
-}) {
+  onClose, onSuccess, videoEditar = null,
+}: { onClose: () => void; onSuccess: () => Promise<void>; videoEditar?: VideoData | null }) {
   const isEdit = videoEditar !== null
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [categoria, setCategoria] = useState(videoEditar?.categoria ?? CATEGORIAS_FIJAS[0])
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setError(null)
-    const formData = new FormData(e.currentTarget)
+    e.preventDefault(); setError(null)
+    const fd = new FormData(e.currentTarget)
     startTransition(async () => {
-      const result = isEdit
-        ? await actualizarVideo(videoEditar!.id, formData)
-        : await crearVideo(formData)
+      const result = isEdit ? await actualizarVideo(videoEditar!.id, fd) : await crearVideo(fd)
       if (result.error) setError(result.error)
-      else { onSuccess(); onClose() }
+      else { await onSuccess(); onClose() }
     })
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}
-    >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="bg-primary-blue px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Video className="w-4 h-4 text-accent-green" />
-            <h2 className="text-white font-bold text-base">
-              {isEdit ? 'Editar Video' : 'Agregar Video'}
-            </h2>
-          </div>
-          <button type="button" onClick={onClose} className="text-white/60 hover:text-white p-1 rounded transition-colors">
-            <X className="w-4 h-4" />
-          </button>
+    <ModalShell title={isEdit ? 'Editar Video' : 'Agregar Video'} icon={<Video className="w-4 h-4 text-accent-green" />} onClose={onClose} maxW="max-w-md">
+      <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <div>
+          <label className={labelCls}>URL de YouTube *</label>
+          <input name="url" type="url" required defaultValue={videoEditar?.url ?? ''} placeholder="https://www.youtube.com/watch?v=…" className={inputCls} />
         </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <div>
+          <label className={labelCls}>Título *</label>
+          <input name="titulo" type="text" required maxLength={120} defaultValue={videoEditar?.titulo ?? ''} placeholder="Ej. Sentadilla con barra" className={inputCls} />
+        </div>
+        <div>
+          <label className={labelCls}>Descripción</label>
+          <textarea name="descripcion" rows={2} maxLength={300} defaultValue={videoEditar?.descripcion ?? ''} placeholder="Descripción o cue técnico…" className={inputCls + ' resize-none'} />
+        </div>
+        <div>
+          <label className={labelCls}>Categoría *</label>
+          <select name="categoria" required value={categoria} onChange={e => setCategoria(e.target.value)} className={inputCls + ' bg-white'}>
+            {CATEGORIAS_FIJAS.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+          </select>
+        </div>
+        {categoria === 'Estabilidad' && (
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">URL de YouTube *</label>
-            <input
-              name="url" type="url" required
-              defaultValue={videoEditar?.url ?? ''}
-              placeholder="https://www.youtube.com/watch?v=..."
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Título *</label>
-            <input
-              name="titulo" type="text" required maxLength={120}
-              defaultValue={videoEditar?.titulo ?? ''}
-              placeholder="Ej. Sentadilla con barra"
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Descripción</label>
-            <textarea
-              name="descripcion" rows={2} maxLength={300}
-              defaultValue={videoEditar?.descripcion ?? ''}
-              placeholder="Descripción o cue técnico del ejercicio..."
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all resize-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Categoría *</label>
-            <select
-              name="categoria" required
-              defaultValue={videoEditar?.categoria ?? CATEGORIAS_FIJAS[0]}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all bg-white"
-            >
-              {CATEGORIAS_FIJAS.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
+            <label className={labelCls}>Subcategoría</label>
+            <select name="subcategoria" defaultValue={videoEditar?.subcategoria ?? ''} className={inputCls + ' bg-white'}>
+              <option value="">General</option>
+              <option value={SUBCATEGORIA_LATERALIDAD}>{SUBCATEGORIA_LATERALIDAD}</option>
             </select>
           </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">{error}</div>
-          )}
-
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose}
-              className="flex-1 border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">
-              Cancelar
-            </button>
-            <button type="submit" disabled={isPending}
-              className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
-              {isPending
-                ? <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</>
-                : isEdit ? 'Actualizar Video' : 'Guardar Video'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        )}
+        {error && <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">{error}</div>}
+        <div className="flex gap-3 pt-2">
+          <button type="button" onClick={onClose} className="flex-1 border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">Cancelar</button>
+          <button type="submit" disabled={isPending} className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
+            {isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</> : isEdit ? 'Actualizar Video' : 'Guardar Video'}
+          </button>
+        </div>
+      </form>
+    </ModalShell>
   )
 }
 
 // ─── VideoCard ────────────────────────────────────────────────────────────────
 
 function VideoCard({ video, isAdmin, onEditar, onEliminar }: {
-  video: VideoData
-  isAdmin: boolean
-  onEditar: (video: VideoData) => void
-  onEliminar: (id: string) => void
+  video: VideoData; isAdmin: boolean; onEditar: (v: VideoData) => void; onEliminar: (id: string) => void
 }) {
-  const embedUrl = getYouTubeEmbedUrl(video.url)
-
   return (
     <div className="group bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden relative">
-      {/* iframe 16:9 responsivo */}
       <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
-        <iframe
-          src={embedUrl}
-          title={video.titulo}
+        <iframe src={getYouTubeEmbedUrl(video.url)} title={video.titulo}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          className="absolute inset-0 w-full h-full border-0"
-          loading="lazy"
-        />
+          allowFullScreen className="absolute inset-0 w-full h-full border-0" loading="lazy" />
       </div>
-
       <div className="p-3">
         <p className="font-bold text-primary-blue text-sm leading-snug">{video.titulo}</p>
-        {video.descripcion && (
-          <p className="text-xs text-slate-500 mt-1 line-clamp-2">{video.descripcion}</p>
-        )}
+        {video.descripcion && <p className="text-xs text-slate-500 mt-1 line-clamp-2">{video.descripcion}</p>}
       </div>
-
       {isAdmin && (
         <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={() => onEditar(video)}
-            title="Editar"
-            className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white text-slate-600 hover:text-primary-blue transition-colors"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => onEliminar(video.id)}
-            title="Eliminar"
-            className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white text-slate-600 hover:text-red-500 transition-colors"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+          <button onClick={() => onEditar(video)} className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white text-slate-600 hover:text-primary-blue transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
+          <button onClick={() => onEliminar(video.id)} className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white text-slate-600 hover:text-red-500 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
         </div>
       )}
     </div>
@@ -503,53 +1145,63 @@ function VideoCard({ video, isAdmin, onEditar, onEliminar }: {
 
 // ─── CategoriaSection ─────────────────────────────────────────────────────────
 
+function VideoGrid({ videos, isAdmin, onEditar, onEliminar }: {
+  videos: VideoData[]; isAdmin: boolean;
+  onEditar: (v: VideoData) => void; onEliminar: (id: string) => void
+}) {
+  if (videos.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <PlayCircle className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+        <p className="text-sm text-slate-400">Sin videos en esta sección.</p>
+      </div>
+    )
+  }
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {videos.map(v => <VideoCard key={v.id} video={v} isAdmin={isAdmin} onEditar={onEditar} onEliminar={onEliminar} />)}
+    </div>
+  )
+}
+
 function CategoriaSection({ categoria, videos, isAdmin, onEditar, onEliminar }: {
-  categoria: string
-  videos: VideoData[]
-  isAdmin: boolean
-  onEditar: (video: VideoData) => void
-  onEliminar: (id: string) => void
+  categoria: string; videos: VideoData[]; isAdmin: boolean;
+  onEditar: (v: VideoData) => void; onEliminar: (id: string) => void
 }) {
   const [open, setOpen] = useState(true)
+  const esEstabilidad = categoria === 'Estabilidad'
+  const generales = esEstabilidad ? videos.filter(v => !v.subcategoria) : videos
+  const lateralidad = esEstabilidad ? videos.filter(v => v.subcategoria === SUBCATEGORIA_LATERALIDAD) : []
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-5 py-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
-      >
+      <button type="button" onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between px-5 py-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left">
         <div className="flex items-center gap-3">
           <div className="w-1 h-6 bg-accent-green rounded-full" />
           <span className="font-black text-primary-blue text-base">{categoria}</span>
-          <span className="text-xs text-slate-400 font-medium bg-slate-200 px-2 py-0.5 rounded-full">
-            {videos.length}
-          </span>
+          <span className="text-xs text-slate-400 font-medium bg-slate-200 px-2 py-0.5 rounded-full">{videos.length}</span>
         </div>
-        {open
-          ? <ChevronUp className="w-4 h-4 text-slate-400 flex-shrink-0" />
-          : <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />}
+        {open ? <ChevronUp className="w-4 h-4 text-slate-400 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />}
       </button>
-
       {open && (
         <div className="p-5 border-t border-slate-100">
-          {videos.length === 0 ? (
-            <div className="text-center py-8">
-              <PlayCircle className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-              <p className="text-sm text-slate-400">Sin videos en esta categoría.</p>
+          {esEstabilidad ? (
+            <div className="space-y-6">
+              <div>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Estabilidad General</p>
+                <VideoGrid videos={generales} isAdmin={isAdmin} onEditar={onEditar} onEliminar={onEliminar} />
+              </div>
+              <div className="bg-accent-green/5 border border-accent-green/20 rounded-xl p-4">
+                <p className="text-[11px] font-bold text-primary-blue uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <span className="w-1 h-4 bg-accent-green rounded-full" />
+                  Lateralidad
+                </p>
+                <VideoGrid videos={lateralidad} isAdmin={isAdmin} onEditar={onEditar} onEliminar={onEliminar} />
+              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {videos.map(v => (
-                <VideoCard
-                  key={v.id}
-                  video={v}
-                  isAdmin={isAdmin}
-                  onEditar={onEditar}
-                  onEliminar={onEliminar}
-                />
-              ))}
-            </div>
+            <VideoGrid videos={videos} isAdmin={isAdmin} onEditar={onEditar} onEliminar={onEliminar} />
           )}
         </div>
       )}
@@ -561,74 +1213,48 @@ function CategoriaSection({ categoria, videos, isAdmin, onEditar, onEliminar }: 
 
 interface GimnasioClientProps {
   rol: string
-  sesionesIniciales: SesionData[]
+  ejercicios: EjercicioPrincipalData[]
+  accesorios: AccesorioData[]
   videosAgrupados: Record<string, VideoData[]>
-  mesInicial: number
-  anioInicial: number
+  etapas: EtapaData[]
+  catalogo: CatalogoData[]
+  nombresEjercicios: string[]
 }
 
 export default function GimnasioClient({
   rol,
-  sesionesIniciales,
+  ejercicios: ejerciciosInit,
+  accesorios: accesoriosInit,
   videosAgrupados: videosAgrupadosInit,
-  mesInicial,
-  anioInicial,
+  etapas: etapasInit,
+  catalogo: catalogoInit,
+  nombresEjercicios: nombresEjerciciosInit,
 }: GimnasioClientProps) {
-  // ── Calendario ──
-  const [mes, setMes] = useState(mesInicial)
-  const [anio, setAnio] = useState(anioInicial)
-  const [sesiones, setSesiones] = useState<SesionData[]>(sesionesIniciales)
-  const [cargandoMes, setCargandoMes] = useState(false)
+  const [ejercicios, setEjercicios] = useState(ejerciciosInit)
+  const [accesorios, setAccesorios] = useState(accesoriosInit)
+  const [videosAgrupados, setVideosAgrupados] = useState(videosAgrupadosInit)
+  const [etapas, setEtapas] = useState(etapasInit)
+  const [catalogo, setCatalogo] = useState(catalogoInit)
+  const [nombresEjercicios, setNombresEjercicios] = useState(nombresEjerciciosInit)
 
-  // ── Videos ──
-  const [videosAgrupados, setVideosAgrupados] = useState<Record<string, VideoData[]>>(videosAgrupadosInit)
-
-  // ── Modales sesiones ──
-  const [showSesionModal, setShowSesionModal] = useState(false)
-  const [sesionEditar, setSesionEditar] = useState<SesionData | null>(null)
-
-  // ── Modales videos ──
+  const [showEtapaModal, setShowEtapaModal] = useState(false)
   const [showVideoModal, setShowVideoModal] = useState(false)
   const [videoEditar, setVideoEditar] = useState<VideoData | null>(null)
 
   const isAdmin = rol === 'ADMIN'
-  const semanas = getCalendarGrid(anio, mes)
 
-  // ── Handlers ──
-
-  async function cambiarMes(delta: number) {
-    let newMes = mes + delta
-    let newAnio = anio
-    if (newMes > 12) { newMes = 1; newAnio++ }
-    if (newMes < 1) { newMes = 12; newAnio-- }
-    setMes(newMes)
-    setAnio(newAnio)
-    setCargandoMes(true)
-    setSesiones(await obtenerSesionesMes(newMes, newAnio))
-    setCargandoMes(false)
+  async function handleRefreshMatriz() {
+    const [ejs, ets, cat, nombres] = await Promise.all([
+      obtenerMatriz(), obtenerEtapas(), obtenerCatalogoEjercicios(), obtenerNombresEjercicios(),
+    ])
+    setEjercicios(ejs); setEtapas(ets); setCatalogo(cat); setNombresEjercicios(nombres)
   }
-
-  async function handleRefreshSesiones() {
-    setSesiones(await obtenerSesionesMes(mes, anio))
-  }
-
-  async function handleRefreshVideos() {
-    setVideosAgrupados(await obtenerVideosAgrupados())
-  }
-
-  async function handleEliminarSesion(id: string) {
-    if (!window.confirm('¿Eliminar esta sesión? Esta acción no se puede deshacer.')) return
-    const result = await eliminarSesion(id)
-    if (!result.error) await handleRefreshSesiones()
-  }
-
+  async function handleRefreshAccesorios() { setAccesorios(await obtenerAccesorios()) }
+  async function handleRefreshVideos() { setVideosAgrupados(await obtenerVideosAgrupados()) }
   async function handleEliminarVideo(id: string) {
-    if (!window.confirm('¿Eliminar este video? Esta acción no se puede deshacer.')) return
-    const result = await eliminarVideo(id)
-    if (!result.error) await handleRefreshVideos()
+    if (!window.confirm('¿Eliminar este video?')) return
+    await eliminarVideo(id); await handleRefreshVideos()
   }
-
-  // ── Render ──
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
@@ -640,89 +1266,49 @@ export default function GimnasioClient({
             <div className="w-1 h-7 bg-accent-green rounded-full" />
             <h1 className="text-3xl font-black text-primary-blue">Gimnasio y Preparación Física</h1>
           </div>
-          <p className="text-slate-500 text-sm ml-3">
-            Bloques de fuerza, periodización y videoteca técnica del club.
-          </p>
+          <p className="text-slate-500 text-sm ml-3">Periodización por microciclos y preparación física del club.</p>
         </div>
         {isAdmin && (
-          <button
-            onClick={() => { setSesionEditar(null); setShowSesionModal(true) }}
-            className="flex items-center gap-2 bg-accent-green text-primary-blue px-5 py-2.5 rounded-xl text-sm font-bold hover:brightness-110 transition-all shadow-md shadow-accent-green/20 self-start sm:self-auto flex-shrink-0"
-          >
+          <button onClick={() => setShowEtapaModal(true)}
+            className="flex items-center gap-2 bg-accent-green text-primary-blue px-5 py-2.5 rounded-xl text-sm font-bold hover:brightness-110 transition-all shadow-md shadow-accent-green/20 self-start sm:self-auto">
             <Plus className="w-4 h-4" />
-            Agregar Sesión
+            Nueva Etapa
           </button>
         )}
       </div>
 
-      {/* ══ BLOQUE SUPERIOR: Calendario ══ */}
+      {/* ══ Matriz ══ */}
       <section className="mb-12">
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-
-          {/* Navegación de mes */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-            <button
-              onClick={() => cambiarMes(-1)}
-              disabled={cargandoMes}
-              className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors disabled:opacity-40"
-              aria-label="Mes anterior"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <div className="text-center min-w-[160px]">
-              <p className="text-primary-blue font-black text-lg leading-tight">{MESES[mes - 1]}</p>
-              <p className="text-slate-400 text-sm leading-tight">{anio}</p>
-            </div>
-            <button
-              onClick={() => cambiarMes(1)}
-              disabled={cargandoMes}
-              className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors disabled:opacity-40"
-              aria-label="Mes siguiente"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-1 h-6 bg-accent-green rounded-full" />
+            <h2 className="text-xl font-black text-primary-blue">Matriz de Periodización</h2>
           </div>
-
-          {/* Cabecera días */}
-          <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/60">
-            {DIAS_SEMANA.map(d => (
-              <div
-                key={d}
-                className="py-2 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wide border-r border-slate-200 last:border-r-0"
-              >
-                {d}
-              </div>
-            ))}
-          </div>
-
-          {/* Semanas */}
-          <div className={`transition-opacity duration-200 ${cargandoMes ? 'opacity-30 pointer-events-none' : 'opacity-100'}`}>
-            {semanas.map((week, i) => (
-              <WeekRow key={i} week={week} sesiones={sesiones} month={mes} year={anio} />
-            ))}
-          </div>
-
-          {cargandoMes && (
-            <div className="flex items-center justify-center py-4 -mt-4">
-              <Loader2 className="w-5 h-5 text-primary-blue animate-spin" />
-            </div>
-          )}
-
-          {/* Leyenda */}
-          {sesiones.length > 0 && (
-            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/40 flex flex-wrap gap-x-4 gap-y-1.5">
-              {Array.from(new Map(sesiones.map(s => [s.id, s])).values()).map(s => (
-                <div key={s.id} className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: s.color }} />
-                  <span className="text-[11px] text-slate-500 truncate max-w-[160px]">{s.titulo}</span>
-                </div>
-              ))}
-            </div>
-          )}
+          <TablaMatriz ejercicios={ejercicios} etapas={etapas} catalogo={catalogo} isAdmin={isAdmin} onRefresh={handleRefreshMatriz} />
         </div>
       </section>
 
-      {/* ══ BLOQUE INFERIOR: Videoteca ══ */}
+      {/* ══ Accesorios + Notas ══ */}
+      <section className="mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1 h-6 bg-accent-green rounded-full" />
+              <h2 className="text-xl font-black text-primary-blue">Ejercicios Accesorios</h2>
+            </div>
+            <AccesoriosPanel accesorios={accesorios} isAdmin={isAdmin} onRefresh={handleRefreshAccesorios} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1 h-6 bg-accent-green rounded-full" />
+              <h2 className="text-xl font-black text-primary-blue">Notas de Programación</h2>
+            </div>
+            <PanelInformativo />
+          </div>
+        </div>
+      </section>
+
+      {/* ══ Videoteca ══ */}
       <section>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-2">
@@ -730,44 +1316,28 @@ export default function GimnasioClient({
             <h2 className="text-xl font-black text-primary-blue">Videoteca de Ejercicios</h2>
           </div>
           {isAdmin && (
-            <button
-              onClick={() => { setVideoEditar(null); setShowVideoModal(true) }}
-              className="flex items-center gap-2 border border-primary-blue/40 text-primary-blue px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary-blue hover:text-white transition-all self-start sm:self-auto flex-shrink-0"
-            >
+            <button onClick={() => { setVideoEditar(null); setShowVideoModal(true) }}
+              className="flex items-center gap-2 border border-primary-blue/40 text-primary-blue px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary-blue hover:text-white transition-all self-start sm:self-auto flex-shrink-0">
               <Plus className="w-4 h-4" />
               Agregar Video
             </button>
           )}
         </div>
-
         <div className="space-y-4">
           {CATEGORIAS_FIJAS.map(cat => (
-            <CategoriaSection
-              key={cat}
-              categoria={cat}
-              videos={videosAgrupados[cat] ?? []}
-              isAdmin={isAdmin}
+            <CategoriaSection key={cat} categoria={cat} videos={videosAgrupados[cat] ?? []} isAdmin={isAdmin}
               onEditar={v => { setVideoEditar(v); setShowVideoModal(true) }}
-              onEliminar={handleEliminarVideo}
-            />
+              onEliminar={handleEliminarVideo} />
           ))}
         </div>
       </section>
 
-      {/* ── Modales ── */}
-      {showSesionModal && (
-        <SesionModal
-          onClose={() => { setShowSesionModal(false); setSesionEditar(null) }}
-          onSuccess={handleRefreshSesiones}
-          sesionEditar={sesionEditar}
-        />
+      {/* ── Modales globales ── */}
+      {showEtapaModal && (
+        <EtapaModal nombres={nombresEjercicios} onClose={() => setShowEtapaModal(false)} onSuccess={handleRefreshMatriz} />
       )}
       {showVideoModal && (
-        <VideoModal
-          onClose={() => { setShowVideoModal(false); setVideoEditar(null) }}
-          onSuccess={handleRefreshVideos}
-          videoEditar={videoEditar}
-        />
+        <VideoModal onClose={() => { setShowVideoModal(false); setVideoEditar(null) }} onSuccess={handleRefreshVideos} videoEditar={videoEditar} />
       )}
     </div>
   )

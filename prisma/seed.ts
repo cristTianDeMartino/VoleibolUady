@@ -277,6 +277,25 @@ const gruposPorTitulo: Record<string, string> = {
   'CIVOLSUR':               'TORNEOS',
 }
 
+const accesoriosSeed = [
+  // Tren Inferior
+  { nombre: 'Extensión de cuádriceps', tipo: 'TREN_INFERIOR' },
+  { nombre: 'Curl de pierna',          tipo: 'TREN_INFERIOR' },
+  { nombre: 'Sentadillas búlgaras',    tipo: 'TREN_INFERIOR' },
+  { nombre: 'Pantorrillas',            tipo: 'TREN_INFERIOR' },
+  { nombre: 'Aductores',               tipo: 'TREN_INFERIOR' },
+  { nombre: 'Abductores',              tipo: 'TREN_INFERIOR' },
+  { nombre: 'Tibial',                  tipo: 'TREN_INFERIOR' },
+  // Tren Superior
+  { nombre: 'Press de hombro',         tipo: 'TREN_SUPERIOR' },
+  { nombre: 'Elevaciones laterales',   tipo: 'TREN_SUPERIOR' },
+  { nombre: 'Bíceps',                  tipo: 'TREN_SUPERIOR' },
+  { nombre: 'Tríceps',                 tipo: 'TREN_SUPERIOR' },
+  { nombre: 'Pull over',               tipo: 'TREN_SUPERIOR' },
+  { nombre: 'Dorsal',                  tipo: 'TREN_SUPERIOR' },
+  { nombre: 'Trapecios',               tipo: 'TREN_SUPERIOR' },
+]
+
 async function main() {
   console.log('🌱 Seeding database...')
 
@@ -351,6 +370,23 @@ async function main() {
   } else {
     console.log(`  ⏭️  Grupos ya asignados, sin cambios`)
   }
+
+  // Ejercicios Accesorios (idempotente por nombre + tipo)
+  let accesoriosCreados = 0
+  for (const acc of accesoriosSeed) {
+    const existe = await prisma.ejercicioAccesorio.findFirst({
+      where: { nombre: acc.nombre, tipo: acc.tipo },
+    })
+    if (!existe) {
+      await prisma.ejercicioAccesorio.create({ data: acc })
+      accesoriosCreados++
+    }
+  }
+  console.log(
+    accesoriosCreados > 0
+      ? `  ✅ ${accesoriosCreados} ejercicios accesorios creados`
+      : `  ⏭️  Ejercicios accesorios ya existentes, sin cambios`
+  )
 }
 
 main()

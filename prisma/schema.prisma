@@ -87,10 +87,57 @@ model SesionGimnasio {
 }
 
 model VideoGimnasio {
-  id          String   @id @default(cuid())
-  titulo      String
-  descripcion String?
-  url         String
-  categoria   String
-  createdAt   DateTime @default(now())
+  id           String   @id @default(cuid())
+  titulo       String
+  descripcion  String?
+  url          String
+  categoria    String
+  subcategoria String?
+  createdAt    DateTime @default(now())
+}
+
+model CatalogoEjercicio {
+  id        String   @id @default(cuid())
+  nombre    String   @unique
+  createdAt DateTime @default(now())
+}
+
+model EtapaEntrenamiento {
+  id          String               @id @default(cuid())
+  nombre      String
+  fechaInicio DateTime
+  fechaFin    DateTime
+  ejercicios  EjercicioPrincipal[]
+  createdAt   DateTime             @default(now())
+}
+
+model EjercicioPrincipal {
+  id          String               @id @default(cuid())
+  nombre      String
+  fechaInicio DateTime
+  fechaFin    DateTime
+  etapaId     String?
+  etapa       EtapaEntrenamiento?  @relation(fields: [etapaId], references: [id], onDelete: Cascade)
+  semanas     DetalleSemana[]
+  createdAt   DateTime             @default(now())
+}
+
+model DetalleSemana {
+  id                String              @id @default(cuid())
+  ejercicioId       String
+  ejercicio         EjercicioPrincipal  @relation(fields: [ejercicioId], references: [id], onDelete: Cascade)
+  numeroSemana      Int
+  fechaInicioSemana DateTime
+  fechaFinSemana    DateTime
+  series            Int
+  rpt               String
+  rir               Int?
+  createdAt         DateTime            @default(now())
+}
+
+model EjercicioAccesorio {
+  id        String   @id @default(cuid())
+  nombre    String
+  tipo      String
+  createdAt DateTime @default(now())
 }

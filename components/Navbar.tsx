@@ -152,10 +152,13 @@ export default function Navbar({ user }: NavbarProps) {
           <div className="hidden md:flex items-center gap-3 flex-shrink-0">
             {user ? (
               <>
-                <div className="text-right">
+                <Link
+                  href="/perfil"
+                  className="text-right cursor-pointer transition-colors duration-200 hover:opacity-80"
+                >
                   <p className="text-white text-xs font-bold leading-none">{user.nombre.split(' ')[0]}</p>
                   <p className="text-accent-green/70 text-xs">{user.rol}</p>
-                </div>
+                </Link>
                 <form action={logout}>
                   <button
                     type="submit"
