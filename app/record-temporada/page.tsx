@@ -13,8 +13,8 @@ export default async function RecordTemporadaPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-1 h-7 bg-accent-green rounded-full" />
-          <h1 className="text-3xl font-black text-primary-blue">Récord de Temporada</h1>
+          <div className="w-1 h-7 bg-uady-gold rounded-full" />
+          <h1 className="text-3xl font-black text-uady-blue">Récord de Temporada</h1>
         </div>
         <p className="text-gray-500 text-sm ml-3">
           Historial de partidos de las selecciones representativas · Temporada 2025–2026

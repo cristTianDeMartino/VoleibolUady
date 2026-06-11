@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma'
 export type LoginState = { error: string | null }
 
 export async function login(prevState: LoginState, formData: FormData): Promise<LoginState> {
-  const codigo = (formData.get('codigoAcceso') as string)?.trim()
+  const codigo = (formData.get('codigoAcceso') as string)?.trim().toUpperCase()
 
   if (!codigo) return { error: 'Ingresa tu código de acceso.' }
 
@@ -25,8 +25,7 @@ export async function login(prevState: LoginState, formData: FormData): Promise<
     { httpOnly: true, sameSite: 'lax', maxAge: 60 * 60 * 24 * 7, path: '/' }
   )
 
-  if (atleta.rol === 'JUGADOR') redirect(`/atletas/${atleta.id}`)
-  redirect('/atletas')
+  redirect('/perfil')
 }
 
 export async function logout() {

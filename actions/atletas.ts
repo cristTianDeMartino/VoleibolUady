@@ -78,6 +78,166 @@ export async function createAtleta(
   redirect('/atletas')
 }
 
+export type PerfilFormState = { error: string | null; success?: boolean }
+
+export async function updatePerfilAtleta(
+  prevState: PerfilFormState,
+  formData: FormData
+): Promise<PerfilFormState> {
+  const session = await getSession()
+  if (!session) return { error: 'Debes iniciar sesión.' }
+
+  const telefonoPersonal = (formData.get('telefonoPersonal') as string)?.trim()
+  const telefonoTutor    = (formData.get('telefonoTutor')    as string)?.trim()
+  const email            = (formData.get('email')            as string)?.trim()
+  const nss              = (formData.get('nss')              as string)?.trim()
+  const seguroPrivado    = (formData.get('seguroPrivado')    as string)?.trim() || null
+
+  if (!telefonoPersonal || !telefonoTutor || !email || !nss) {
+    return { error: 'Teléfono personal, tutor/familiar, correo y NSS son obligatorios.' }
+  }
+
+  let fotoUrl: string | undefined
+  const fotoFile = formData.get('foto') as File | null
+  if (fotoFile && fotoFile.size > 0) {
+    try {
+      const atleta = await prisma.atleta.findUnique({ where: { id: session.id }, select: { nombre: true } })
+      const bytes = await fotoFile.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+      const ext = (fotoFile.name.split('.').pop() ?? 'jpg').toLowerCase().replace(/[^a-z]/g, '')
+      const safe = (atleta?.nombre ?? 'atleta').toLowerCase().replace(/[^a-z0-9]/g, '-')
+      const filename = `${Date.now()}-${safe}.${ext}`
+      await writeFile(path.join(process.cwd(), 'public', 'uploads', 'fotos', filename), buffer)
+      fotoUrl = `/uploads/fotos/${filename}`
+    } catch {
+      // Non-fatal — continue without updating photo
+    }
+  }
+
+  await prisma.atleta.update({
+    where: { id: session.id },
+    data: {
+      telefonoPersonal,
+      telefonoTutor,
+      email,
+      nss,
+      seguroPrivado,
+      ...(fotoUrl ? { fotoUrl } : {}),
+    },
+  })
+
+  revalidatePath('/perfil')
+  revalidatePath(`/atletas/${session.id}`)
+  return { error: null, success: true }
+}
+
+export async function updateFotoPerfilPropio(
+  formData: FormData,
+): Promise<{ error?: string; success?: boolean }> {
+  const session = await getSession()
+  if (!session) return { error: 'Debes iniciar sesión.' }
+
+  const fotoFile = formData.get('foto') as File | null
+  if (!fotoFile || fotoFile.size === 0) return { error: 'Selecciona un archivo de foto.' }
+
+  try {
+    const record = await prisma.atleta.findUnique({ where: { id: session.id }, select: { nombre: true } })
+    const bytes = await fotoFile.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const ext = (fotoFile.name.split('.').pop() ?? 'jpg').toLowerCase().replace(/[^a-z]/g, '')
+    const safe = (record?.nombre ?? 'usuario').toLowerCase().replace(/[^a-z0-9]/g, '-')
+    const filename = `${Date.now()}-${safe}.${ext}`
+    await writeFile(path.join(process.cwd(), 'public', 'uploads', 'fotos', filename), buffer)
+    await prisma.atleta.update({ where: { id: session.id }, data: { fotoUrl: `/uploads/fotos/${filename}` } })
+  } catch (e) {
+    console.error('updateFotoPerfilPropio:', e)
+    return { error: 'Error al guardar la foto.' }
+  }
+
+  revalidatePath('/perfil')
+  return { success: true }
+}
+
+export async function updateSeccionAcademica(
+  prevState: PerfilFormState,
+  formData: FormData,
+): Promise<PerfilFormState> {
+  const session = await getSession()
+  if (!session || session.rol !== 'JUGADOR') return { error: 'Sin permisos.' }
+
+  const facultad = (formData.get('facultad') as string)?.trim()
+  const semestreRaw = (formData.get('semestre') as string)?.trim()
+  const directorFacultad = (formData.get('directorFacultad') as string)?.trim()
+
+  if (!facultad || !semestreRaw || !directorFacultad) return { error: 'Completa todos los campos.' }
+  const semestre = parseInt(semestreRaw, 10)
+  if (isNaN(semestre) || semestre < 1 || semestre > 12) return { error: 'El semestre debe ser entre 1 y 12.' }
+
+  await prisma.atleta.update({ where: { id: session.id }, data: { facultad, semestre, directorFacultad } })
+  revalidatePath('/perfil')
+  return { error: null, success: true }
+}
+
+export async function updateSeccionContacto(
+  prevState: PerfilFormState,
+  formData: FormData,
+): Promise<PerfilFormState> {
+  const session = await getSession()
+  if (!session) return { error: 'Sin permisos.' }
+
+  const email = (formData.get('email') as string)?.trim()
+  const telefonoPersonal = (formData.get('telefonoPersonal') as string)?.trim()
+  const telefonoTutor = (formData.get('telefonoTutor') as string)?.trim()
+
+  if (!email || !telefonoPersonal || !telefonoTutor) return { error: 'Todos los campos son obligatorios.' }
+
+  await prisma.atleta.update({ where: { id: session.id }, data: { email, telefonoPersonal, telefonoTutor } })
+  revalidatePath('/perfil')
+  return { error: null, success: true }
+}
+
+export async function updateSeccionMedica(
+  prevState: PerfilFormState,
+  formData: FormData,
+): Promise<PerfilFormState> {
+  const session = await getSession()
+  if (!session || session.rol !== 'JUGADOR') return { error: 'Sin permisos.' }
+
+  const nss = (formData.get('nss') as string)?.trim()
+  const seguroPrivado = (formData.get('seguroPrivado') as string)?.trim() || null
+
+  if (!nss) return { error: 'El NSS es obligatorio.' }
+
+  await prisma.atleta.update({ where: { id: session.id }, data: { nss, seguroPrivado } })
+  revalidatePath('/perfil')
+  return { error: null, success: true }
+}
+
+export async function updatePerfilAdmin(
+  prevState: PerfilFormState,
+  formData: FormData,
+): Promise<PerfilFormState> {
+  const session = await getSession()
+  if (!session || session.rol !== 'ADMIN') return { error: 'Sin permisos.' }
+
+  const nombre = (formData.get('nombre') as string)?.trim()
+  const apellidos = (formData.get('apellidos') as string)?.trim()
+  const email = (formData.get('email') as string)?.trim()
+  const telefonoPersonal = (formData.get('telefonoPersonal') as string)?.trim()
+  const rolTecnico = (formData.get('rolTecnico') as string)?.trim()
+
+  if (!nombre || !apellidos || !email || !telefonoPersonal || !rolTecnico) {
+    return { error: 'Todos los campos son obligatorios.' }
+  }
+
+  await prisma.atleta.update({
+    where: { id: session.id },
+    data: { nombre, apellidos, email, telefonoPersonal, rolTecnico },
+  })
+  revalidatePath('/perfil')
+  return { error: null, success: true }
+}
+
 export async function updateFotoAtleta(
   atletaId: string,
   formData: FormData

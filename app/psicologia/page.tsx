@@ -9,9 +9,9 @@ interface VideoCard {
 }
 
 const tipoColors: Record<string, string> = {
-  Técnica: 'bg-primary-blue/10 text-primary-blue',
+  Técnica: 'bg-uady-blue/10 text-uady-blue',
   Mental: 'bg-purple-100 text-purple-700',
-  Motivacional: 'bg-accent-green/20 text-amber-700',
+  Motivacional: 'bg-uady-gold/20 text-amber-700',
   Grupal: 'bg-emerald-100 text-emerald-700',
 }
 
@@ -33,8 +33,8 @@ export default function PsicologiaPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-1 h-7 bg-accent-green rounded-full" />
-            <h1 className="text-3xl font-black text-primary-blue">Espacio de Psicología</h1>
+            <div className="w-1 h-7 bg-uady-gold rounded-full" />
+            <h1 className="text-3xl font-black text-uady-blue">Espacio de Psicología</h1>
           </div>
           <p className="text-gray-500 text-sm ml-3">
             {mockVideos.length} sesiones · Desarrollo mental y emocional del atleta
@@ -42,7 +42,7 @@ export default function PsicologiaPage() {
         </div>
         <button
           disabled
-          className="bg-accent-green text-primary-blue px-4 py-2 rounded-lg text-sm font-semibold opacity-50 cursor-not-allowed self-start md:self-auto"
+          className="bg-uady-gold text-uady-blue px-4 py-2 rounded-lg text-sm font-semibold opacity-50 cursor-not-allowed self-start md:self-auto"
         >
           + Subir Video
         </button>
@@ -50,13 +50,13 @@ export default function PsicologiaPage() {
 
       {/* Filter tags */}
       <div className="flex flex-wrap gap-2 mb-6">
-        <button className="bg-primary-blue text-white text-xs font-bold px-3 py-1.5 rounded-full">
+        <button className="bg-uady-blue text-white text-xs font-bold px-3 py-1.5 rounded-full">
           Todos
         </button>
         {Object.keys(tipoColors).map((tipo) => (
           <button
             key={tipo}
-            className={`text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-primary-blue hover:text-primary-blue transition-colors`}
+            className={`text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-uady-blue hover:text-uady-blue transition-colors`}
           >
             {tipo}
           </button>
@@ -71,14 +71,14 @@ export default function PsicologiaPage() {
             className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden group cursor-pointer"
           >
             {/* Video thumbnail */}
-            <div className="bg-primary-blue h-36 flex items-center justify-center relative overflow-hidden">
+            <div className="bg-uady-blue h-36 flex items-center justify-center relative overflow-hidden">
               <span className="text-5xl group-hover:scale-110 transition-transform duration-200">
                 {video.thumbnail}
               </span>
               {/* Play button overlay */}
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
-                <div className="w-12 h-12 bg-accent-green rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-primary-blue ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-12 h-12 bg-uady-gold rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-uady-blue ml-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                   </svg>
                 </div>
@@ -94,7 +94,7 @@ export default function PsicologiaPage() {
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${tipoColors[video.tipo] || 'bg-gray-100 text-gray-500'}`}>
                 {video.tipo}
               </span>
-              <h3 className="font-bold text-primary-blue text-sm mt-2 leading-snug line-clamp-2">
+              <h3 className="font-bold text-uady-blue text-sm mt-2 leading-snug line-clamp-2">
                 {video.titulo}
               </h3>
               <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">

@@ -1,27 +1,36 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { login } from '@/actions/auth'
+import { crearAdminMaestro, sembrarDatosDemo, sembrarPlanificacionVoleibol, seedVideosFuncionales } from '@/actions/seed'
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(login, { error: null })
+  const [seedMsg, setSeedMsg] = useState<string | null>(null)
+  const [seeding, startSeed] = useTransition()
+  const [demoMsg, setDemoMsg] = useState<string | null>(null)
+  const [demoing, startDemo] = useTransition()
+  const [planMsg, setPlanMsg] = useState<string | null>(null)
+  const [planning, startPlan] = useTransition()
+  const [videosMsg, setVideosMsg] = useState<string | null>(null)
+  const [seedingVideos, startVideos] = useTransition()
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-sm">
         {/* Logo area */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary-blue rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-uady-blue rounded-2xl flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">🏐</span>
           </div>
-          <h1 className="text-2xl font-black text-primary-blue">Sistema de Voleibol</h1>
+          <h1 className="text-2xl font-black text-uady-blue">Sistema de Voleibol</h1>
           <p className="text-gray-400 text-sm mt-1">Plan Rector · Selecciones</p>
         </div>
 
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-7">
-          <h2 className="font-black text-primary-blue text-lg mb-1">Iniciar Sesión</h2>
+          <h2 className="font-black text-uady-blue text-lg mb-1">Iniciar Sesión</h2>
           <p className="text-gray-400 text-sm mb-6">
             Ingresa el código de acceso que te proporcionó tu entrenador.
           </p>
@@ -44,7 +53,7 @@ export default function LoginPage() {
                 autoFocus
                 placeholder="Ej. ANA001"
                 required
-                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/10 transition-all font-mono tracking-widest"
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-uady-blue focus:ring-2 focus:ring-uady-blue/10 transition-all font-mono tracking-widest"
               />
               <p className="text-xs text-gray-400 mt-1.5">
                 Las mayúsculas importan. Ej: <code className="bg-gray-50 px-1 rounded">ADMIN001</code>
@@ -54,7 +63,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isPending}
-              className="w-full bg-primary-blue text-white font-bold py-3 rounded-lg text-sm hover:bg-primary-blue transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-uady-blue text-white font-bold py-3 rounded-lg text-sm hover:bg-uady-blue transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isPending ? (
                 <>
@@ -73,19 +82,77 @@ export default function LoginPage() {
 
         <p className="text-center text-xs text-gray-400 mt-6">
           ¿No tienes código?{' '}
-          <Link href="/" className="text-primary-blue font-semibold hover:underline">
+          <Link href="/" className="text-uady-blue font-semibold hover:underline">
             Contacta a tu entrenador
           </Link>
         </p>
 
-        {/* Dev hint — remove in production */}
-        <div className="mt-4 bg-accent-green/20 border border-accent-green/30 rounded-xl p-3 text-xs text-center text-gray-600">
-          <p className="font-bold text-amber-700 mb-1">Códigos de prueba:</p>
-          <code className="bg-white px-1.5 py-0.5 rounded font-mono">VOLEIUADY</code>
-          {' '}(Admin) &nbsp;
-          <code className="bg-white px-1.5 py-0.5 rounded font-mono">ANA001</code>
-          {' '}(Atleta)
-        </div>
+        {/* Dev seed — remove in production */}
+        {process.env.NODE_ENV !== 'production' && (
+          <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-center text-gray-600 space-y-2">
+            <p className="font-bold text-amber-700">🛠 Modo Desarrollo</p>
+
+            <button
+              type="button"
+              disabled={seeding}
+              onClick={() =>
+                startSeed(async () => {
+                  const res = await crearAdminMaestro()
+                  setSeedMsg(res.ok ? `✅ Admin listo → ${res.codigo}` : `❌ ${res.error}`)
+                })
+              }
+              className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded-lg disabled:opacity-60 transition-colors"
+            >
+              {seeding ? 'Creando…' : 'Crear Admin Maestro (ADMIN001)'}
+            </button>
+            {seedMsg && <p className="font-mono font-bold text-green-700">{seedMsg}</p>}
+
+            <button
+              type="button"
+              disabled={demoing}
+              onClick={() =>
+                startDemo(async () => {
+                  const res = await sembrarDatosDemo()
+                  setDemoMsg(res.ok ? `✅ ${res.resumen}` : `❌ ${res.error}`)
+                })
+              }
+              className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold px-3 py-1.5 rounded-lg disabled:opacity-60 transition-colors"
+            >
+              {demoing ? 'Sembrando datos…' : 'Sembrar jugadores + lesiones + citas'}
+            </button>
+            {demoMsg && <p className="font-mono font-bold text-green-700">{demoMsg}</p>}
+
+            <button
+              type="button"
+              disabled={planning}
+              onClick={() =>
+                startPlan(async () => {
+                  const res = await sembrarPlanificacionVoleibol()
+                  setPlanMsg(res.ok ? `✅ ${res.resumen}` : `❌ ${res.error}`)
+                })
+              }
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg disabled:opacity-60 transition-colors"
+            >
+              {planning ? 'Sembrando planificación…' : 'Sembrar staff + gimnasio + macrociclo + partidos'}
+            </button>
+            {planMsg && <p className="font-mono font-bold text-green-700">{planMsg}</p>}
+
+            <button
+              type="button"
+              disabled={seedingVideos}
+              onClick={() =>
+                startVideos(async () => {
+                  const res = await seedVideosFuncionales()
+                  setVideosMsg(res.ok ? `✅ ${res.resumen}` : `❌ ${res.error}`)
+                })
+              }
+              className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold px-3 py-1.5 rounded-lg disabled:opacity-60 transition-colors"
+            >
+              {seedingVideos ? 'Sembrando videos…' : 'Sembrar videos Funcionales (YouTube)'}
+            </button>
+            {videosMsg && <p className="font-mono font-bold text-green-700">{videosMsg}</p>}
+          </div>
+        )}
       </div>
     </div>
   )

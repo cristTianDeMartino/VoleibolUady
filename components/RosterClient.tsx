@@ -18,9 +18,9 @@ interface AtletaRow {
 }
 
 const positionColors: Record<string, string> = {
-  Libero: 'bg-accent-green text-primary-blue',
-  Colocador: 'bg-primary-blue text-white',
-  Opuesto: 'bg-accent-green text-primary-blue',
+  Libero: 'bg-uady-gold text-uady-blue',
+  Colocador: 'bg-uady-blue text-white',
+  Opuesto: 'bg-uady-gold text-uady-blue',
   Central: 'bg-emerald-600 text-white',
   Banda: 'bg-purple-600 text-white',
 }
@@ -100,7 +100,7 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre, apellido, facultad o posición..."
-            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-all"
+            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-uady-blue focus:ring-1 focus:ring-uady-blue transition-all"
           />
           {search && (
             <button
@@ -114,7 +114,7 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOrder)}
-          className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-600 focus:outline-none focus:border-primary-blue transition-all"
+          className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-600 focus:outline-none focus:border-uady-blue transition-all"
         >
           <option value="asc">Apellido A → Z</option>
           <option value="desc">Apellido Z → A</option>
@@ -131,8 +131,8 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
               onClick={() => setRamaFilter(r)}
               className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
                 ramaFilter === r
-                  ? 'bg-primary-blue text-white shadow-sm'
-                  : 'text-gray-500 hover:text-primary-blue'
+                  ? 'bg-uady-blue text-white shadow-sm'
+                  : 'text-gray-500 hover:text-uady-blue'
               }`}
             >
               {r === 'Todas' ? '🏐 Todas' : r === 'Femenil' ? '♀ Femenil' : '♂ Varonil'}
@@ -160,7 +160,7 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
         {posFilter.length > 0 && (
           <button
             onClick={() => setPosFilter([])}
-            className="text-xs text-gray-400 hover:text-primary-blue underline"
+            className="text-xs text-gray-400 hover:text-uady-blue underline"
           >
             Limpiar posiciones
           </button>
@@ -170,7 +170,7 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
       {/* Results summary */}
       <div className="flex items-center justify-between mb-4">
         <p className="text-xs text-gray-400">
-          <span className="font-bold text-primary-blue">{filtered.length}</span>{' '}
+          <span className="font-bold text-uady-blue">{filtered.length}</span>{' '}
           atleta{filtered.length !== 1 ? 's' : ''} encontrada{filtered.length !== 1 ? 's' : ''}
           {hasActiveFilters && (
             <span className="text-gray-300"> (de {initialAtletas.length} totales)</span>
@@ -179,7 +179,7 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="text-xs text-accent-green font-semibold hover:underline"
+            className="text-xs text-uady-gold font-semibold hover:underline"
           >
             ✕ Limpiar todos los filtros
           </button>
@@ -195,7 +195,7 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
           </p>
           <button
             onClick={clearFilters}
-            className="mt-3 text-xs text-primary-blue font-semibold hover:underline"
+            className="mt-3 text-xs text-uady-blue font-semibold hover:underline"
           >
             Limpiar filtros y ver todas
           </button>
@@ -212,7 +212,7 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
               className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden group"
             >
               {/* Photo area */}
-              <div className="bg-gradient-to-br from-primary-blue to-blue-800 h-32 flex items-center justify-center relative overflow-hidden">
+              <div className="bg-gradient-to-br from-uady-blue to-blue-800 h-32 flex items-center justify-center relative overflow-hidden">
                 {a.fotoUrl ? (
                   <Image
                     src={a.fotoUrl}
@@ -243,7 +243,7 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
 
               {/* Card body */}
               <div className="p-3">
-                <p className="font-black text-primary-blue text-sm leading-tight">{a.nombre}</p>
+                <p className="font-black text-uady-blue text-sm leading-tight">{a.nombre}</p>
                 <p className="text-gray-500 text-xs truncate">{a.apellidos}</p>
                 <div className="mt-2">
                   <span
@@ -260,7 +260,7 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
                   </p>
                   <p className="text-xs text-gray-400">Sem. {a.semestre}</p>
                 </div>
-                <p className="text-xs text-accent-green font-semibold mt-2 group-hover:text-primary-blue transition-colors">
+                <p className="text-xs text-uady-gold font-semibold mt-2 group-hover:text-uady-blue transition-colors">
                   Ver detalles →
                 </p>
               </div>

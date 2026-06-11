@@ -9,9 +9,9 @@ import type { Metadata } from 'next'
 
 function EconomiaMockup() {
   const presupuesto = [
-    { label: 'Inscripciones a torneos', monto: '$12,500', pct: 72, color: 'bg-primary-blue' },
-    { label: 'Viáticos y transporte',   monto: '$8,200',  pct: 55, color: 'bg-accent-green' },
-    { label: 'Equipamiento deportivo',  monto: '$5,800',  pct: 38, color: 'bg-accent-green' },
+    { label: 'Inscripciones a torneos', monto: '$12,500', pct: 72, color: 'bg-uady-blue' },
+    { label: 'Viáticos y transporte',   monto: '$8,200',  pct: 55, color: 'bg-uady-gold' },
+    { label: 'Equipamiento deportivo',  monto: '$5,800',  pct: 38, color: 'bg-uady-gold' },
     { label: 'Gastos médicos',          monto: '$3,100',  pct: 22, color: 'bg-sky-500' },
   ]
 
@@ -26,12 +26,12 @@ function EconomiaMockup() {
     <div className="w-full max-w-4xl mt-8 rounded-2xl border border-gray-200 bg-white shadow-xl shadow-gray-200/60 overflow-hidden">
 
       {/* Barra superior estilo app */}
-      <div className="bg-primary-blue px-6 py-3 flex items-center justify-between">
+      <div className="bg-uady-blue px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Wallet className="w-4 h-4 text-accent-green" />
+          <Wallet className="w-4 h-4 text-uady-gold" />
           <span className="text-white text-sm font-bold">Control de Recursos Económicos</span>
         </div>
-        <span className="text-accent-green/70 text-xs font-semibold">Temporada 2025–2026</span>
+        <span className="text-uady-gold/70 text-xs font-semibold">Temporada 2025–2026</span>
       </div>
 
       <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -42,14 +42,14 @@ function EconomiaMockup() {
           <div className="grid grid-cols-2 gap-3">
             {[
               { label: 'Fondo disponible', value: '$18,400', icon: <TrendingUp className="w-4 h-4 text-emerald-500" />, sub: '+12% vs temporada ant.' },
-              { label: 'Total egresos',    value: '$11,900', icon: <TrendingDown className="w-4 h-4 text-accent-green" />, sub: 'Este semestre' },
+              { label: 'Total egresos',    value: '$11,900', icon: <TrendingDown className="w-4 h-4 text-uady-gold" />, sub: 'Este semestre' },
             ].map(k => (
               <div key={k.label} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs text-gray-400 font-medium">{k.label}</span>
                   {k.icon}
                 </div>
-                <p className="text-lg font-black text-primary-blue">{k.value}</p>
+                <p className="text-lg font-black text-uady-blue">{k.value}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{k.sub}</p>
               </div>
             ))}
@@ -63,7 +63,7 @@ function EconomiaMockup() {
                 <div key={p.label}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-gray-600 font-medium">{p.label}</span>
-                    <span className="text-xs font-black text-primary-blue">{p.monto}</span>
+                    <span className="text-xs font-black text-uady-blue">{p.monto}</span>
                   </div>
                   <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div className={`h-full ${p.color} rounded-full`} style={{ width: `${p.pct}%` }} />
@@ -81,13 +81,13 @@ function EconomiaMockup() {
             {movimientos.map((m, i) => (
               <div key={i} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 border border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${m.tipo === 'ingreso' ? 'bg-emerald-400' : 'bg-accent-green'}`} />
+                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${m.tipo === 'ingreso' ? 'bg-emerald-400' : 'bg-uady-gold'}`} />
                   <div>
                     <p className="text-xs font-semibold text-gray-700 leading-snug">{m.concepto}</p>
                     <p className="text-xs text-gray-400">{m.fecha}</p>
                   </div>
                 </div>
-                <span className={`text-sm font-black flex-shrink-0 ml-2 ${m.tipo === 'ingreso' ? 'text-emerald-600' : 'text-accent-green'}`}>
+                <span className={`text-sm font-black flex-shrink-0 ml-2 ${m.tipo === 'ingreso' ? 'text-emerald-600' : 'text-uady-gold'}`}>
                   {m.monto}
                 </span>
               </div>
@@ -99,7 +99,7 @@ function EconomiaMockup() {
           <div className="grid grid-cols-3 gap-2">
             {[
               { icon: <ShoppingBag className="w-4 h-4" />, label: 'Venta de chocolates', color: 'text-amber-600 bg-amber-50 border-amber-100' },
-              { icon: <Trophy className="w-4 h-4" />,      label: 'Boletos de torneos',  color: 'text-primary-blue bg-primary-blue/5 border-primary-blue/10' },
+              { icon: <Trophy className="w-4 h-4" />,      label: 'Boletos de torneos',  color: 'text-uady-blue bg-uady-blue/5 border-uady-blue/10' },
               { icon: <Plane className="w-4 h-4" />,       label: 'Viáticos y fees',     color: 'text-sky-600 bg-sky-50 border-sky-100' },
             ].map(a => (
               <div key={a.label} className={`rounded-xl p-3 border text-center ${a.color}`}>
@@ -115,9 +115,9 @@ function EconomiaMockup() {
       <div className="bg-gray-50 border-t border-gray-100 px-6 py-3 flex items-center justify-between">
         <span className="text-xs text-gray-400">Vista previa conceptual — datos de muestra</span>
         <div className="flex gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-primary-blue" />
-          <div className="w-2 h-2 rounded-full bg-accent-green" />
-          <div className="w-2 h-2 rounded-full bg-accent-green" />
+          <div className="w-2 h-2 rounded-full bg-uady-blue" />
+          <div className="w-2 h-2 rounded-full bg-uady-gold" />
+          <div className="w-2 h-2 rounded-full bg-uady-gold" />
         </div>
       </div>
     </div>
@@ -134,20 +134,20 @@ export default function EconomiaPage() {
 
       {/* Encabezado */}
       <div className="max-w-2xl mx-auto">
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary-blue/10 mb-6">
-          <CircleDollarSign className="w-10 h-10 text-accent-green" strokeWidth={1.5} />
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-uady-blue/10 mb-6">
+          <CircleDollarSign className="w-10 h-10 text-uady-gold" strokeWidth={1.5} />
         </div>
 
-        <div className="inline-flex items-center gap-2 bg-accent-green/10 border border-accent-green/30 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-full mb-4 uppercase tracking-widest">
-          <span className="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse" />
+        <div className="inline-flex items-center gap-2 bg-uady-gold/10 border border-uady-gold/30 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-full mb-4 uppercase tracking-widest">
+          <span className="w-1.5 h-1.5 rounded-full bg-uady-gold animate-pulse" />
           Módulo en Desarrollo
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-black text-primary-blue mb-4 leading-tight">
+        <h1 className="text-3xl md:text-4xl font-black text-uady-blue mb-4 leading-tight">
           Control de Recursos Económicos
         </h1>
 
-        <div className="w-14 h-1 bg-accent-green rounded-full mx-auto mb-5" />
+        <div className="w-14 h-1 bg-uady-gold rounded-full mx-auto mb-5" />
 
         <p className="text-gray-500 text-base md:text-lg leading-relaxed max-w-xl mx-auto">
           Módulo en desarrollo diseñado para llevar el registro transparente de las finanzas del

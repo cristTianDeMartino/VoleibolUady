@@ -34,6 +34,7 @@ const navItems: NavItem[] = [
     label: 'Área de la Salud',
     children: [
       { label: 'Seguimiento de Lesiones', href: '/lesiones' },
+      { label: 'Citas Médicas', href: '/salud/citas' },
       { label: 'Prevenciones de la Salud', href: '/prevencion' },
     ],
   },
@@ -75,13 +76,13 @@ export default function Navbar({ user }: NavbarProps) {
 
   return (
     <header className="sticky top-0 z-50 shadow-md">
-      <nav className="bg-primary-blue px-4 py-3">
+      <nav className="bg-uady-blue px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between w-full">
 
           {/* Logo — extrema izquierda */}
           <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
             <span className="text-2xl">🏐</span>
-            <span className="font-black text-accent-green text-base tracking-wider uppercase group-hover:text-white transition-colors">
+            <span className="font-black text-uady-gold text-base tracking-wider uppercase group-hover:text-white transition-colors">
               Sistema de Voleibol
             </span>
           </Link>
@@ -97,8 +98,8 @@ export default function Navbar({ user }: NavbarProps) {
                       href={item.href}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                         active
-                          ? 'bg-accent-green text-primary-blue font-bold'
-                          : 'text-white hover:bg-white/10 hover:text-accent-green'
+                          ? 'bg-uady-gold text-uady-blue font-bold'
+                          : 'text-white hover:bg-white/10 hover:text-uady-gold'
                       }`}
                     >
                       {item.label}
@@ -114,8 +115,8 @@ export default function Navbar({ user }: NavbarProps) {
                     type="button"
                     className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       active
-                        ? 'bg-accent-green text-primary-blue font-bold'
-                        : 'text-white hover:bg-white/10 hover:text-accent-green'
+                        ? 'bg-uady-gold text-uady-blue font-bold'
+                        : 'text-white hover:bg-white/10 hover:text-uady-gold'
                     }`}
                   >
                     {item.label}
@@ -132,8 +133,8 @@ export default function Navbar({ user }: NavbarProps) {
                               href={child.href}
                               className={`block px-4 py-2.5 text-sm transition-colors ${
                                 childActive
-                                  ? 'bg-gray-100 text-primary-blue font-semibold'
-                                  : 'text-gray-800 hover:bg-gray-100 hover:text-accent-green'
+                                  ? 'bg-gray-100 text-uady-blue font-semibold'
+                                  : 'text-gray-800 hover:bg-gray-100 hover:text-uady-gold'
                               }`}
                             >
                               {child.label}
@@ -157,12 +158,12 @@ export default function Navbar({ user }: NavbarProps) {
                   className="text-right cursor-pointer transition-colors duration-200 hover:opacity-80"
                 >
                   <p className="text-white text-xs font-bold leading-none">{user.nombre.split(' ')[0]}</p>
-                  <p className="text-accent-green/70 text-xs">{user.rol}</p>
+                  <p className="text-uady-gold/70 text-xs">{user.rol}</p>
                 </Link>
                 <form action={logout}>
                   <button
                     type="submit"
-                    className="text-white text-xs font-semibold border border-white/30 px-2.5 py-1 rounded-lg hover:bg-white hover:text-primary-blue transition-all"
+                    className="text-white text-xs font-semibold border border-white/30 px-2.5 py-1 rounded-lg hover:bg-white hover:text-uady-blue transition-all"
                   >
                     Salir
                   </button>
@@ -171,7 +172,7 @@ export default function Navbar({ user }: NavbarProps) {
             ) : (
               <Link
                 href="/login"
-                className="text-white text-xs font-bold border border-white/30 px-3 py-1.5 rounded-lg hover:bg-white hover:text-primary-blue transition-all"
+                className="text-white text-xs font-bold border border-white/30 px-3 py-1.5 rounded-lg hover:bg-white hover:text-uady-blue transition-all"
               >
                 Iniciar Sesión
               </Link>
@@ -210,7 +211,7 @@ export default function Navbar({ user }: NavbarProps) {
         {/* Mobile dropdown */}
         {mobileOpen && (
           <div className="md:hidden mt-3 border-t border-white/20 pt-3">
-            <ul className="flex flex-col gap-1 bg-primary-blue rounded-xl p-2">
+            <ul className="flex flex-col gap-1 bg-uady-blue rounded-xl p-2">
               {navItems.map((item) => {
                 if (!hasChildren(item)) {
                   const active = isLinkActive(item.href)
@@ -221,8 +222,8 @@ export default function Navbar({ user }: NavbarProps) {
                         onClick={closeMobile}
                         className={`block px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
                           active
-                            ? 'bg-accent-green text-primary-blue'
-                            : 'text-white hover:bg-primary-blue hover:text-accent-green'
+                            ? 'bg-uady-gold text-uady-blue'
+                            : 'text-white hover:bg-uady-blue hover:text-uady-gold'
                         }`}
                       >
                         {item.label}
@@ -239,7 +240,7 @@ export default function Navbar({ user }: NavbarProps) {
                       type="button"
                       onClick={() => toggleMobileMenu(item.label)}
                       className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                        active ? 'bg-accent-green text-primary-blue' : 'text-white hover:bg-primary-blue hover:text-accent-green'
+                        active ? 'bg-uady-gold text-uady-blue' : 'text-white hover:bg-uady-blue hover:text-uady-gold'
                       }`}
                     >
                       {item.label}
@@ -249,7 +250,7 @@ export default function Navbar({ user }: NavbarProps) {
                     </button>
 
                     {open && (
-                      <ul className="ml-4 mt-1 flex flex-col gap-0.5 border-l-2 border-accent-green/30 pl-2">
+                      <ul className="ml-4 mt-1 flex flex-col gap-0.5 border-l-2 border-uady-gold/30 pl-2">
                         {item.children.map((child) => {
                           const childActive = isLinkActive(child.href)
                           return (
@@ -259,8 +260,8 @@ export default function Navbar({ user }: NavbarProps) {
                                 onClick={closeMobile}
                                 className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
                                   childActive
-                                    ? 'bg-accent-green text-primary-blue font-semibold'
-                                    : 'text-white/90 hover:bg-primary-blue hover:text-accent-green'
+                                    ? 'bg-uady-gold text-uady-blue font-semibold'
+                                    : 'text-white/90 hover:bg-uady-blue hover:text-uady-gold'
                                 }`}
                               >
                                 {child.label}

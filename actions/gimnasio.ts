@@ -558,6 +558,41 @@ export async function eliminarEtapa(etapaId: string): Promise<{ error: string | 
   return { error: null }
 }
 
+export async function actualizarNombreEjercicioGlobal(
+  nombreActual: string,
+  nuevoNombre: string,
+): Promise<{ error: string | null }> {
+  const session = await getSession()
+  if (!session || session.rol !== 'ADMIN') return { error: 'No autorizado.' }
+
+  const actualTrim = nombreActual.trim()
+  const nuevoTrim = nuevoNombre.trim()
+  if (!actualTrim || !nuevoTrim) return { error: 'El nombre es requerido.' }
+
+  await prisma.ejercicioPrincipal.updateMany({
+    where: { nombre: actualTrim },
+    data: { nombre: nuevoTrim },
+  })
+
+  await registrarEnCatalogo(nuevoTrim)
+  revalidatePath('/gimnasio')
+  return { error: null }
+}
+
+export async function eliminarEjercicioPorNombreGlobal(
+  nombre: string,
+): Promise<{ error: string | null }> {
+  const session = await getSession()
+  if (!session || session.rol !== 'ADMIN') return { error: 'No autorizado.' }
+
+  const nombreTrim = nombre.trim()
+  if (!nombreTrim) return { error: 'El nombre es requerido.' }
+
+  await prisma.ejercicioPrincipal.deleteMany({ where: { nombre: nombreTrim } })
+  revalidatePath('/gimnasio')
+  return { error: null }
+}
+
 // ─── Ejercicios Accesorios ─────────────────────────────────────────────────────
 
 export async function obtenerAccesorios(): Promise<AccesorioData[]> {

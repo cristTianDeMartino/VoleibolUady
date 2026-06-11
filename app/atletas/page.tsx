@@ -33,8 +33,8 @@ export default async function AtletasPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-1 h-7 bg-accent-green rounded-full" />
-            <h1 className="text-3xl font-black text-primary-blue">Roster de Atletas</h1>
+            <div className="w-1 h-7 bg-uady-gold rounded-full" />
+            <h1 className="text-3xl font-black text-uady-blue">Roster de Atletas</h1>
           </div>
           <p className="text-gray-500 text-sm ml-3">
             {atletas.length} atleta{atletas.length !== 1 ? 's' : ''} registrada
@@ -46,7 +46,7 @@ export default async function AtletasPage() {
           {isAdmin && (
             <Link
               href="/atletas/agregar"
-              className="bg-accent-green text-primary-blue px-5 py-2 rounded-lg text-sm font-bold hover:brightness-110 transition-all duration-200 flex items-center gap-1.5"
+              className="bg-uady-gold text-uady-blue px-5 py-2 rounded-lg text-sm font-bold hover:brightness-110 transition-all duration-200 flex items-center gap-1.5"
             >
               + Agregar Atleta
             </Link>
@@ -54,7 +54,7 @@ export default async function AtletasPage() {
           {!session && (
             <Link
               href="/login"
-              className="border border-primary-blue text-primary-blue px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-blue hover:text-white transition-all"
+              className="border border-uady-blue text-uady-blue px-4 py-2 rounded-lg text-sm font-semibold hover:bg-uady-blue hover:text-white transition-all"
             >
               Iniciar Sesión
             </Link>
@@ -66,12 +66,12 @@ export default async function AtletasPage() {
       {atletas.length === 0 && (
         <div className="text-center py-24 bg-white rounded-2xl border border-gray-100">
           <p className="text-5xl mb-4">🏐</p>
-          <h3 className="text-lg font-bold text-primary-blue mb-2">Sin atletas registradas</h3>
+          <h3 className="text-lg font-bold text-uady-blue mb-2">Sin atletas registradas</h3>
           <p className="text-gray-400 text-sm mb-6">Aún no hay atletas en la base de datos.</p>
           {isAdmin && (
             <Link
               href="/atletas/agregar"
-              className="inline-block bg-accent-green text-primary-blue px-6 py-2.5 rounded-lg font-bold text-sm hover:brightness-110 transition-all"
+              className="inline-block bg-uady-gold text-uady-blue px-6 py-2.5 rounded-lg font-bold text-sm hover:brightness-110 transition-all"
             >
               + Registrar primera atleta
             </Link>

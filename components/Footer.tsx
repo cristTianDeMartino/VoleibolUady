@@ -12,13 +12,13 @@ export default function Footer() {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="bg-primary-blue text-white mt-auto">
+    <footer className="bg-uady-blue text-white mt-auto">
       <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Brand */}
         <div>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-2xl">🏐</span>
-            <h3 className="text-accent-green font-black text-lg uppercase tracking-wide">
+            <h3 className="text-uady-gold font-black text-lg uppercase tracking-wide">
               Sistema de Voleibol
             </h3>
           </div>
@@ -30,7 +30,7 @@ export default function Footer() {
 
         {/* Navigation */}
         <div>
-          <h4 className="text-accent-green font-bold mb-4 uppercase text-sm tracking-wider">
+          <h4 className="text-uady-gold font-bold mb-4 uppercase text-sm tracking-wider">
             Módulos
           </h4>
           <ul className="space-y-2">
@@ -38,9 +38,9 @@ export default function Footer() {
               <li key={m.href}>
                 <Link
                   href={m.href}
-                  className="text-sm text-white/70 hover:text-accent-green transition-colors duration-200 flex items-center gap-2"
+                  className="text-sm text-white/70 hover:text-uady-gold transition-colors duration-200 flex items-center gap-2"
                 >
-                  <span className="w-1 h-1 rounded-full bg-accent-green inline-block" />
+                  <span className="w-1 h-1 rounded-full bg-uady-gold inline-block" />
                   {m.label}
                 </Link>
               </li>
@@ -50,7 +50,7 @@ export default function Footer() {
 
         {/* Contact */}
         <div>
-          <h4 className="text-accent-green font-bold mb-4 uppercase text-sm tracking-wider">
+          <h4 className="text-uady-gold font-bold mb-4 uppercase text-sm tracking-wider">
             Contacto
           </h4>
           <address className="not-italic text-sm text-white/70 space-y-1.5">

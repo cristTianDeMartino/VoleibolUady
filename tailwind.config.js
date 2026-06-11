@@ -10,15 +10,17 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'primary-blue':  '#0F2540',
-        'accent-green':  '#72D611',
+        'uady-blue': '#09345C',
+        'uady-gold': '#C69214',
+        'uady-yellow-light': '#F0C265',
+        'uady-orange-cta': '#E4491E',
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
-        lg:  '0.5rem',
-        xl:  '0.75rem',
+        lg: '0.5rem',
+        xl: '0.75rem',
         '2xl': '1rem',
       },
       transitionDuration: {

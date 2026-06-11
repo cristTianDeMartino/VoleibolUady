@@ -5,9 +5,11 @@ import { getSession } from '@/lib/auth'
 import EditFotoAtleta from '@/components/EditFotoAtleta'
 
 const positionColors: Record<string, string> = {
-  Libero: 'bg-accent-green text-primary-blue',
-  Colocador: 'bg-primary-blue text-white',
-  Opuesta: 'bg-accent-green text-primary-blue',
+  Libero: 'bg-uady-gold text-uady-blue',
+  Colocador: 'bg-uady-blue text-white',
+  Armadora: 'bg-uady-blue text-white',    // backwards compat
+  Opuesto: 'bg-uady-gold text-uady-blue',
+  Opuesta: 'bg-uady-gold text-uady-blue', // backwards compat
   Central: 'bg-emerald-600 text-white',
   Banda: 'bg-purple-600 text-white',
 }
@@ -41,13 +43,13 @@ export default async function AtletaDetailPage({
       {/* Back button */}
       <Link
         href="/atletas"
-        className="inline-flex items-center gap-1.5 text-primary-blue hover:text-accent-green text-sm font-semibold mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-uady-blue hover:text-uady-gold text-sm font-semibold mb-6 transition-colors"
       >
         ← Regresar al Roster
       </Link>
 
       {/* Header card */}
-      <div className="bg-primary-blue rounded-2xl p-6 text-white flex flex-col sm:flex-row gap-6 items-center sm:items-start mb-6">
+      <div className="bg-uady-blue rounded-2xl p-6 text-white flex flex-col sm:flex-row gap-6 items-center sm:items-start mb-6">
         {/* Photo — editable by admin on hover */}
         <EditFotoAtleta
           atletaId={atleta.id}
@@ -75,7 +77,7 @@ export default async function AtletaDetailPage({
               {atleta.rama === 'Varonil' ? '♂' : '♀'} {atleta.rama}
             </span>
             {atleta.rol === 'ADMIN' && (
-              <span className="bg-accent-green text-primary-blue text-xs font-bold px-3 py-1 rounded-full">
+              <span className="bg-uady-gold text-uady-blue text-xs font-bold px-3 py-1 rounded-full">
                 Admin
               </span>
             )}
@@ -96,8 +98,8 @@ export default async function AtletaDetailPage({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Public section */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <h2 className="font-black text-primary-blue mb-4 flex items-center gap-2">
-            <span className="w-1 h-5 bg-accent-green rounded-full" />
+          <h2 className="font-black text-uady-blue mb-4 flex items-center gap-2">
+            <span className="w-1 h-5 bg-uady-gold rounded-full" />
             Información Académica
           </h2>
           <dl className="space-y-3 text-sm">
@@ -118,9 +120,9 @@ export default async function AtletaDetailPage({
 
         {/* Private: Contact */}
         {canViewPrivate ? (
-          <div className="bg-white rounded-xl border border-primary-blue/10 shadow-sm p-5">
-            <h2 className="font-black text-primary-blue mb-4 flex items-center gap-2">
-              <span className="w-1 h-5 bg-primary-blue rounded-full" />
+          <div className="bg-white rounded-xl border border-uady-blue/10 shadow-sm p-5">
+            <h2 className="font-black text-uady-blue mb-4 flex items-center gap-2">
+              <span className="w-1 h-5 bg-uady-blue rounded-full" />
               Contacto
               <span className="text-xs font-normal text-gray-400 ml-1">🔒 Privado</span>
             </h2>
@@ -147,9 +149,9 @@ export default async function AtletaDetailPage({
 
         {/* Private: Medical */}
         {canViewPrivate && (
-          <div className="bg-white rounded-xl border border-accent-green/10 shadow-sm p-5">
-            <h2 className="font-black text-primary-blue mb-4 flex items-center gap-2">
-              <span className="w-1 h-5 bg-accent-green rounded-full" />
+          <div className="bg-white rounded-xl border border-uady-gold/10 shadow-sm p-5">
+            <h2 className="font-black text-uady-blue mb-4 flex items-center gap-2">
+              <span className="w-1 h-5 bg-uady-gold rounded-full" />
               Datos Médicos
               <span className="text-xs font-normal text-gray-400 ml-1">🔒 Privado</span>
             </h2>
@@ -174,8 +176,8 @@ export default async function AtletaDetailPage({
           const altas = atleta.lesiones.filter((l) => l.estatus === 'Alta')
           return (
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 md:col-span-2">
-              <h2 className="font-black text-primary-blue mb-4 flex items-center gap-2">
-                <span className="w-1 h-5 bg-accent-green rounded-full" />
+              <h2 className="font-black text-uady-blue mb-4 flex items-center gap-2">
+                <span className="w-1 h-5 bg-uady-gold rounded-full" />
                 Historial Médico de Lesiones
                 <span className="text-xs font-normal text-gray-400 ml-1">🔒 Privado</span>
                 <span className="ml-auto bg-gray-100 text-gray-500 text-xs font-bold px-2 py-0.5 rounded-full">
@@ -203,7 +205,7 @@ export default async function AtletaDetailPage({
                           <td className="py-3 pr-4 text-gray-500 whitespace-nowrap">
                             {fmtFecha(l.fechaConsulta)}
                           </td>
-                          <td className="py-3 pr-4 font-medium text-primary-blue">{l.diagnostico}</td>
+                          <td className="py-3 pr-4 font-medium text-uady-blue">{l.diagnostico}</td>
                           <td className="py-3 whitespace-nowrap">
                             <span className="inline-flex items-center gap-1.5 text-emerald-700">
                               <span className="w-2 h-2 rounded-full bg-emerald-500" />
@@ -226,7 +228,7 @@ export default async function AtletaDetailPage({
         <div className="mt-6 flex gap-3 flex-wrap">
           <Link
             href="/atletas/agregar"
-            className="text-sm font-semibold text-primary-blue border border-primary-blue/20 px-4 py-2 rounded-lg hover:bg-primary-blue hover:text-white transition-all"
+            className="text-sm font-semibold text-uady-blue border border-uady-blue/20 px-4 py-2 rounded-lg hover:bg-uady-blue hover:text-white transition-all"
           >
             + Agregar otra atleta
           </Link>

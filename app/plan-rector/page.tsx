@@ -19,7 +19,7 @@ function BlockImage({
   objectPosition?: string
 }) {
   return (
-    <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-accent-green/30 shadow-xl shadow-black/20">
+    <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-uady-gold/30 shadow-xl shadow-black/20">
       <Image src={src} alt={alt} fill className="object-cover" style={{ objectPosition }} />
     </div>
   )
@@ -47,7 +47,7 @@ function ContentBlock({
 }: ContentBlockProps) {
   const textContent = (
     <div className="flex flex-col justify-center">
-      <span className="text-accent-green text-xs font-bold uppercase tracking-widest mb-2">
+      <span className="text-uady-gold text-xs font-bold uppercase tracking-widest mb-2">
         {eyebrow}
       </span>
       <h2 className="text-2xl md:text-3xl font-black text-white mb-4 leading-tight">
@@ -75,19 +75,19 @@ function ContentBlock({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function PlanRectorPage() {
   return (
-    <div className="bg-primary-blue text-white">
+    <div className="bg-uady-blue text-white">
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
-      <section className="bg-accent-green text-primary-blue">
+      <section className="bg-uady-gold text-uady-blue">
         <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/25 border border-primary-blue/20 text-primary-blue text-xs font-semibold px-3 py-1 rounded-full mb-6 uppercase tracking-widest">
-            <span className="w-1.5 h-1.5 bg-primary-blue rounded-full" />
+          <div className="inline-flex items-center gap-2 bg-white/25 border border-uady-blue/20 text-uady-blue text-xs font-semibold px-3 py-1 rounded-full mb-6 uppercase tracking-widest">
+            <span className="w-1.5 h-1.5 bg-uady-blue rounded-full" />
             Documento Institucional 2026–2027
           </div>
           <h1 className="text-4xl md:text-5xl font-black leading-tight mb-5">
             Plan Rector de las
             <span className="block text-white">Selecciones de Voleibol</span>
           </h1>
-          <p className="text-primary-blue/90 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto">
+          <p className="text-uady-blue/90 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto">
             Formación integral, excelencia deportiva e identidad como ejes de un
             modelo que trasciende la cancha.
           </p>
@@ -97,7 +97,7 @@ export default function PlanRectorPage() {
 
       {/* Onda decorativa */}
       <div
-        className="relative z-10 -mt-8 h-16 bg-accent-green"
+        className="relative z-10 -mt-8 h-16 bg-uady-gold"
         style={{ clipPath: 'ellipse(55% 100% at 50% 0%)' }}
       />
 
@@ -144,9 +144,9 @@ export default function PlanRectorPage() {
         {/* Separador decorativo */}
         <div className="flex items-center gap-4">
           <div className="flex-1 h-px bg-white/15" />
-          <div className="w-2 h-2 rounded-full bg-accent-green" />
+          <div className="w-2 h-2 rounded-full bg-uady-gold" />
           <div className="w-2 h-2 rounded-full bg-white/70" />
-          <div className="w-2 h-2 rounded-full bg-accent-green/70" />
+          <div className="w-2 h-2 rounded-full bg-uady-gold/70" />
           <div className="flex-1 h-px bg-white/15" />
         </div>
 
@@ -182,9 +182,9 @@ export default function PlanRectorPage() {
         {/* Separador decorativo */}
         <div className="flex items-center gap-4">
           <div className="flex-1 h-px bg-white/15" />
-          <div className="w-2 h-2 rounded-full bg-accent-green" />
+          <div className="w-2 h-2 rounded-full bg-uady-gold" />
           <div className="w-2 h-2 rounded-full bg-white/70" />
-          <div className="w-2 h-2 rounded-full bg-accent-green/70" />
+          <div className="w-2 h-2 rounded-full bg-uady-gold/70" />
           <div className="flex-1 h-px bg-white/15" />
         </div>
 
@@ -247,7 +247,7 @@ export default function PlanRectorPage() {
       <div className="max-w-5xl mx-auto px-4 pb-16 flex justify-center">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 bg-accent-green text-primary-blue font-bold text-sm px-6 py-3 rounded-lg shadow-lg shadow-primary-blue/30 hover:brightness-110 hover:shadow-primary-blue/40 transition-all duration-200"
+          className="inline-flex items-center gap-2 bg-uady-gold text-uady-blue font-bold text-sm px-6 py-3 rounded-lg shadow-lg shadow-uady-blue/30 hover:brightness-110 hover:shadow-uady-blue/40 transition-all duration-200"
         >
           <ArrowLeft className="w-4 h-4" />
           Regresar al Inicio

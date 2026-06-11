@@ -4,15 +4,14 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 model Atleta {
-  id               String   @id @default(cuid())
+  id               String       @id @default(cuid())
   nombre           String
   apellidos        String
-  genero           String   @default("F")   // "M" = Masculino, "F" = Femenino
-  rama             String   @default("Femenil") // "Femenil" | "Varonil"
+  genero           String       @default("F")
+  rama             String       @default("Femenil")
   posicion         String
   facultad         String
   directorFacultad String
@@ -21,12 +20,15 @@ model Atleta {
   telefonoTutor    String
   nss              String
   seguroPrivado    String?
-  codigoAcceso     String   @unique
-  rol              String   @default("JUGADOR")
+  email            String?
+  rolTecnico       String?
+  codigoAcceso     String       @unique
+  rol              String       @default("JUGADOR")
   fotoUrl          String?
   lesiones         Lesion[]
   asistencias      Asistencia[]
-  createdAt        DateTime @default(now())
+  citas            CitaMedica[]
+  createdAt        DateTime     @default(now())
 }
 
 model Partido {
@@ -140,4 +142,15 @@ model EjercicioAccesorio {
   nombre    String
   tipo      String
   createdAt DateTime @default(now())
+}
+
+model CitaMedica {
+  id               String   @id @default(cuid())
+  atletaId         String
+  atleta           Atleta   @relation(fields: [atletaId], references: [id], onDelete: Cascade)
+  tipoEspecialista String   // "Psicólogo" | "Nutriólogo" | "Dentista" | "Médico General" | "Otro"
+  fechaHora        DateTime
+  motivo           String
+  estado           String   @default("Programada") // "Programada" | "Completada" | "Cancelada"
+  createdAt        DateTime @default(now())
 }

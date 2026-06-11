@@ -108,8 +108,8 @@ export default function RecordTemporadaClient({ partidos, isAdmin }: Props) {
                   onClick={() => setRamaFilter(r)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
                     ramaFilter === r
-                      ? 'bg-primary-blue text-white shadow-sm'
-                      : 'text-gray-500 hover:text-primary-blue'
+                      ? 'bg-uady-blue text-white shadow-sm'
+                      : 'text-gray-500 hover:text-uady-blue'
                   }`}
                 >
                   {r === 'Todas' ? '🏐 Todas' : r === 'Femenil' ? '♀ Femenil' : '♂ Varonil'}
@@ -125,7 +125,7 @@ export default function RecordTemporadaClient({ partidos, isAdmin }: Props) {
               <select
                 value={torneoFilter}
                 onChange={(e) => setTorneoFilter(e.target.value)}
-                className="bg-gray-100 border-none rounded-xl px-3 py-2 text-xs font-bold text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-blue/30 transition-all cursor-pointer"
+                className="bg-gray-100 border-none rounded-xl px-3 py-2 text-xs font-bold text-gray-600 focus:outline-none focus:ring-2 focus:ring-uady-blue/30 transition-all cursor-pointer"
               >
                 <option value="Todos">Todos los torneos</option>
                 {torneos.map((t) => (
@@ -139,7 +139,7 @@ export default function RecordTemporadaClient({ partidos, isAdmin }: Props) {
         {isAdmin && (
           <button
             onClick={() => setShowForm(true)}
-            className="bg-accent-green text-primary-blue px-5 py-2.5 rounded-lg text-sm font-bold hover:brightness-110 transition-all duration-200 shrink-0"
+            className="bg-uady-gold text-uady-blue px-5 py-2.5 rounded-lg text-sm font-bold hover:brightness-110 transition-all duration-200 shrink-0"
           >
             + Registrar Partido
           </button>
@@ -148,7 +148,7 @@ export default function RecordTemporadaClient({ partidos, isAdmin }: Props) {
 
       {/* Conteo */}
       <p className="text-xs text-gray-400 mb-4">
-        <span className="font-bold text-primary-blue">{filtrados.length}</span>{' '}
+        <span className="font-bold text-uady-blue">{filtrados.length}</span>{' '}
         partido{filtrados.length !== 1 ? 's' : ''}
         {ramaFilter !== 'Todas' && (
           <span className="text-gray-300"> · {ramaFilter}</span>
@@ -180,10 +180,10 @@ export default function RecordTemporadaClient({ partidos, isAdmin }: Props) {
                 className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col"
               >
                 {/* Cabecera */}
-                <div className="bg-primary-blue px-4 py-3 flex items-start justify-between gap-2">
+                <div className="bg-uady-blue px-4 py-3 flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     {/* Torneo con más prominencia */}
-                    <p className="text-accent-green font-black text-sm leading-tight truncate">
+                    <p className="text-uady-gold font-black text-sm leading-tight truncate">
                       {p.torneo}
                     </p>
                     <p className="text-blue-300 text-xs mt-0.5">
@@ -201,8 +201,8 @@ export default function RecordTemporadaClient({ partidos, isAdmin }: Props) {
 
                 {/* Cuerpo: Club vs rival + sede */}
                 <div className="p-4 flex-1">
-                  <p className="text-center text-lg font-black text-primary-blue">
-                    Club <span className="text-accent-green">vs</span> {p.rival}
+                  <p className="text-center text-lg font-black text-uady-blue">
+                    Club <span className="text-uady-gold">vs</span> {p.rival}
                   </p>
                   <p className="text-center text-xs text-gray-400 mt-1">📍 {p.sede}</p>
                 </div>
@@ -217,7 +217,7 @@ export default function RecordTemporadaClient({ partidos, isAdmin }: Props) {
                       {parciales.map((set, i) => (
                         <span
                           key={i}
-                          className="bg-slate-100 text-primary-blue text-xs font-bold px-2 py-0.5 rounded-md"
+                          className="bg-slate-100 text-uady-blue text-xs font-bold px-2 py-0.5 rounded-md"
                         >
                           {set}
                         </span>
@@ -251,13 +251,13 @@ export default function RecordTemporadaClient({ partidos, isAdmin }: Props) {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del modal */}
-            <div className="bg-accent-green px-5 py-3 rounded-t-2xl flex items-center justify-between">
-              <h2 className="font-bold text-primary-blue text-sm flex items-center gap-2">
+            <div className="bg-uady-gold px-5 py-3 rounded-t-2xl flex items-center justify-between">
+              <h2 className="font-bold text-uady-blue text-sm flex items-center gap-2">
                 🏐 Registrar Partido
               </h2>
               <button
                 onClick={() => setShowForm(false)}
-                className="text-primary-blue/70 hover:text-primary-blue text-lg leading-none"
+                className="text-uady-blue/70 hover:text-uady-blue text-lg leading-none"
                 aria-label="Cerrar"
               >
                 ✕
@@ -352,7 +352,7 @@ export default function RecordTemporadaClient({ partidos, isAdmin }: Props) {
                 {/* Inputs dinámicos por set */}
                 <div className="sm:col-span-2">
                   <p className="text-xs font-bold text-gray-600 mb-2">
-                    Parciales por Set <span className="text-accent-green">*</span>
+                    Parciales por Set <span className="text-uady-gold">*</span>
                   </p>
                   <div className="space-y-2">
                     {setScores.map((score, i) => (
@@ -388,7 +388,7 @@ export default function RecordTemporadaClient({ partidos, isAdmin }: Props) {
                           </div>
                         </div>
                         {/* Preview del parcial */}
-                        <span className="text-xs font-black text-primary-blue bg-slate-100 px-2.5 py-1 rounded-lg w-16 text-center shrink-0">
+                        <span className="text-xs font-black text-uady-blue bg-slate-100 px-2.5 py-1 rounded-lg w-16 text-center shrink-0">
                           {score.local || '0'}–{score.rival || '0'}
                         </span>
                       </div>
@@ -411,7 +411,7 @@ export default function RecordTemporadaClient({ partidos, isAdmin }: Props) {
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="bg-accent-green text-primary-blue font-bold px-8 py-2.5 rounded-lg text-sm hover:brightness-110 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="bg-uady-gold text-uady-blue font-bold px-8 py-2.5 rounded-lg text-sm hover:brightness-110 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {isPending ? (
                       <>
@@ -438,7 +438,7 @@ export default function RecordTemporadaClient({ partidos, isAdmin }: Props) {
 // ── Utilidades de UI ──────────────────────────────────────────────────────────
 
 const inputCls =
-  'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-all text-gray-700'
+  'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-uady-blue focus:ring-1 focus:ring-uady-blue transition-all text-gray-700'
 
 function Field({
   label,
@@ -454,7 +454,7 @@ function Field({
   return (
     <div className={span2 ? 'sm:col-span-2' : ''}>
       <label className="block text-xs font-bold text-gray-600 mb-1">
-        {label} {required && <span className="text-accent-green">*</span>}
+        {label} {required && <span className="text-uady-gold">*</span>}
       </label>
       {children}
     </div>

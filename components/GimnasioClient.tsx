@@ -8,7 +8,7 @@ import {
 import {
   obtenerMatriz, obtenerEtapas, obtenerCatalogoEjercicios, obtenerNombresEjercicios,
   crearEtapaConEjercicios, actualizarEtapa, actualizarDetalleSemana, eliminarEtapa,
-  eliminarEjercicioPrincipal, actualizarNombreEjercicioPrincipal,
+  eliminarEjercicioPorNombreGlobal, actualizarNombreEjercicioGlobal,
   agregarEjercicioAEtapaExistente,
   obtenerAccesorios, crearEjercicioAccesorio, eliminarEjercicioAccesorio,
   crearVideo, actualizarVideo, eliminarVideo, obtenerVideosAgrupados,
@@ -38,15 +38,6 @@ const NOTAS_INFO = [
   { id: 3, text: 'En todos los ejercicios cuidar que el peso utilizado NO deforme la técnica, pero que sea suficientemente intenso para reproducir un esfuerzo significativo.' },
   { id: 4, text: 'Los ejercicios accesorios se deberán hacer semanalmente en relación al tiempo con el que dispongan, SIN sobrepasar las 16 series semanales por tren (ejemplo: 4 de Bíceps, 4 de Tríceps, 4 de Dorsal y 4 de Hombro = 16 series).' },
   { id: 5, text: 'Las series de potencia se ejecutarán con el peso que permita realizar el número de repeticiones indicado, de manera explosiva, sin deformar la técnica.' },
-]
-
-const EJERCICIO_COLORS = [
-  'bg-primary-blue text-white',
-  'bg-slate-700 text-white',
-  'bg-indigo-800 text-white',
-  'bg-teal-700 text-white',
-  'bg-violet-700 text-white',
-  'bg-emerald-800 text-white',
 ]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -98,7 +89,7 @@ function getYouTubeEmbedUrl(url: string): string {
 
 // ─── Shared UI primitives ─────────────────────────────────────────────────────
 
-const inputCls = 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all'
+const inputCls = 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-uady-blue/30 focus:border-uady-blue transition-all'
 const labelCls = 'block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide'
 
 function ModalShell({
@@ -120,7 +111,7 @@ function ModalShell({
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div className={`bg-white rounded-2xl shadow-2xl w-full ${maxW} overflow-hidden max-h-[90vh] flex flex-col`}>
-        <div className="bg-primary-blue px-6 py-4 flex items-center justify-between flex-shrink-0">
+        <div className="bg-uady-blue px-6 py-4 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2">
             {icon}
             <h2 className="text-white font-bold text-base">{title}</h2>
@@ -135,7 +126,7 @@ function ModalShell({
   )
 }
 
-// ─── ConfirmDeleteModal (popup de confirmación de borrado) ───────────────────
+// ─── ConfirmDeleteModal ───────────────────────────────────────────────────────
 
 function ConfirmDeleteModal({
   title,
@@ -163,7 +154,7 @@ function ConfirmDeleteModal({
             <AlertTriangle className="w-5 h-5 text-red-500" />
           </div>
           <div>
-            <h2 className="font-bold text-primary-blue text-base">{title}</h2>
+            <h2 className="font-bold text-uady-blue text-base">{title}</h2>
             <p className="text-slate-500 text-sm mt-1">{description}</p>
           </div>
         </div>
@@ -175,7 +166,7 @@ function ConfirmDeleteModal({
             type="button"
             onClick={onCancel}
             disabled={isPending}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-primary-blue bg-slate-100 hover:bg-slate-200 disabled:opacity-60 transition-colors"
+            className="px-4 py-2 rounded-lg text-sm font-medium text-uady-blue bg-slate-100 hover:bg-slate-200 disabled:opacity-60 transition-colors"
           >
             Cancelar
           </button>
@@ -193,7 +184,7 @@ function ConfirmDeleteModal({
   )
 }
 
-// ─── EtapaModal (crear etapa + ejercicios) ────────────────────────────────────
+// ─── EtapaModal ───────────────────────────────────────────────────────────────
 
 interface EjercicioRow { _key: number; nombre: string; series: string; rpt: string; rir: string }
 
@@ -248,13 +239,12 @@ function EtapaModal({
   }
 
   return (
-    <ModalShell title="Nueva Etapa de Entrenamiento" icon={<Dumbbell className="w-4 h-4 text-accent-green" />} onClose={onClose}>
+    <ModalShell title="Nueva Etapa de Entrenamiento" icon={<Dumbbell className="w-4 h-4 text-uady-gold" />} onClose={onClose}>
       <datalist id="cat-etapa">
         {nombres.map(n => <option key={n} value={n} />)}
       </datalist>
       <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
         <div className="overflow-y-auto flex-1 p-6 space-y-6">
-          {/* Etapa */}
           <div className="space-y-4">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Datos de la Etapa</p>
             <div>
@@ -272,12 +262,11 @@ function EtapaModal({
               </div>
             </div>
             {semanaCount > 0 && (
-              <div className="bg-accent-green/10 border border-accent-green/30 rounded-lg px-3 py-2 text-xs font-semibold text-primary-blue">
-                Se generarán <span className="text-accent-green">{semanaCount} semana{semanaCount !== 1 ? 's' : ''}</span> por ejercicio automáticamente.
+              <div className="bg-uady-gold/10 border border-uady-gold/30 rounded-lg px-3 py-2 text-xs font-semibold text-uady-blue">
+                Se generarán <span className="text-uady-gold">{semanaCount} semana{semanaCount !== 1 ? 's' : ''}</span> por ejercicio automáticamente.
               </div>
             )}
           </div>
-          {/* Ejercicios */}
           <div className="space-y-3">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ejercicios</p>
             {rows.map((row, idx) => (
@@ -312,7 +301,7 @@ function EtapaModal({
                 </div>
               </div>
             ))}
-            <button type="button" onClick={addRow} className="w-full border-2 border-dashed border-slate-200 hover:border-accent-green/50 text-slate-400 hover:text-accent-green rounded-xl py-3 text-sm font-medium transition-all flex items-center justify-center gap-2">
+            <button type="button" onClick={addRow} className="w-full border-2 border-dashed border-slate-200 hover:border-uady-gold/50 text-slate-400 hover:text-uady-gold rounded-xl py-3 text-sm font-medium transition-all flex items-center justify-center gap-2">
               <Plus className="w-4 h-4" />
               Añadir otro ejercicio a esta etapa
             </button>
@@ -322,7 +311,7 @@ function EtapaModal({
         <div className="flex gap-3 px-6 py-4 border-t border-slate-100 flex-shrink-0">
           <button type="button" onClick={onClose} className="flex-1 border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">Cancelar</button>
           <button type="submit" disabled={isPending || semanaCount === 0}
-            className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
+            className="flex-1 bg-uady-gold text-uady-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
             {isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Creando…</> : `Crear Etapa (${rows.length} ej. × ${semanaCount} sem.)`}
           </button>
         </div>
@@ -359,7 +348,7 @@ function EditarEtapaModal({
   }
 
   return (
-    <ModalShell title="Editar Etapa" icon={<Pencil className="w-4 h-4 text-accent-green" />} onClose={onClose} maxW="max-w-md">
+    <ModalShell title="Editar Etapa" icon={<Pencil className="w-4 h-4 text-uady-gold" />} onClose={onClose} maxW="max-w-md">
       <form onSubmit={handleSubmit} className="p-6 space-y-4">
         <div>
           <label className={labelCls}>Nombre de la Etapa *</label>
@@ -381,7 +370,7 @@ function EditarEtapaModal({
         {error && <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">{error}</div>}
         <div className="flex gap-3 pt-1">
           <button type="button" onClick={onClose} className="flex-1 border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">Cancelar</button>
-          <button type="submit" disabled={isPending} className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
+          <button type="submit" disabled={isPending} className="flex-1 bg-uady-gold text-uady-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
             {isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</> : 'Guardar Cambios'}
           </button>
         </div>
@@ -393,13 +382,11 @@ function EditarEtapaModal({
 // ─── EditarNombreEjercicioModal ───────────────────────────────────────────────
 
 function EditarNombreEjercicioModal({
-  ejercicioId,
   nombreActual,
   catalogo,
   onClose,
   onSuccess,
 }: {
-  ejercicioId: string
   nombreActual: string
   catalogo: CatalogoData[]
   onClose: () => void
@@ -413,14 +400,14 @@ function EditarNombreEjercicioModal({
     e.preventDefault()
     setError(null)
     startTransition(async () => {
-      const result = await actualizarNombreEjercicioPrincipal(ejercicioId, nombre)
+      const result = await actualizarNombreEjercicioGlobal(nombreActual, nombre)
       if (result.error) setError(result.error)
       else { await onSuccess(); onClose() }
     })
   }
 
   return (
-    <ModalShell title="Editar Nombre del Ejercicio" icon={<Pencil className="w-4 h-4 text-accent-green" />} onClose={onClose} maxW="max-w-sm">
+    <ModalShell title="Editar Nombre del Ejercicio" icon={<Pencil className="w-4 h-4 text-uady-gold" />} onClose={onClose} maxW="max-w-sm">
       <datalist id="cat-edit-nombre">
         {catalogo.map(c => <option key={c.id} value={c.nombre} />)}
       </datalist>
@@ -434,7 +421,7 @@ function EditarNombreEjercicioModal({
         {error && <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">{error}</div>}
         <div className="flex gap-3 pt-1">
           <button type="button" onClick={onClose} className="flex-1 border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">Cancelar</button>
-          <button type="submit" disabled={isPending} className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
+          <button type="submit" disabled={isPending} className="flex-1 bg-uady-gold text-uady-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
             {isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</> : 'Actualizar'}
           </button>
         </div>
@@ -443,27 +430,54 @@ function EditarNombreEjercicioModal({
   )
 }
 
-// ─── AgregarEjercicioEtapaModal ───────────────────────────────────────────────
+// ─── AgregarEjercicioGlobalModal ──────────────────────────────────────────────
 
-function AgregarEjercicioEtapaModal({
-  etapa,
+function AgregarEjercicioGlobalModal({
+  etapas,
   catalogo,
   onClose,
   onSuccess,
 }: {
-  etapa: EtapaData
+  etapas: EtapaData[]
   catalogo: CatalogoData[]
   onClose: () => void
   onSuccess: () => Promise<void>
 }) {
-  const semanas = useMemo(() => generarSemanasCliente(etapa.fechaInicio, etapa.fechaFin), [etapa])
-  const [selected, setSelected] = useState<Set<number>>(() => new Set(semanas.map(s => s.numeroSemana)))
+  // Compute the initial etapa and its weeks synchronously so the lazy initializer
+  // below has the right data without needing a useEffect to populate `selected`.
+  const firstEtapa = etapas.length > 0 ? etapas[0] : null
+  const firstSemanas = firstEtapa
+    ? generarSemanasCliente(firstEtapa.fechaInicio, firstEtapa.fechaFin)
+    : []
+
+  const [etapaId, setEtapaId] = useState(firstEtapa?.id ?? '')
+  // Derive the current etapa and its weeks from the selected ID
+  const etapa = useMemo(() => etapas.find(e => e.id === etapaId) ?? null, [etapas, etapaId])
+  const semanas = useMemo(
+    () => etapa ? generarSemanasCliente(etapa.fechaInicio, etapa.fechaFin) : [],
+    [etapa],
+  )
+  // Initialise with all weeks of the first etapa selected
+  const [selected, setSelected] = useState<Set<number>>(
+    () => new Set(firstSemanas.map(s => s.numeroSemana)),
+  )
   const [nombre, setNombre] = useState('')
   const [series, setSeries] = useState('')
   const [rpt, setRpt] = useState('')
   const [rir, setRir] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  // Single handler: update both etapaId and selected atomically so React
+  // batches them into one render — no stale-closure risk, no interim flash.
+  function handleEtapaChange(newId: string) {
+    const newEtapa = etapas.find(e => e.id === newId) ?? null
+    const newSemanas = newEtapa
+      ? generarSemanasCliente(newEtapa.fechaInicio, newEtapa.fechaFin)
+      : []
+    setEtapaId(newId)
+    setSelected(new Set(newSemanas.map(s => s.numeroSemana)))
+  }
 
   function toggleWeek(num: number) {
     setSelected(prev => {
@@ -479,11 +493,12 @@ function AgregarEjercicioEtapaModal({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    if (!etapaId) { setError('Selecciona una etapa.'); return }
     if (selected.size === 0) { setError('Selecciona al menos una semana.'); return }
     const semanasSeleccionadas = semanas.filter(s => selected.has(s.numeroSemana))
     startTransition(async () => {
       const result = await agregarEjercicioAEtapaExistente(
-        etapa.id, nombre, parseInt(series), rpt,
+        etapaId, nombre, parseInt(series), rpt,
         rir !== '' ? parseInt(rir) : null,
         semanasSeleccionadas,
       )
@@ -492,90 +507,125 @@ function AgregarEjercicioEtapaModal({
     })
   }
 
-  const allSelected = selected.size === semanas.length
+  const allSelected = selected.size === semanas.length && semanas.length > 0
   const noneSelected = selected.size === 0
 
   return (
     <ModalShell
-      title={`Añadir Ejercicio — ${etapa.nombre}`}
-      icon={<Plus className="w-4 h-4 text-accent-green" />}
+      title="Agregar Ejercicio a Etapa"
+      icon={<Plus className="w-4 h-4 text-uady-gold" />}
       onClose={onClose}
     >
-      <datalist id="cat-agregar">
+      <datalist id="cat-agregar-global">
         {catalogo.map(c => <option key={c.id} value={c.nombre} />)}
       </datalist>
       <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
         <div className="overflow-y-auto flex-1 p-6 space-y-5">
 
-          {/* Nombre */}
-          <div>
-            <label className={labelCls}>Nombre del Ejercicio *</label>
-            <input list="cat-agregar" type="text" required maxLength={80} value={nombre}
-              onChange={e => setNombre(e.target.value)}
-              placeholder="Escribe o selecciona del catálogo…" className={inputCls} />
-          </div>
-
-          {/* Carga base */}
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className={labelCls}>Series *</label>
-              <input type="number" required min={1} max={20} value={series} onChange={e => setSeries(e.target.value)} placeholder="4" className={inputCls + ' text-center'} />
+          {etapas.length === 0 ? (
+            <div className="text-center py-8 text-slate-400 text-sm">
+              No hay etapas creadas. Usa &quot;+ Nueva Etapa&quot; para crear una primero.
             </div>
-            <div>
-              <label className={labelCls}>RPT *</label>
-              <input type="text" required maxLength={20} value={rpt} onChange={e => setRpt(e.target.value)} placeholder="16-18" className={inputCls + ' text-center'} />
-            </div>
-            <div>
-              <label className={labelCls}>RIR</label>
-              <input type="number" min={0} max={5} value={rir} onChange={e => setRir(e.target.value)} placeholder="3" className={inputCls + ' text-center'} />
-            </div>
-          </div>
-
-          {/* Semanas */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className={labelCls + ' mb-0'}>Semanas de Aplicación *</label>
-              <div className="flex items-center gap-2">
-                <button type="button" onClick={() => toggleAll(true)}
-                  disabled={allSelected}
-                  className="text-[10px] text-accent-green font-semibold disabled:opacity-40 hover:underline">Todas</button>
-                <span className="text-slate-300 text-xs">|</span>
-                <button type="button" onClick={() => toggleAll(false)}
-                  disabled={noneSelected}
-                  className="text-[10px] text-slate-400 font-semibold disabled:opacity-40 hover:underline">Ninguna</button>
+          ) : (
+            <>
+              {/* 1. Seleccionar Etapa */}
+              <div>
+                <label className={labelCls}>Etapa *</label>
+                <select
+                  value={etapaId}
+                  onChange={e => handleEtapaChange(e.target.value)}
+                  required
+                  className={inputCls + ' bg-white'}
+                >
+                  {etapas.map(et => (
+                    <option key={et.id} value={et.id}>{et.nombre}</option>
+                  ))}
+                </select>
               </div>
-            </div>
-            <div className="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-52 overflow-y-auto">
-              {semanas.map(s => (
-                <label key={s.numeroSemana}
-                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(s.numeroSemana)}
-                    onChange={() => toggleWeek(s.numeroSemana)}
-                    className="w-4 h-4 rounded accent-[#72D611] cursor-pointer"
-                  />
-                  <span className="text-sm text-slate-700">
-                    <span className="font-semibold text-primary-blue">Sem. {s.numeroSemana}</span>
-                    {' '}
-                    <span className="text-slate-400 text-xs">({formatearFechaSemana(s.fechaInicioSemana, s.fechaFinSemana)})</span>
-                  </span>
-                </label>
-              ))}
-            </div>
-            {selected.size > 0 && (
-              <p className="text-[11px] text-slate-400 mt-1.5">
-                {selected.size} de {semanas.length} semana{semanas.length !== 1 ? 's' : ''} seleccionada{selected.size !== 1 ? 's' : ''}.
-              </p>
-            )}
-          </div>
+
+              {/* 2. Seleccionar Ejercicio */}
+              <div>
+                <label className={labelCls}>Nombre del Ejercicio *</label>
+                <input
+                  list="cat-agregar-global"
+                  type="text"
+                  required
+                  maxLength={80}
+                  value={nombre}
+                  onChange={e => setNombre(e.target.value)}
+                  placeholder="Escribe o selecciona del catálogo…"
+                  className={inputCls}
+                />
+              </div>
+
+              {/* 3. Carga Base */}
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className={labelCls}>Series *</label>
+                  <input type="number" required min={1} max={20} value={series} onChange={e => setSeries(e.target.value)} placeholder="4" className={inputCls + ' text-center'} />
+                </div>
+                <div>
+                  <label className={labelCls}>RPT *</label>
+                  <input type="text" required maxLength={20} value={rpt} onChange={e => setRpt(e.target.value)} placeholder="16-18" className={inputCls + ' text-center'} />
+                </div>
+                <div>
+                  <label className={labelCls}>RIR</label>
+                  <input type="number" min={0} max={5} value={rir} onChange={e => setRir(e.target.value)} placeholder="3" className={inputCls + ' text-center'} />
+                </div>
+              </div>
+
+              {/* 4. Seleccionar Semanas */}
+              {semanas.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className={labelCls + ' mb-0'}>Semanas de Aplicación *</label>
+                    <div className="flex items-center gap-2">
+                      <button type="button" onClick={() => toggleAll(true)}
+                        disabled={allSelected}
+                        className="text-[10px] text-uady-gold font-semibold disabled:opacity-40 hover:underline">Todas</button>
+                      <span className="text-slate-300 text-xs">|</span>
+                      <button type="button" onClick={() => toggleAll(false)}
+                        disabled={noneSelected}
+                        className="text-[10px] text-slate-400 font-semibold disabled:opacity-40 hover:underline">Ninguna</button>
+                    </div>
+                  </div>
+                  <div className="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-52 overflow-y-auto">
+                    {semanas.map(s => (
+                      <label key={s.numeroSemana}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={selected.has(s.numeroSemana)}
+                          onChange={() => toggleWeek(s.numeroSemana)}
+                          className="w-4 h-4 rounded accent-[#72D611] cursor-pointer"
+                        />
+                        <span className="text-sm text-slate-700">
+                          <span className="font-semibold text-uady-blue">Sem. {s.numeroSemana}</span>
+                          {' '}
+                          <span className="text-slate-400 text-xs">({formatearFechaSemana(s.fechaInicioSemana, s.fechaFinSemana)})</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  {selected.size > 0 && (
+                    <p className="text-[11px] text-slate-400 mt-1.5">
+                      {selected.size} de {semanas.length} semana{semanas.length !== 1 ? 's' : ''} seleccionada{selected.size !== 1 ? 's' : ''}.
+                    </p>
+                  )}
+                </div>
+              )}
+            </>
+          )}
 
           {error && <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">{error}</div>}
         </div>
         <div className="flex gap-3 px-6 py-4 border-t border-slate-100 flex-shrink-0">
           <button type="button" onClick={onClose} className="flex-1 border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">Cancelar</button>
-          <button type="submit" disabled={isPending || selected.size === 0}
-            className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
+          <button
+            type="submit"
+            disabled={isPending || selected.size === 0 || !etapaId || etapas.length === 0}
+            className="flex-1 bg-uady-gold text-uady-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
+          >
             {isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Creando…</> : `Agregar (${selected.size} sem.)`}
           </button>
         </div>
@@ -607,7 +657,7 @@ function EditarCeldaModal({
   }
 
   return (
-    <ModalShell title={ejercicioNombre} icon={<Pencil className="w-4 h-4 text-accent-green" />} onClose={onClose} maxW="max-w-sm">
+    <ModalShell title={ejercicioNombre} icon={<Pencil className="w-4 h-4 text-uady-gold" />} onClose={onClose} maxW="max-w-sm">
         <form onSubmit={handleSubmit} className="px-6 pb-6 pt-3 space-y-4">
         <p className="text-slate-400 text-[11px]">
           Sem. {detalle.numeroSemana} · {formatearFechaSemana(detalle.fechaInicioSemana, detalle.fechaFinSemana)}
@@ -629,7 +679,7 @@ function EditarCeldaModal({
         {error && <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">{error}</div>}
         <div className="flex gap-3 pt-1">
           <button type="button" onClick={onClose} className="flex-1 border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">Cancelar</button>
-          <button type="submit" disabled={isPending} className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
+          <button type="submit" disabled={isPending} className="flex-1 bg-uady-gold text-uady-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
             {isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</> : 'Actualizar Semana'}
           </button>
         </div>
@@ -655,10 +705,13 @@ function TablaMatriz({
 }) {
   const [editarCelda, setEditarCelda] = useState<EditarCeldaState | null>(null)
   const [editarEtapa, setEditarEtapa] = useState<EtapaData | null>(null)
-  const [editarNombreEj, setEditarNombreEj] = useState<{ id: string; nombre: string } | null>(null)
-  const [agregarEjEtapa, setAgregarEjEtapa] = useState<EtapaData | null>(null)
+  const [editarNombreEj, setEditarNombreEj] = useState<{ nombre: string } | null>(null)
 
-  const [itemToDelete, setItemToDelete] = useState<{ type: 'etapa' | 'ejercicio'; id: string; nombre: string } | null>(null)
+  const [itemToDelete, setItemToDelete] = useState<
+    | { type: 'etapa'; id: string; nombre: string }
+    | { type: 'ejercicio'; nombre: string }
+    | null
+  >(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
@@ -673,10 +726,28 @@ function TablaMatriz({
     return Array.from(map.values()).sort((a, b) => a.key.localeCompare(b.key))
   }, [ejercicios])
 
+  // Unique exercise names in first-appearance order (global deduplication)
+  const uniqueNames = useMemo(() => {
+    const seen = new Set<string>()
+    const names: string[] = []
+    for (const ej of ejercicios) {
+      const key = ej.nombre.toLowerCase()
+      if (!seen.has(key)) {
+        seen.add(key)
+        names.push(ej.nombre)
+      }
+    }
+    return names
+  }, [ejercicios])
+
+  // Key: nameLower::weekKey — first DetalleSemana found wins (handles same exercise across stages)
   const detalleMap = useMemo(() => {
     const map = new Map<string, DetalleSemanaData>()
     ejercicios.forEach(ej =>
-      ej.semanas.forEach(s => map.set(`${ej.id}::${dateKey(s.fechaInicioSemana)}`, s))
+      ej.semanas.forEach(s => {
+        const key = `${ej.nombre.toLowerCase()}::${dateKey(s.fechaInicioSemana)}`
+        if (!map.has(key)) map.set(key, s)
+      })
     )
     return map
   }, [ejercicios])
@@ -693,9 +764,9 @@ function TablaMatriz({
     return groups
   }, [globalWeeks, etapas])
 
-  function handleEliminarEjercicio(id: string, nombre: string) {
+  function handleEliminarEjercicio(nombre: string) {
     setDeleteError(null)
-    setItemToDelete({ type: 'ejercicio', id, nombre })
+    setItemToDelete({ type: 'ejercicio', nombre })
   }
 
   function handleEliminarEtapa(id: string, nombre: string) {
@@ -710,7 +781,7 @@ function TablaMatriz({
     try {
       const result = itemToDelete.type === 'etapa'
         ? await eliminarEtapa(itemToDelete.id)
-        : await eliminarEjercicioPrincipal(itemToDelete.id)
+        : await eliminarEjercicioPorNombreGlobal(itemToDelete.nombre)
       if (result.error) { setDeleteError(result.error); return }
       await onRefresh()
       setItemToDelete(null)
@@ -751,43 +822,28 @@ function TablaMatriz({
                     colSpan={g.count * 3}
                     className="px-2 py-1.5 text-center border-l border-white/20 bg-[#72D611] text-[#0F2540] group/etapa"
                   >
-                    <div className="flex flex-col items-center gap-0.5">
-                      {/* Nombre + lápiz de edición */}
-                      <div className="flex items-center justify-center gap-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-widest leading-none">
-                          {etapa.nombre.toUpperCase()}
-                        </span>
-                        {isAdmin && (
-                          <button
-                            type="button"
-                            onClick={() => setEditarEtapa(etapa)}
-                            className="opacity-0 group-hover/etapa:opacity-100 p-0.5 rounded bg-[#0F2540]/10 hover:bg-[#0F2540]/20 transition-all"
-                            title="Editar etapa"
-                          >
-                            <Pencil className="w-2.5 h-2.5 text-[#0F2540]" />
-                          </button>
-                        )}
-                        {isAdmin && (
-                          <button
-                            type="button"
-                            onClick={() => handleEliminarEtapa(etapa.id, etapa.nombre)}
-                            className="opacity-0 group-hover/etapa:opacity-100 p-0.5 rounded bg-[#0F2540]/10 hover:bg-red-500/20 transition-all"
-                            title="Eliminar etapa"
-                          >
-                            <Trash2 className="w-2.5 h-2.5 text-[#0F2540] hover:text-red-600" />
-                          </button>
-                        )}
-                      </div>
-                      {/* Añadir ejercicio a esta etapa */}
+                    <div className="flex items-center justify-center gap-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-widest leading-none">
+                        {etapa.nombre.toUpperCase()}
+                      </span>
                       {isAdmin && (
                         <button
                           type="button"
-                          onClick={() => setAgregarEjEtapa(etapa)}
-                          className="opacity-0 group-hover/etapa:opacity-100 flex items-center gap-0.5 text-[9px] font-semibold text-[#0F2540]/70 hover:text-[#0F2540] transition-all"
-                          title="Añadir ejercicio a esta etapa"
+                          onClick={() => setEditarEtapa(etapa)}
+                          className="opacity-0 group-hover/etapa:opacity-100 p-0.5 rounded bg-[#0F2540]/10 hover:bg-[#0F2540]/20 transition-all"
+                          title="Editar etapa"
                         >
-                          <Plus className="w-2.5 h-2.5" />
-                          Añadir ejercicio
+                          <Pencil className="w-2.5 h-2.5 text-[#0F2540]" />
+                        </button>
+                      )}
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => handleEliminarEtapa(etapa.id, etapa.nombre)}
+                          className="opacity-0 group-hover/etapa:opacity-100 p-0.5 rounded bg-[#0F2540]/10 hover:bg-red-500/20 transition-all"
+                          title="Eliminar etapa"
+                        >
+                          <Trash2 className="w-2.5 h-2.5 text-[#0F2540] hover:text-red-600" />
                         </button>
                       )}
                     </div>
@@ -801,10 +857,10 @@ function TablaMatriz({
             {/* ── Fila 1: Semanas con fechas ── */}
             <tr className="bg-slate-50">
               {globalWeeks.map((w, i) => (
-                <th key={w.key} colSpan={3} className="px-2 py-2.5 text-center border-l border-slate-200 bg-primary-blue/5 whitespace-nowrap">
+                <th key={w.key} colSpan={3} className="px-2 py-2.5 text-center border-l border-slate-200 bg-uady-blue/5 whitespace-nowrap">
                   <div className="flex flex-col items-center gap-0.5">
                     <span className="text-[9px] font-bold text-slate-400 tracking-widest uppercase">S{i + 1}</span>
-                    <span className="text-[10px] font-semibold text-primary-blue tracking-wide">
+                    <span className="text-[10px] font-semibold text-uady-blue tracking-wide">
                       {formatearFechaSemana(w.inicio, w.fin)}
                     </span>
                   </div>
@@ -815,31 +871,31 @@ function TablaMatriz({
             {/* ── Fila 2: SERIES / RPT / RIR ── */}
             <tr>
               {globalWeeks.flatMap(w => [
-                <th key={`${w.key}-ser`} className="px-3 py-2 text-center text-[10px] font-bold text-white uppercase tracking-wide bg-primary-blue border-l border-primary-blue/30 min-w-[52px]">SERIES</th>,
-                <th key={`${w.key}-rpt`} className="px-3 py-2 text-center text-[10px] font-bold text-white uppercase tracking-wide bg-primary-blue border-l border-primary-blue/30 min-w-[60px]">RPT</th>,
-                <th key={`${w.key}-rir`} className="px-3 py-2 text-center text-[10px] font-bold text-white uppercase tracking-wide bg-primary-blue border-l border-primary-blue/30 min-w-[46px]">RIR</th>,
+                <th key={`${w.key}-ser`} className="px-3 py-2 text-center text-[10px] font-bold text-white uppercase tracking-wide bg-uady-blue border-l border-uady-blue/30 min-w-[52px]">SERIES</th>,
+                <th key={`${w.key}-rpt`} className="px-3 py-2 text-center text-[10px] font-bold text-white uppercase tracking-wide bg-uady-blue border-l border-uady-blue/30 min-w-[60px]">RPT</th>,
+                <th key={`${w.key}-rir`} className="px-3 py-2 text-center text-[10px] font-bold text-white uppercase tracking-wide bg-uady-blue border-l border-uady-blue/30 min-w-[46px]">RIR</th>,
               ])}
             </tr>
           </thead>
           <tbody>
-            {ejercicios.length === 0 ? (
+            {uniqueNames.length === 0 ? (
               <tr>
                 <td colSpan={totalCols} className="text-center py-10 text-slate-400 text-sm italic">Sin ejercicios planificados.</td>
               </tr>
             ) : (
-              ejercicios.map((ej, idx) => {
-                const colorClass = EJERCICIO_COLORS[idx % EJERCICIO_COLORS.length]
+              uniqueNames.map((nombre, idx) => {
+                // Alternate between two close shades of uady-blue for a clean corporate look
+                const nameBg = idx % 2 === 0 ? 'bg-[#0F2540]' : 'bg-[#162d4a]'
                 return (
-                  <tr key={ej.id} className="group/row border-t border-slate-100 hover:bg-slate-50/50 transition-colors">
-                    {/* Nombre + lápiz + borrar */}
-                    <td className={`${colorClass} px-4 py-3 font-semibold text-sm border-r border-slate-200`}>
+                  <tr key={nombre} className="group/row border-t border-slate-100 hover:bg-slate-50/50 transition-colors">
+                    <td className={`${nameBg} text-white px-4 py-3 font-semibold text-sm border-r border-slate-200`}>
                       <div className="flex items-center justify-between gap-2">
-                        <span className="leading-tight">{ej.nombre}</span>
+                        <span className="leading-tight">{nombre}</span>
                         {isAdmin && (
                           <div className="opacity-0 group-hover/row:opacity-100 flex items-center gap-1 flex-shrink-0 transition-opacity">
                             <button
                               type="button"
-                              onClick={() => setEditarNombreEj({ id: ej.id, nombre: ej.nombre })}
+                              onClick={() => setEditarNombreEj({ nombre })}
                               className="p-1 rounded hover:bg-white/20 transition-all"
                               title="Editar nombre"
                             >
@@ -847,7 +903,7 @@ function TablaMatriz({
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleEliminarEjercicio(ej.id, ej.nombre)}
+                              onClick={() => handleEliminarEjercicio(nombre)}
                               className="p-1 rounded hover:bg-white/20 transition-all"
                               title="Eliminar ejercicio"
                             >
@@ -858,17 +914,17 @@ function TablaMatriz({
                       </div>
                     </td>
                     {globalWeeks.flatMap(w => {
-                      const det = detalleMap.get(`${ej.id}::${w.key}`)
+                      const det = detalleMap.get(`${nombre.toLowerCase()}::${w.key}`)
                       return [
-                        <td key={`${w.key}-ser`} className="relative group/cell px-3 py-3 text-center font-bold text-primary-blue text-sm border-l border-slate-100 min-w-[52px]">
+                        <td key={`${w.key}-ser`} className="relative group/cell px-3 py-3 text-center font-bold text-uady-blue text-sm border-l border-slate-100 min-w-[52px]">
                           {det ? (
                             <>
                               {det.series}
                               {isAdmin && (
                                 <button
                                   type="button"
-                                  onClick={() => setEditarCelda({ detalle: det, ejercicioNombre: ej.nombre })}
-                                  className="absolute top-1 right-1 opacity-0 group-hover/cell:opacity-100 p-0.5 rounded bg-white/80 hover:bg-accent-green/20 border border-slate-200 hover:border-accent-green/40 transition-all shadow-sm"
+                                  onClick={() => setEditarCelda({ detalle: det, ejercicioNombre: nombre })}
+                                  className="absolute top-1 right-1 opacity-0 group-hover/cell:opacity-100 p-0.5 rounded bg-white/80 hover:bg-uady-gold/20 border border-slate-200 hover:border-uady-gold/40 transition-all shadow-sm"
                                   title={`Editar Sem. ${det.numeroSemana}`}
                                 >
                                   <Pencil className="w-2.5 h-2.5 text-slate-500" />
@@ -901,18 +957,9 @@ function TablaMatriz({
       )}
       {editarNombreEj && (
         <EditarNombreEjercicioModal
-          ejercicioId={editarNombreEj.id}
           nombreActual={editarNombreEj.nombre}
           catalogo={catalogo}
           onClose={() => setEditarNombreEj(null)}
-          onSuccess={onRefresh}
-        />
-      )}
-      {agregarEjEtapa && (
-        <AgregarEjercicioEtapaModal
-          etapa={agregarEjEtapa}
-          catalogo={catalogo}
-          onClose={() => setAgregarEjEtapa(null)}
           onSuccess={onRefresh}
         />
       )}
@@ -922,7 +969,7 @@ function TablaMatriz({
           description={
             itemToDelete.type === 'etapa'
               ? `¿Estás seguro de que deseas eliminar la etapa "${itemToDelete.nombre}" y todos sus ejercicios planificados? Esta acción no se puede deshacer.`
-              : `¿Estás seguro de que deseas eliminar "${itemToDelete.nombre}" y todas sus semanas planificadas? Esta acción no se puede deshacer.`
+              : `¿Estás seguro de que deseas eliminar "${itemToDelete.nombre}" de todas las etapas y sus semanas planificadas? Esta acción no se puede deshacer.`
           }
           isPending={isDeleting}
           error={deleteError}
@@ -1007,14 +1054,14 @@ function AccesoriosPanel({
       {isAdmin && (
         <form onSubmit={handleAgregar} className="flex flex-col sm:flex-row gap-2 pt-1">
           <input type="text" value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre del ejercicio…"
-            className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all" />
+            className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-uady-blue/30 focus:border-uady-blue transition-all" />
           <select value={tipo} onChange={e => setTipo(e.target.value as 'TREN_INFERIOR' | 'TREN_SUPERIOR')}
-            className="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue transition-all">
+            className="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-uady-blue/30 focus:border-uady-blue transition-all">
             <option value="TREN_INFERIOR">Tren Inferior</option>
             <option value="TREN_SUPERIOR">Tren Superior</option>
           </select>
           <button type="submit" disabled={addPending || !nombre.trim()}
-            className="px-4 py-2 bg-accent-green text-primary-blue text-sm font-bold rounded-lg hover:brightness-110 disabled:opacity-60 transition-all flex items-center gap-1.5 justify-center">
+            className="px-4 py-2 bg-uady-gold text-uady-blue text-sm font-bold rounded-lg hover:brightness-110 disabled:opacity-60 transition-all flex items-center gap-1.5 justify-center">
             {addPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             Agregar
           </button>
@@ -1038,15 +1085,15 @@ function AccesoriosPanel({
 
 function PanelInformativo() {
   return (
-    <div className="bg-primary-blue/5 border border-primary-blue/15 rounded-2xl p-6 h-full">
+    <div className="bg-uady-blue/5 border border-uady-blue/15 rounded-2xl p-6 h-full">
       <div className="flex items-center gap-2 mb-5">
-        <Info className="w-5 h-5 text-primary-blue flex-shrink-0" />
-        <h3 className="font-black text-primary-blue text-base">Notas de Programación</h3>
+        <Info className="w-5 h-5 text-uady-blue flex-shrink-0" />
+        <h3 className="font-black text-uady-blue text-base">Notas de Programación</h3>
       </div>
       <ol className="space-y-4">
         {NOTAS_INFO.map(nota => (
           <li key={nota.id} className="flex gap-3">
-            <span className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-accent-green text-primary-blue text-[11px] font-bold flex items-center justify-center leading-none">{nota.id}</span>
+            <span className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-uady-gold text-uady-blue text-[11px] font-bold flex items-center justify-center leading-none">{nota.id}</span>
             <p className="text-slate-700 text-sm leading-relaxed">{nota.text}</p>
           </li>
         ))}
@@ -1076,7 +1123,7 @@ function VideoModal({
   }
 
   return (
-    <ModalShell title={isEdit ? 'Editar Video' : 'Agregar Video'} icon={<Video className="w-4 h-4 text-accent-green" />} onClose={onClose} maxW="max-w-md">
+    <ModalShell title={isEdit ? 'Editar Video' : 'Agregar Video'} icon={<Video className="w-4 h-4 text-uady-gold" />} onClose={onClose} maxW="max-w-md">
       <form onSubmit={handleSubmit} className="p-6 space-y-4">
         <div>
           <label className={labelCls}>URL de YouTube *</label>
@@ -1108,7 +1155,7 @@ function VideoModal({
         {error && <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">{error}</div>}
         <div className="flex gap-3 pt-2">
           <button type="button" onClick={onClose} className="flex-1 border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">Cancelar</button>
-          <button type="submit" disabled={isPending} className="flex-1 bg-accent-green text-primary-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
+          <button type="submit" disabled={isPending} className="flex-1 bg-uady-gold text-uady-blue rounded-lg py-2.5 text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
             {isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</> : isEdit ? 'Actualizar Video' : 'Guardar Video'}
           </button>
         </div>
@@ -1130,12 +1177,12 @@ function VideoCard({ video, isAdmin, onEditar, onEliminar }: {
           allowFullScreen className="absolute inset-0 w-full h-full border-0" loading="lazy" />
       </div>
       <div className="p-3">
-        <p className="font-bold text-primary-blue text-sm leading-snug">{video.titulo}</p>
+        <p className="font-bold text-uady-blue text-sm leading-snug">{video.titulo}</p>
         {video.descripcion && <p className="text-xs text-slate-500 mt-1 line-clamp-2">{video.descripcion}</p>}
       </div>
       {isAdmin && (
         <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={() => onEditar(video)} className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white text-slate-600 hover:text-primary-blue transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
+          <button onClick={() => onEditar(video)} className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white text-slate-600 hover:text-uady-blue transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
           <button onClick={() => onEliminar(video.id)} className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white text-slate-600 hover:text-red-500 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
         </div>
       )}
@@ -1143,7 +1190,7 @@ function VideoCard({ video, isAdmin, onEditar, onEliminar }: {
   )
 }
 
-// ─── CategoriaSection ─────────────────────────────────────────────────────────
+// ─── VideoGrid ────────────────────────────────────────────────────────────────
 
 function VideoGrid({ videos, isAdmin, onEditar, onEliminar }: {
   videos: VideoData[]; isAdmin: boolean;
@@ -1178,8 +1225,8 @@ function CategoriaSection({ categoria, videos, isAdmin, onEditar, onEliminar }: 
       <button type="button" onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-5 py-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left">
         <div className="flex items-center gap-3">
-          <div className="w-1 h-6 bg-accent-green rounded-full" />
-          <span className="font-black text-primary-blue text-base">{categoria}</span>
+          <div className="w-1 h-6 bg-uady-gold rounded-full" />
+          <span className="font-black text-uady-blue text-base">{categoria}</span>
           <span className="text-xs text-slate-400 font-medium bg-slate-200 px-2 py-0.5 rounded-full">{videos.length}</span>
         </div>
         {open ? <ChevronUp className="w-4 h-4 text-slate-400 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />}
@@ -1192,9 +1239,9 @@ function CategoriaSection({ categoria, videos, isAdmin, onEditar, onEliminar }: 
                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Estabilidad General</p>
                 <VideoGrid videos={generales} isAdmin={isAdmin} onEditar={onEditar} onEliminar={onEliminar} />
               </div>
-              <div className="bg-accent-green/5 border border-accent-green/20 rounded-xl p-4">
-                <p className="text-[11px] font-bold text-primary-blue uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <span className="w-1 h-4 bg-accent-green rounded-full" />
+              <div className="bg-uady-gold/5 border border-uady-gold/20 rounded-xl p-4">
+                <p className="text-[11px] font-bold text-uady-blue uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <span className="w-1 h-4 bg-uady-gold rounded-full" />
                   Lateralidad
                 </p>
                 <VideoGrid videos={lateralidad} isAdmin={isAdmin} onEditar={onEditar} onEliminar={onEliminar} />
@@ -1238,6 +1285,7 @@ export default function GimnasioClient({
   const [nombresEjercicios, setNombresEjercicios] = useState(nombresEjerciciosInit)
 
   const [showEtapaModal, setShowEtapaModal] = useState(false)
+  const [showAgregarEjModal, setShowAgregarEjModal] = useState(false)
   const [showVideoModal, setShowVideoModal] = useState(false)
   const [videoEditar, setVideoEditar] = useState<VideoData | null>(null)
 
@@ -1263,17 +1311,28 @@ export default function GimnasioClient({
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-1 h-7 bg-accent-green rounded-full" />
-            <h1 className="text-3xl font-black text-primary-blue">Gimnasio y Preparación Física</h1>
+            <div className="w-1 h-7 bg-uady-gold rounded-full" />
+            <h1 className="text-3xl font-black text-uady-blue">Gimnasio y Preparación Física</h1>
           </div>
           <p className="text-slate-500 text-sm ml-3">Periodización por microciclos y preparación física del club.</p>
         </div>
         {isAdmin && (
-          <button onClick={() => setShowEtapaModal(true)}
-            className="flex items-center gap-2 bg-accent-green text-primary-blue px-5 py-2.5 rounded-xl text-sm font-bold hover:brightness-110 transition-all shadow-md shadow-accent-green/20 self-start sm:self-auto">
-            <Plus className="w-4 h-4" />
-            Nueva Etapa
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            <button
+              onClick={() => setShowAgregarEjModal(true)}
+              className="flex items-center gap-2 border border-uady-blue/40 text-uady-blue px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-uady-blue hover:text-white transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              Agregar Ejercicio a Etapa
+            </button>
+            <button
+              onClick={() => setShowEtapaModal(true)}
+              className="flex items-center gap-2 bg-uady-gold text-uady-blue px-5 py-2.5 rounded-xl text-sm font-bold hover:brightness-110 transition-all shadow-md shadow-uady-gold/20"
+            >
+              <Plus className="w-4 h-4" />
+              Nueva Etapa
+            </button>
+          </div>
         )}
       </div>
 
@@ -1281,8 +1340,8 @@ export default function GimnasioClient({
       <section className="mb-12">
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6">
           <div className="flex items-center gap-2 mb-5">
-            <div className="w-1 h-6 bg-accent-green rounded-full" />
-            <h2 className="text-xl font-black text-primary-blue">Matriz de Periodización</h2>
+            <div className="w-1 h-6 bg-uady-gold rounded-full" />
+            <h2 className="text-xl font-black text-uady-blue">Matriz de Periodización</h2>
           </div>
           <TablaMatriz ejercicios={ejercicios} etapas={etapas} catalogo={catalogo} isAdmin={isAdmin} onRefresh={handleRefreshMatriz} />
         </div>
@@ -1293,15 +1352,15 @@ export default function GimnasioClient({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-1 h-6 bg-accent-green rounded-full" />
-              <h2 className="text-xl font-black text-primary-blue">Ejercicios Accesorios</h2>
+              <div className="w-1 h-6 bg-uady-gold rounded-full" />
+              <h2 className="text-xl font-black text-uady-blue">Ejercicios Accesorios</h2>
             </div>
             <AccesoriosPanel accesorios={accesorios} isAdmin={isAdmin} onRefresh={handleRefreshAccesorios} />
           </div>
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-1 h-6 bg-accent-green rounded-full" />
-              <h2 className="text-xl font-black text-primary-blue">Notas de Programación</h2>
+              <div className="w-1 h-6 bg-uady-gold rounded-full" />
+              <h2 className="text-xl font-black text-uady-blue">Notas de Programación</h2>
             </div>
             <PanelInformativo />
           </div>
@@ -1312,12 +1371,12 @@ export default function GimnasioClient({
       <section>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-2">
-            <div className="w-1 h-6 bg-accent-green rounded-full" />
-            <h2 className="text-xl font-black text-primary-blue">Videoteca de Ejercicios</h2>
+            <div className="w-1 h-6 bg-uady-gold rounded-full" />
+            <h2 className="text-xl font-black text-uady-blue">Videoteca de Ejercicios</h2>
           </div>
           {isAdmin && (
             <button onClick={() => { setVideoEditar(null); setShowVideoModal(true) }}
-              className="flex items-center gap-2 border border-primary-blue/40 text-primary-blue px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary-blue hover:text-white transition-all self-start sm:self-auto flex-shrink-0">
+              className="flex items-center gap-2 border border-uady-blue/40 text-uady-blue px-4 py-2 rounded-xl text-sm font-bold hover:bg-uady-blue hover:text-white transition-all self-start sm:self-auto flex-shrink-0">
               <Plus className="w-4 h-4" />
               Agregar Video
             </button>
@@ -1335,6 +1394,14 @@ export default function GimnasioClient({
       {/* ── Modales globales ── */}
       {showEtapaModal && (
         <EtapaModal nombres={nombresEjercicios} onClose={() => setShowEtapaModal(false)} onSuccess={handleRefreshMatriz} />
+      )}
+      {showAgregarEjModal && (
+        <AgregarEjercicioGlobalModal
+          etapas={etapas}
+          catalogo={catalogo}
+          onClose={() => setShowAgregarEjModal(false)}
+          onSuccess={handleRefreshMatriz}
+        />
       )}
       {showVideoModal && (
         <VideoModal onClose={() => { setShowVideoModal(false); setVideoEditar(null) }} onSuccess={handleRefreshVideos} videoEditar={videoEditar} />

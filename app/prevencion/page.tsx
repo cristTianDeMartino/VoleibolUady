@@ -156,7 +156,7 @@ function RegistroCard({ r }: { r: RegistroSalud }) {
           {/* Encabezado */}
           <div className="flex items-start justify-between gap-2 mb-1">
             <div>
-              <p className="font-black text-primary-blue text-sm leading-snug">{r.atleta}</p>
+              <p className="font-black text-uady-blue text-sm leading-snug">{r.atleta}</p>
               <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full mt-0.5 ${r.badge}`}>
                 {r.tipo}
               </span>
@@ -213,7 +213,7 @@ function VideoCard({ v }: { v: VideoMock }) {
         >
           <button
             title="Editar video"
-            className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow text-slate-600 hover:text-primary-blue hover:bg-white transition-colors"
+            className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow text-slate-600 hover:text-uady-blue hover:bg-white transition-colors"
           >
             <Pencil className="w-3.5 h-3.5" />
           </button>
@@ -233,10 +233,10 @@ function VideoCard({ v }: { v: VideoMock }) {
 
       {/* Info */}
       <div className="p-4">
-        <span className="inline-block text-xs font-bold bg-primary-blue/10 text-primary-blue px-2 py-0.5 rounded-full mb-2">
+        <span className="inline-block text-xs font-bold bg-uady-blue/10 text-uady-blue px-2 py-0.5 rounded-full mb-2">
           {v.tag}
         </span>
-        <h3 className="font-black text-primary-blue text-sm leading-snug mb-1">{v.titulo}</h3>
+        <h3 className="font-black text-uady-blue text-sm leading-snug mb-1">{v.titulo}</h3>
         <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">{v.descripcion}</p>
       </div>
     </div>
@@ -257,14 +257,14 @@ export default function PrevencionPage() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-1 h-7 bg-accent-green rounded-full" />
-                <h1 className="text-3xl font-black text-primary-blue">Control de Salud Preventiva</h1>
+                <div className="w-1 h-7 bg-uady-gold rounded-full" />
+                <h1 className="text-3xl font-black text-uady-blue">Control de Salud Preventiva</h1>
               </div>
               <p className="text-gray-500 text-sm ml-3">
                 Seguimiento de citas, molestias menores y atención preventiva del equipo.
               </p>
             </div>
-            <button className="flex items-center gap-2 bg-accent-green text-primary-blue px-5 py-2.5 rounded-xl text-sm font-bold hover:brightness-110 transition-all shadow-md shadow-accent-green/20 self-start sm:self-auto flex-shrink-0">
+            <button className="flex items-center gap-2 bg-uady-gold text-uady-blue px-5 py-2.5 rounded-xl text-sm font-bold hover:brightness-110 transition-all shadow-md shadow-uady-gold/20 self-start sm:self-auto flex-shrink-0">
               <Plus className="w-4 h-4" />
               Registrar Cita / Molestia
             </button>
@@ -296,7 +296,7 @@ export default function PrevencionPage() {
         <div className="flex items-center gap-4 mb-10">
           <div className="h-px flex-1 bg-gray-200" />
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm">
-            <HeartPulse className="w-3.5 h-3.5 text-accent-green" />
+            <HeartPulse className="w-3.5 h-3.5 text-uady-gold" />
             <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
               Bienestar Mental
             </span>
@@ -311,14 +311,14 @@ export default function PrevencionPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-1 h-6 bg-accent-green rounded-full" />
-                <h2 className="text-xl font-black text-primary-blue">Psicología y Motivación Deportiva</h2>
+                <div className="w-1 h-6 bg-uady-gold rounded-full" />
+                <h2 className="text-xl font-black text-uady-blue">Psicología y Motivación Deportiva</h2>
               </div>
               <p className="text-gray-500 text-sm ml-3">
                 Recursos audiovisuales de apoyo mental y desarrollo personal del atleta.
               </p>
             </div>
-            <button className="flex items-center gap-2 border border-primary-blue/40 text-primary-blue px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary-blue hover:text-white transition-all self-start sm:self-auto flex-shrink-0">
+            <button className="flex items-center gap-2 border border-uady-blue/40 text-uady-blue px-4 py-2 rounded-xl text-sm font-bold hover:bg-uady-blue hover:text-white transition-all self-start sm:self-auto flex-shrink-0">
               <Plus className="w-4 h-4" />
               Agregar Video
             </button>

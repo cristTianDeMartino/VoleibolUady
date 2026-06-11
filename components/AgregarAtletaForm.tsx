@@ -4,7 +4,7 @@ import { useActionState, useState } from 'react'
 import Link from 'next/link'
 import { createAtleta } from '@/actions/atletas'
 
-const posiciones = ['Libero', 'Armadora', 'Opuesta', 'Central', 'Banda']
+const posiciones = ['Libero', 'Colocador', 'Banda', 'Central', 'Opuesto']
 
 const facultades = [
   'Facultad de Medicina',
@@ -25,7 +25,7 @@ const facultades = [
 function SectionCard({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="bg-primary-blue px-5 py-3 flex items-center gap-2">
+      <div className="bg-uady-blue px-5 py-3 flex items-center gap-2">
         <span>{icon}</span>
         <h3 className="font-bold text-white text-sm">{title}</h3>
       </div>
@@ -43,7 +43,7 @@ function Field({
   return (
     <div className={span2 ? 'md:col-span-2' : ''}>
       <label className="block text-xs font-bold text-gray-600 mb-1">
-        {label} {required && <span className="text-accent-green">*</span>}
+        {label} {required && <span className="text-uady-gold">*</span>}
       </label>
       {children ?? (
         <input
@@ -51,7 +51,7 @@ function Field({
           name={name}
           required={required}
           placeholder={placeholder}
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-all"
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-uady-blue focus:ring-1 focus:ring-uady-blue transition-all"
         />
       )}
     </div>
@@ -73,14 +73,14 @@ export default function AgregarAtletaForm() {
       <div className="flex items-center gap-3 mb-8">
         <Link
           href="/atletas"
-          className="text-primary-blue hover:text-accent-green transition-colors text-sm font-semibold flex items-center gap-1"
+          className="text-uady-blue hover:text-uady-gold transition-colors text-sm font-semibold flex items-center gap-1"
         >
           ← Regresar al Roster
         </Link>
         <span className="text-gray-300">|</span>
         <div className="flex items-center gap-2">
-          <div className="w-1 h-7 bg-accent-green rounded-full" />
-          <h1 className="text-2xl font-black text-primary-blue">Agregar Atleta</h1>
+          <div className="w-1 h-7 bg-uady-gold rounded-full" />
+          <h1 className="text-2xl font-black text-uady-blue">Agregar Atleta</h1>
         </div>
       </div>
 
@@ -99,7 +99,7 @@ export default function AgregarAtletaForm() {
             <select
               name="posicion"
               required
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-all text-gray-700"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-uady-blue focus:ring-1 focus:ring-uady-blue transition-all text-gray-700"
             >
               <option value="">Seleccionar posición...</option>
               {posiciones.map((p) => (
@@ -122,9 +122,9 @@ export default function AgregarAtletaForm() {
                     value={r}
                     defaultChecked={r === 'Femenil'}
                     required
-                    className="accent-primary-blue w-4 h-4"
+                    className="accent-uady-blue w-4 h-4"
                   />
-                  <span className="text-sm font-semibold text-gray-700 group-hover:text-primary-blue transition-colors">
+                  <span className="text-sm font-semibold text-gray-700 group-hover:text-uady-blue transition-colors">
                     {r === 'Femenil' ? '♀ Femenil' : '♂ Varonil'}
                   </span>
                 </label>
@@ -143,9 +143,9 @@ export default function AgregarAtletaForm() {
                     value={g.val}
                     defaultChecked={g.val === 'F'}
                     required
-                    className="accent-primary-blue w-4 h-4"
+                    className="accent-uady-blue w-4 h-4"
                   />
-                  <span className="text-sm font-semibold text-gray-700 group-hover:text-primary-blue transition-colors">
+                  <span className="text-sm font-semibold text-gray-700 group-hover:text-uady-blue transition-colors">
                     {g.label}
                   </span>
                 </label>
@@ -157,9 +157,9 @@ export default function AgregarAtletaForm() {
             <div className="flex items-center gap-3">
               {photoPreview ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={photoPreview} alt="Preview" className="w-12 h-12 rounded-full object-cover border-2 border-primary-blue" />
+                <img src={photoPreview} alt="Preview" className="w-12 h-12 rounded-full object-cover border-2 border-uady-blue" />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-primary-blue/10 border-2 border-dashed border-primary-blue/30 flex items-center justify-center text-xl">
+                <div className="w-12 h-12 rounded-full bg-uady-blue/10 border-2 border-dashed border-uady-blue/30 flex items-center justify-center text-xl">
                   📷
                 </div>
               )}
@@ -168,7 +168,7 @@ export default function AgregarAtletaForm() {
                 name="foto"
                 accept="image/*"
                 onChange={handlePhoto}
-                className="text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-primary-blue/10 file:text-primary-blue file:text-xs file:font-semibold hover:file:bg-primary-blue/20 transition-all"
+                className="text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-uady-blue/10 file:text-uady-blue file:text-xs file:font-semibold hover:file:bg-uady-blue/20 transition-all"
               />
             </div>
           </Field>
@@ -180,7 +180,7 @@ export default function AgregarAtletaForm() {
             <select
               name="facultad"
               required
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-all text-gray-700"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-uady-blue focus:ring-1 focus:ring-uady-blue transition-all text-gray-700"
             >
               <option value="">Seleccionar facultad...</option>
               {facultades.map((f) => (
@@ -244,7 +244,7 @@ export default function AgregarAtletaForm() {
           <Field label="Rol en el Sistema" name="rol">
             <select
               name="rol"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-all text-gray-700"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-uady-blue focus:ring-1 focus:ring-uady-blue transition-all text-gray-700"
             >
               <option value="JUGADOR">JUGADOR</option>
               <option value="ADMIN">ADMIN</option>
@@ -263,7 +263,7 @@ export default function AgregarAtletaForm() {
           <button
             type="submit"
             disabled={isPending}
-            className="bg-accent-green text-primary-blue font-bold px-8 py-2.5 rounded-lg text-sm hover:brightness-110 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+            className="bg-uady-gold text-uady-blue font-bold px-8 py-2.5 rounded-lg text-sm hover:brightness-110 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isPending ? (
               <>

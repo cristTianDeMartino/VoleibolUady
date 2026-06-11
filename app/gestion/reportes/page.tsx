@@ -58,7 +58,7 @@ function ReportesMockup() {
   ]
 
   const formatos = [
-    { label: 'PDF', icon: <FileText className="w-4 h-4" />, color: 'bg-primary-blue/10 text-primary-blue border-primary-blue/20' },
+    { label: 'PDF', icon: <FileText className="w-4 h-4" />, color: 'bg-uady-blue/10 text-uady-blue border-uady-blue/20' },
     { label: 'Excel', icon: <BarChart3 className="w-4 h-4" />, color: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
     { label: 'Compartir', icon: <Share2 className="w-4 h-4" />, color: 'bg-sky-50 text-sky-600 border-sky-200' },
   ]
@@ -67,12 +67,12 @@ function ReportesMockup() {
     <div className="w-full max-w-4xl mt-8 rounded-2xl border border-gray-200 bg-white shadow-xl shadow-gray-200/60 overflow-hidden">
 
       {/* Barra superior */}
-      <div className="bg-primary-blue px-6 py-3 flex items-center justify-between">
+      <div className="bg-uady-blue px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FileBarChart2 className="w-4 h-4 text-accent-green" />
+          <FileBarChart2 className="w-4 h-4 text-uady-gold" />
           <span className="text-white text-sm font-bold">Centro de Reportes Generales</span>
         </div>
-        <span className="text-accent-green/70 text-xs font-semibold">Temporada 2025–2026</span>
+        <span className="text-uady-gold/70 text-xs font-semibold">Temporada 2025–2026</span>
       </div>
 
       <div className="p-6">
@@ -85,7 +85,7 @@ function ReportesMockup() {
             { label: 'En desarrollo',      value: '2',  sub: 'Próximamente', dot: 'bg-amber-400' },
           ].map(k => (
             <div key={k.label} className="bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">
-              <p className="text-2xl font-black text-primary-blue">{k.value}</p>
+              <p className="text-2xl font-black text-uady-blue">{k.value}</p>
               <p className="text-xs font-bold text-gray-600 mt-0.5">{k.label}</p>
               <div className="flex items-center justify-center gap-1 mt-1.5">
                 <div className={`w-1.5 h-1.5 rounded-full ${k.dot}`} />
@@ -103,11 +103,11 @@ function ReportesMockup() {
               className={`flex items-center justify-between bg-white border border-gray-100 border-l-4 ${r.color} rounded-xl px-5 py-4 hover:shadow-sm transition-shadow`}
             >
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-primary-blue/8 text-primary-blue flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-uady-blue/8 text-uady-blue flex items-center justify-center flex-shrink-0">
                   {r.icon}
                 </div>
                 <div>
-                  <p className="text-sm font-black text-primary-blue">{r.titulo}</p>
+                  <p className="text-sm font-black text-uady-blue">{r.titulo}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{r.descripcion}</p>
                 </div>
               </div>
@@ -120,7 +120,7 @@ function ReportesMockup() {
                 </span>
                 <button
                   disabled={r.estado !== 'Disponible'}
-                  className="flex items-center gap-1.5 bg-accent-green text-primary-blue text-xs font-bold px-3 py-1.5 rounded-lg hover:brightness-110 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  className="flex items-center gap-1.5 bg-uady-gold text-uady-blue text-xs font-bold px-3 py-1.5 rounded-lg hover:brightness-110 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 >
                   <Download className="w-3.5 h-3.5" />
                   Descargar
@@ -154,9 +154,9 @@ function ReportesMockup() {
       <div className="bg-gray-50 border-t border-gray-100 px-6 py-3 flex items-center justify-between">
         <span className="text-xs text-gray-400">Vista previa conceptual — datos de muestra</span>
         <div className="flex gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-primary-blue" />
-          <div className="w-2 h-2 rounded-full bg-accent-green" />
-          <div className="w-2 h-2 rounded-full bg-accent-green" />
+          <div className="w-2 h-2 rounded-full bg-uady-blue" />
+          <div className="w-2 h-2 rounded-full bg-uady-gold" />
+          <div className="w-2 h-2 rounded-full bg-uady-gold" />
         </div>
       </div>
     </div>
@@ -173,20 +173,20 @@ export default function ReportesPage() {
 
       {/* Encabezado */}
       <div className="max-w-2xl mx-auto">
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary-blue/10 mb-6">
-          <FileBarChart2 className="w-10 h-10 text-accent-green" strokeWidth={1.5} />
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-uady-blue/10 mb-6">
+          <FileBarChart2 className="w-10 h-10 text-uady-gold" strokeWidth={1.5} />
         </div>
 
-        <div className="inline-flex items-center gap-2 bg-accent-green/10 border border-accent-green/30 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-full mb-4 uppercase tracking-widest">
-          <span className="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse" />
+        <div className="inline-flex items-center gap-2 bg-uady-gold/10 border border-uady-gold/30 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-full mb-4 uppercase tracking-widest">
+          <span className="w-1.5 h-1.5 rounded-full bg-uady-gold animate-pulse" />
           Próximamente
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-black text-primary-blue mb-4 leading-tight">
+        <h1 className="text-3xl md:text-4xl font-black text-uady-blue mb-4 leading-tight">
           Centro de Reportes Generales
         </h1>
 
-        <div className="w-14 h-1 bg-accent-green rounded-full mx-auto mb-5" />
+        <div className="w-14 h-1 bg-uady-gold rounded-full mx-auto mb-5" />
 
         <p className="text-gray-500 text-base md:text-lg leading-relaxed max-w-xl mx-auto">
           Próximamente podrás generar, descargar y compartir reportes automatizados de todas las

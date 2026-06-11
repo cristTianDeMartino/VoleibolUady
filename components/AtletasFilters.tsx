@@ -55,7 +55,7 @@ export function AtletasFilters({ atletas, positionColors }: AtletasFiltersProps)
       className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden group"
     >
       {/* Photo */}
-      <div className="bg-gradient-to-br from-primary-blue to-blue-800 h-32 flex items-center justify-center relative overflow-hidden">
+      <div className="bg-gradient-to-br from-uady-blue to-blue-800 h-32 flex items-center justify-center relative overflow-hidden">
         {a.fotoUrl ? (
           <Image
             src={a.fotoUrl}
@@ -72,7 +72,7 @@ export function AtletasFilters({ atletas, positionColors }: AtletasFiltersProps)
 
       {/* Info */}
       <div className="p-3">
-        <p className="font-black text-primary-blue text-sm leading-tight">{a.nombre}</p>
+        <p className="font-black text-uady-blue text-sm leading-tight">{a.nombre}</p>
         <p className="text-gray-500 text-xs truncate">{a.apellidos}</p>
 
         <div className="mt-2">
@@ -90,7 +90,7 @@ export function AtletasFilters({ atletas, positionColors }: AtletasFiltersProps)
           <p className="text-xs text-gray-400">Sem. {a.semestre}</p>
         </div>
 
-        <p className="text-xs text-accent-green font-semibold mt-2 group-hover:text-primary-blue transition-colors">
+        <p className="text-xs text-uady-gold font-semibold mt-2 group-hover:text-uady-blue transition-colors">
           Ver detalles →
         </p>
       </div>
@@ -112,7 +112,7 @@ export function AtletasFilters({ atletas, positionColors }: AtletasFiltersProps)
               placeholder="Ingresa nombre o apellido..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/10 outline-none transition-all"
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-uady-blue focus:ring-2 focus:ring-uady-blue/10 outline-none transition-all"
             />
           </div>
 
@@ -124,7 +124,7 @@ export function AtletasFilters({ atletas, positionColors }: AtletasFiltersProps)
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value as 'nombre' | 'posicion')}
-              className="w-full md:w-48 px-4 py-2.5 rounded-lg border border-gray-200 focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/10 outline-none transition-all cursor-pointer bg-white"
+              className="w-full md:w-48 px-4 py-2.5 rounded-lg border border-gray-200 focus:border-uady-blue focus:ring-2 focus:ring-uady-blue/10 outline-none transition-all cursor-pointer bg-white"
             >
               <option value="nombre">Nombre (A-Z)</option>
               <option value="posicion">Posición</option>
@@ -151,8 +151,8 @@ export function AtletasFilters({ atletas, positionColors }: AtletasFiltersProps)
       {(atletasVaroniles.length > 0 || searchTerm) && (
         <div className="mb-12">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-1 h-6 bg-accent-green rounded-full" />
-            <h2 className="text-2xl font-black text-primary-blue">
+            <div className="w-1 h-6 bg-uady-gold rounded-full" />
+            <h2 className="text-2xl font-black text-uady-blue">
               Varonil ({varonilFiltrado.length})
             </h2>
           </div>
@@ -173,8 +173,8 @@ export function AtletasFilters({ atletas, positionColors }: AtletasFiltersProps)
       {(atletasFemeniles.length > 0 || searchTerm) && (
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-1 h-6 bg-accent-green rounded-full" />
-            <h2 className="text-2xl font-black text-primary-blue">
+            <div className="w-1 h-6 bg-uady-gold rounded-full" />
+            <h2 className="text-2xl font-black text-uady-blue">
               Femenino ({femenilFiltrado.length})
             </h2>
           </div>
@@ -195,7 +195,7 @@ export function AtletasFilters({ atletas, positionColors }: AtletasFiltersProps)
       {femenilFiltrado.length === 0 && varonilFiltrado.length === 0 && searchTerm && (
         <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
           <p className="text-5xl mb-4">🔎</p>
-          <h3 className="text-lg font-bold text-primary-blue mb-2">No se encontraron atletas</h3>
+          <h3 className="text-lg font-bold text-uady-blue mb-2">No se encontraron atletas</h3>
           <p className="text-gray-400 text-sm">
             Intenta con otro nombre o apellido
           </p>
