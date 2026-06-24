@@ -37,7 +37,7 @@ export interface AtletaConAsistencia {
   id: string
   nombre: string
   apellidos: string
-  rama: string
+  genero: string
 }
 
 export interface MatrizAsistencia {
@@ -55,8 +55,9 @@ export async function obtenerMatrizAsistencia(
 
   const [atletas, asistencias] = await Promise.all([
     prisma.atleta.findMany({
+      where: { estado: 'ACTIVO' },
       orderBy: [{ apellidos: 'asc' }, { nombre: 'asc' }],
-      select: { id: true, nombre: true, apellidos: true, rama: true },
+      select: { id: true, nombre: true, apellidos: true, genero: true },
     }),
     prisma.asistencia.findMany({
       where: { fecha: { gte: inicio, lte: fin } },

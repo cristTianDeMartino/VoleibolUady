@@ -45,6 +45,7 @@ const navItems: NavItem[] = [
       { label: 'Reportes', href: '/gestion/reportes' },
     ],
   },
+  { label: 'Museo', href: '/museo' },
 ]
 
 const hasChildren = (item: NavItem): item is { label: string; children: NavLink[] } =>
@@ -76,20 +77,21 @@ export default function Navbar({ user }: NavbarProps) {
 
   return (
     <header className="sticky top-0 z-50 shadow-md">
-      <nav className="bg-uady-blue px-4 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between w-full">
+      <nav className="bg-uady-blue px-6 py-3">
+        <div className="w-full flex items-center justify-between gap-6">
 
-          {/* Logo — extrema izquierda */}
-          <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-            <span className="text-2xl">🏐</span>
-            <span className="font-black text-uady-gold text-base tracking-wider uppercase group-hover:text-white transition-colors">
-              Sistema de Voleibol
-            </span>
-          </Link>
+          {/* Grupo izquierdo: logo + links, pegado al borde izquierdo */}
+          <div className="flex items-center gap-6 min-w-0">
+            <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
+              <span className="text-2xl">🏐</span>
+              <span className="font-black text-uady-gold text-base tracking-wider uppercase group-hover:text-white transition-colors">
+                Sistema de Voleibol
+              </span>
+            </Link>
 
-          {/* Desktop links — ligeramente a la izquierda con mr-auto */}
-          <ul className="hidden md:flex items-center gap-x-1 ml-8 mr-auto">
-            {navItems.map((item) => {
+            {/* Desktop links — pegados al logo, alineados a la izquierda */}
+            <ul className="hidden md:flex items-center gap-x-6 justify-start">
+              {navItems.map((item) => {
               if (!hasChildren(item)) {
                 const active = isLinkActive(item.href)
                 return (
@@ -124,7 +126,7 @@ export default function Navbar({ user }: NavbarProps) {
                   </button>
 
                   <div className="absolute left-0 top-full pt-2 hidden group-hover:block z-50">
-                    <ul className="bg-white rounded-xl shadow-lg border border-gray-100 py-2 min-w-[15rem]">
+                    <ul className="bg-uady-gold rounded-xl shadow-lg border border-uady-gold/50 py-2 min-w-[15rem]">
                       {item.children.map((child) => {
                         const childActive = isLinkActive(child.href)
                         return (
@@ -133,8 +135,8 @@ export default function Navbar({ user }: NavbarProps) {
                               href={child.href}
                               className={`block px-4 py-2.5 text-sm transition-colors ${
                                 childActive
-                                  ? 'bg-gray-100 text-uady-blue font-semibold'
-                                  : 'text-gray-800 hover:bg-gray-100 hover:text-uady-gold'
+                                  ? 'bg-uady-blue/10 text-uady-blue font-semibold'
+                                  : 'text-uady-blue hover:bg-yellow-600'
                               }`}
                             >
                               {child.label}
@@ -148,52 +150,62 @@ export default function Navbar({ user }: NavbarProps) {
               )
             })}
           </ul>
-
-          {/* Perfil de usuario — extrema derecha (desktop) */}
-          <div className="hidden md:flex items-center gap-3 flex-shrink-0">
-            {user ? (
-              <>
-                <Link
-                  href="/perfil"
-                  className="text-right cursor-pointer transition-colors duration-200 hover:opacity-80"
-                >
-                  <p className="text-white text-xs font-bold leading-none">{user.nombre.split(' ')[0]}</p>
-                  <p className="text-uady-gold/70 text-xs">{user.rol}</p>
-                </Link>
-                <form action={logout}>
-                  <button
-                    type="submit"
-                    className="text-white text-xs font-semibold border border-white/30 px-2.5 py-1 rounded-lg hover:bg-white hover:text-uady-blue transition-all"
-                  >
-                    Salir
-                  </button>
-                </form>
-              </>
-            ) : (
-              <Link
-                href="/login"
-                className="text-white text-xs font-bold border border-white/30 px-3 py-1.5 rounded-lg hover:bg-white hover:text-uady-blue transition-all"
-              >
-                Iniciar Sesión
-              </Link>
-            )}
           </div>
 
-          {/* Mobile: session + hamburger */}
-          <div className="md:hidden flex items-center gap-2">
-            {user ? (
-              <form action={logout}>
-                <button type="submit" className="text-white/70 text-xs border border-white/20 px-2 py-1 rounded-lg">
-                  Salir
-                </button>
-              </form>
-            ) : (
-              <Link href="/login" className="text-white/70 text-xs border border-white/20 px-2 py-1 rounded-lg">
-                Login
-              </Link>
-            )}
+          {/* Grupo derecho: auth + hamburger, pegado al borde derecho */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Auth controls (desktop) */}
+            <div className="hidden md:block">
+              {user ? (
+                <div className="relative group">
+                  <button
+                    type="button"
+                    className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isLinkActive('/perfil')
+                        ? 'bg-uady-gold text-uady-blue font-bold'
+                        : 'text-white hover:bg-white/10 hover:text-uady-gold'
+                    }`}
+                  >
+                    {user.nombre.split(' ')[0]}
+                    <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" />
+                  </button>
+
+                  <div className="absolute right-0 top-full pt-2 hidden group-hover:block z-50">
+                    <ul className="bg-uady-gold rounded-xl shadow-lg border border-uady-gold/50 py-2 min-w-[12rem]">
+                      <li>
+                        <Link
+                          href="/perfil"
+                          className="block px-4 py-2.5 text-sm text-uady-blue hover:bg-yellow-600"
+                        >
+                          Mi Perfil
+                        </Link>
+                      </li>
+                      <li>
+                        <form action={logout}>
+                          <button
+                            type="submit"
+                            className="w-full text-left px-4 py-2.5 text-sm text-uady-blue hover:bg-yellow-600"
+                          >
+                            Cerrar sesión
+                          </button>
+                        </form>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="px-4 py-2 rounded-lg text-sm font-bold bg-uady-gold text-uady-blue hover:bg-white transition-all"
+                >
+                  Iniciar Sesión
+                </Link>
+              )}
+            </div>
+
+            {/* Mobile: hamburger */}
             <button
-              className="text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+              className="md:hidden text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Abrir menú"
             >
@@ -274,6 +286,37 @@ export default function Navbar({ user }: NavbarProps) {
                   </li>
                 )
               })}
+
+              {/* Perfil / Login — último ítem del menú móvil */}
+              <li>
+                {user ? (
+                  <div className="flex items-center justify-between px-4 py-2.5">
+                    <Link
+                      href="/perfil"
+                      onClick={closeMobile}
+                      className="text-white font-semibold text-sm hover:text-uady-gold"
+                    >
+                      {user.nombre.split(' ')[0]}
+                    </Link>
+                    <form action={logout}>
+                      <button
+                        type="submit"
+                        className="text-white/80 text-xs font-semibold border border-white/30 px-2.5 py-1 rounded-lg hover:bg-white/10 hover:text-uady-gold transition-all"
+                      >
+                        Salir
+                      </button>
+                    </form>
+                  </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={closeMobile}
+                    className="block px-4 py-2.5 rounded-lg text-sm font-bold bg-uady-gold text-uady-blue"
+                  >
+                    Iniciar Sesión
+                  </Link>
+                )}
+              </li>
             </ul>
           </div>
         )}

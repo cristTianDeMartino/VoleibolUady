@@ -3,6 +3,8 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { POSICIONES, labelPosicion, type PosicionValue } from '@/lib/constants/posiciones'
+import { ramaFromGenero } from '@/lib/constants/genero'
 
 // Local interface — decoupled from Prisma client
 interface AtletaRow {
@@ -10,22 +12,22 @@ interface AtletaRow {
   nombre: string
   apellidos: string
   genero: string
-  rama: string
-  posicion: string
+  posicion: PosicionValue | null
   facultad: string
   semestre: number
   fotoUrl: string | null
+  estado: 'ACTIVO' | 'EGRESADO'
+  anioIngreso: number
+  anioEgreso: number | null
 }
 
-const positionColors: Record<string, string> = {
-  Libero: 'bg-uady-gold text-uady-blue',
-  Colocador: 'bg-uady-blue text-white',
-  Opuesto: 'bg-uady-gold text-uady-blue',
-  Central: 'bg-emerald-600 text-white',
-  Banda: 'bg-purple-600 text-white',
+const positionColors: Record<PosicionValue, string> = {
+  LIBERO: 'bg-uady-gold text-uady-blue',
+  ACOMODO: 'bg-uady-blue text-white',
+  OPUESTO: 'bg-uady-gold text-uady-blue',
+  CENTRAL: 'bg-emerald-600 text-white',
+  BANDA: 'bg-purple-600 text-white',
 }
-
-const ALL_POSITIONS = ['Libero', 'Colocador', 'Opuesto', 'Central', 'Banda']
 
 type RamaFilter = 'Todas' | 'Femenil' | 'Varonil'
 type SortOrder = 'asc' | 'desc'
@@ -38,7 +40,7 @@ interface Props {
 export default function RosterClient({ initialAtletas, isAdmin }: Props) {
   const [search, setSearch] = useState('')
   const [ramaFilter, setRamaFilter] = useState<RamaFilter>('Todas')
-  const [posFilter, setPosFilter] = useState<string[]>([])
+  const [posFilter, setPosFilter] = useState<PosicionValue[]>([])
   const [sort, setSort] = useState<SortOrder>('asc')
 
   // All filtering + sorting derived from state — no DB round-trips
@@ -51,9 +53,9 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
           a.nombre.toLowerCase().includes(term) ||
           a.apellidos.toLowerCase().includes(term) ||
           a.facultad.toLowerCase().includes(term) ||
-          a.posicion.toLowerCase().includes(term)
-        const matchRama = ramaFilter === 'Todas' || a.rama === ramaFilter
-        const matchPos = posFilter.length === 0 || posFilter.includes(a.posicion)
+          labelPosicion(a.posicion).toLowerCase().includes(term)
+        const matchRama = ramaFilter === 'Todas' || ramaFromGenero(a.genero) === ramaFilter
+        const matchPos = posFilter.length === 0 || (a.posicion != null && posFilter.includes(a.posicion))
         return matchSearch && matchRama && matchPos
       })
       .sort((a, b) => {
@@ -63,7 +65,7 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
       })
   }, [initialAtletas, search, ramaFilter, posFilter, sort])
 
-  const togglePos = (pos: string) =>
+  const togglePos = (pos: PosicionValue) =>
     setPosFilter((prev) =>
       prev.includes(pos) ? prev.filter((p) => p !== pos) : [...prev, pos]
     )
@@ -144,17 +146,17 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
       {/* Position chip filters */}
       <div className="flex flex-wrap items-center gap-2 mb-5">
         <span className="text-xs text-gray-400 font-semibold">Posición:</span>
-        {ALL_POSITIONS.map((pos) => (
+        {POSICIONES.map(({ value, label }) => (
           <button
-            key={pos}
-            onClick={() => togglePos(pos)}
+            key={value}
+            onClick={() => togglePos(value)}
             className={`text-xs font-bold px-2.5 py-1 rounded-full border transition-all duration-200 ${
-              posFilter.includes(pos)
-                ? `${positionColors[pos] ?? 'bg-gray-600 text-white'} border-transparent`
+              posFilter.includes(value)
+                ? `${positionColors[value]} border-transparent`
                 : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'
             }`}
           >
-            {pos}
+            {label}
           </button>
         ))}
         {posFilter.length > 0 && (
@@ -227,16 +229,17 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
                   </span>
                 )}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                {/* Rama badge */}
+                {a.estado === 'EGRESADO' && <div className="absolute inset-0 bg-black/30" />}
+                {/* Rama badge — derivada de género */}
                 <div className="absolute top-2 left-2">
                   <span
                     className={`text-xs font-bold px-1.5 py-0.5 rounded ${
-                      a.rama === 'Varonil'
+                      a.genero === 'M'
                         ? 'bg-blue-900/80 text-blue-200'
                         : 'bg-pink-900/80 text-pink-200'
                     }`}
                   >
-                    {a.rama}
+                    {ramaFromGenero(a.genero)}
                   </span>
                 </div>
               </div>
@@ -245,13 +248,18 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
               <div className="p-3">
                 <p className="font-black text-uady-blue text-sm leading-tight">{a.nombre}</p>
                 <p className="text-gray-500 text-xs truncate">{a.apellidos}</p>
+                {a.estado === 'EGRESADO' && (
+                  <p className="text-uady-gold text-[10px] font-bold tracking-widest mt-0.5">
+                    {a.anioIngreso} · {a.anioEgreso}
+                  </p>
+                )}
                 <div className="mt-2">
                   <span
                     className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full ${
-                      positionColors[a.posicion] ?? 'bg-gray-100 text-gray-600'
+                      a.posicion ? positionColors[a.posicion] : 'bg-gray-100 text-gray-600'
                     }`}
                   >
-                    {a.posicion}
+                    {labelPosicion(a.posicion)}
                   </span>
                 </div>
                 <div className="mt-2 pt-2 border-t border-gray-50">
@@ -273,9 +281,9 @@ export default function RosterClient({ initialAtletas, isAdmin }: Props) {
       <div className="mt-8 bg-white rounded-xl border border-gray-100 p-4">
         <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Posiciones</p>
         <div className="flex flex-wrap gap-2">
-          {Object.entries(positionColors).map(([pos, cls]) => (
-            <span key={pos} className={`text-xs font-bold px-2.5 py-1 rounded-full ${cls}`}>
-              {pos}
+          {POSICIONES.map(({ value, label }) => (
+            <span key={value} className={`text-xs font-bold px-2.5 py-1 rounded-full ${positionColors[value]}`}>
+              {label}
             </span>
           ))}
         </div>

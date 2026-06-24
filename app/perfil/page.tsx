@@ -9,7 +9,10 @@ export default async function PerfilPage() {
   const session = await getSession()
   if (!session) redirect('/login')
 
-  const atleta = await prisma.atleta.findUnique({ where: { id: session.id } })
+  const atleta = await prisma.atleta.findUnique({
+    where: { id: session.id },
+    include: { privado: true },
+  })
   if (!atleta) redirect('/login')
 
   return (
@@ -18,19 +21,33 @@ export default async function PerfilPage() {
         id: atleta.id,
         nombre: atleta.nombre,
         apellidos: atleta.apellidos,
+        matricula: atleta.matricula,
         rol: atleta.rol,
         posicion: atleta.posicion,
-        rama: atleta.rama,
+        genero: atleta.genero,
         facultad: atleta.facultad,
         semestre: atleta.semestre,
         directorFacultad: atleta.directorFacultad,
         telefonoPersonal: atleta.telefonoPersonal,
         telefonoTutor: atleta.telefonoTutor,
-        nss: atleta.nss,
-        seguroPrivado: atleta.seguroPrivado,
-        email: atleta.email ?? null,
+        correo: atleta.correo ?? null,
         fotoUrl: atleta.fotoUrl,
         rolTecnico: atleta.rolTecnico ?? null,
+        numUniforme: atleta.numUniforme,
+        anioIngreso: atleta.anioIngreso,
+        anioEgreso: atleta.anioEgreso,
+        tallaPlayera: atleta.tallaPlayera,
+        tallaShort: atleta.tallaShort,
+        tallaPants: atleta.tallaPants,
+        tallaChamarra: atleta.tallaChamarra,
+        privado: atleta.privado
+          ? {
+              nss: atleta.privado.nss,
+              seguroAseguradora: atleta.privado.seguroAseguradora,
+              seguroPoliza: atleta.privado.seguroPoliza,
+              seguroTitular: atleta.privado.seguroTitular,
+            }
+          : null,
       }}
     />
   )

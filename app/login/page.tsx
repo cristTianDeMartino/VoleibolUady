@@ -1,7 +1,8 @@
 'use client'
 
-import { useActionState, useState, useTransition } from 'react'
+import { useActionState, useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
+import { GraduationCap } from 'lucide-react'
 import { login } from '@/actions/auth'
 import { crearAdminMaestro, sembrarDatosDemo, sembrarPlanificacionVoleibol, seedVideosFuncionales } from '@/actions/seed'
 
@@ -15,6 +16,11 @@ export default function LoginPage() {
   const [planning, startPlan] = useTransition()
   const [videosMsg, setVideosMsg] = useState<string | null>(null)
   const [seedingVideos, startVideos] = useTransition()
+  const formRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    if (state.error === 'EGRESADO') formRef.current?.reset()
+  }, [state])
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-16">
@@ -35,13 +41,13 @@ export default function LoginPage() {
             Ingresa el código de acceso que te proporcionó tu entrenador.
           </p>
 
-          {state.error && (
+          {state.error && state.error !== 'EGRESADO' && (
             <div className="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm font-medium px-3 py-2.5 rounded-lg flex items-center gap-2">
               <span>⚠️</span> {state.error}
             </div>
           )}
 
-          <form action={formAction} className="space-y-4">
+          <form ref={formRef} action={formAction} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1.5">
                 Código de Acceso
@@ -78,6 +84,19 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          {state.error === 'EGRESADO' && (
+            <div className="mt-4 bg-[#1B2A4A] border-l-4 border-[#F5A623] rounded-lg px-4 py-3 flex gap-3">
+              <GraduationCap className="w-5 h-5 text-uady-gold flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-uady-gold font-bold text-sm mb-1">Eres egresado de la UADY</p>
+                <p className="text-white/80 text-xs leading-relaxed">
+                  Tu ciclo como atleta activo ha concluido. Tu historial y logros quedan registrados
+                  en el sistema. Para cualquier consulta, contacta al cuerpo técnico.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-6">

@@ -597,7 +597,7 @@ function AgregarEjercicioGlobalModal({
                           type="checkbox"
                           checked={selected.has(s.numeroSemana)}
                           onChange={() => toggleWeek(s.numeroSemana)}
-                          className="w-4 h-4 rounded accent-[#72D611] cursor-pointer"
+                          className="w-4 h-4 rounded accent-uady-gold cursor-pointer"
                         />
                         <span className="text-sm text-slate-700">
                           <span className="font-semibold text-uady-blue">Sem. {s.numeroSemana}</span>
@@ -820,7 +820,7 @@ function TablaMatriz({
                   <th
                     key={etapa.id}
                     colSpan={g.count * 3}
-                    className="px-2 py-1.5 text-center border-l border-white/20 bg-[#72D611] text-[#0F2540] group/etapa"
+                    className="px-2 py-1.5 text-center border-l border-white/20 bg-uady-gold text-uady-blue group/etapa"
                   >
                     <div className="flex items-center justify-center gap-1.5">
                       <span className="text-[10px] font-bold uppercase tracking-widest leading-none">
@@ -830,20 +830,20 @@ function TablaMatriz({
                         <button
                           type="button"
                           onClick={() => setEditarEtapa(etapa)}
-                          className="opacity-0 group-hover/etapa:opacity-100 p-0.5 rounded bg-[#0F2540]/10 hover:bg-[#0F2540]/20 transition-all"
+                          className="opacity-0 group-hover/etapa:opacity-100 p-0.5 rounded bg-uady-blue/10 hover:bg-uady-blue/20 transition-all"
                           title="Editar etapa"
                         >
-                          <Pencil className="w-2.5 h-2.5 text-[#0F2540]" />
+                          <Pencil className="w-2.5 h-2.5 text-uady-blue" />
                         </button>
                       )}
                       {isAdmin && (
                         <button
                           type="button"
                           onClick={() => handleEliminarEtapa(etapa.id, etapa.nombre)}
-                          className="opacity-0 group-hover/etapa:opacity-100 p-0.5 rounded bg-[#0F2540]/10 hover:bg-red-500/20 transition-all"
+                          className="opacity-0 group-hover/etapa:opacity-100 p-0.5 rounded bg-uady-blue/10 hover:bg-red-500/20 transition-all"
                           title="Eliminar etapa"
                         >
-                          <Trash2 className="w-2.5 h-2.5 text-[#0F2540] hover:text-red-600" />
+                          <Trash2 className="w-2.5 h-2.5 text-uady-blue hover:text-red-600" />
                         </button>
                       )}
                     </div>
@@ -885,7 +885,7 @@ function TablaMatriz({
             ) : (
               uniqueNames.map((nombre, idx) => {
                 // Alternate between two close shades of uady-blue for a clean corporate look
-                const nameBg = idx % 2 === 0 ? 'bg-[#0F2540]' : 'bg-[#162d4a]'
+                const nameBg = idx % 2 === 0 ? 'bg-uady-blue' : 'bg-uady-blue/90'
                 return (
                   <tr key={nombre} className="group/row border-t border-slate-100 hover:bg-slate-50/50 transition-colors">
                     <td className={`${nameBg} text-white px-4 py-3 font-semibold text-sm border-r border-slate-200`}>

@@ -38,16 +38,16 @@ beforeAll(async () => {
   const jugador = await prisma.atleta.create({
     data: {
       nombre: 'Test', apellidos: 'Jugador', genero: 'F', rama: 'Femenil',
-      posicion: 'Libero', facultad: 'Test', directorFacultad: 'Test',
-      semestre: 1, telefonoPersonal: '0', telefonoTutor: '0', nss: '0',
+      posicion: 'LIBERO', facultad: 'Test', directorFacultad: 'Test',
+      semestre: 1, telefonoPersonal: '0', telefonoTutor: '0',
       codigoAcceso: `TEST_JUGADOR_${Date.now()}`, rol: 'JUGADOR',
     },
   })
   const otro = await prisma.atleta.create({
     data: {
       nombre: 'Otro', apellidos: 'Jugador', genero: 'M', rama: 'Varonil',
-      posicion: 'Central', facultad: 'Test', directorFacultad: 'Test',
-      semestre: 1, telefonoPersonal: '0', telefonoTutor: '0', nss: '0',
+      posicion: 'CENTRAL', facultad: 'Test', directorFacultad: 'Test',
+      semestre: 1, telefonoPersonal: '0', telefonoTutor: '0',
       codigoAcceso: `TEST_OTRO_${Date.now()}`, rol: 'JUGADOR',
     },
   })

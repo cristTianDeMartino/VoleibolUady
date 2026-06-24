@@ -3,15 +3,18 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import EditFotoAtleta from '@/components/EditFotoAtleta'
+import BotonEliminarAtleta from '@/components/BotonEliminarAtleta'
+import { BotonEgresarAtleta, BotonReactivarAtleta } from '@/components/BotonEstadoAtleta'
+import { CardDeportiva, CardContacto, CardMedica } from '@/components/AtletaPublicCards'
+import { labelPosicion, type PosicionValue } from '@/lib/constants/posiciones'
+import { ramaFromGenero } from '@/lib/constants/genero'
 
-const positionColors: Record<string, string> = {
-  Libero: 'bg-uady-gold text-uady-blue',
-  Colocador: 'bg-uady-blue text-white',
-  Armadora: 'bg-uady-blue text-white',    // backwards compat
-  Opuesto: 'bg-uady-gold text-uady-blue',
-  Opuesta: 'bg-uady-gold text-uady-blue', // backwards compat
-  Central: 'bg-emerald-600 text-white',
-  Banda: 'bg-purple-600 text-white',
+const positionColors: Record<PosicionValue, string> = {
+  LIBERO: 'bg-uady-gold text-uady-blue',
+  ACOMODO: 'bg-uady-blue text-white',
+  OPUESTO: 'bg-uady-gold text-uady-blue',
+  CENTRAL: 'bg-emerald-600 text-white',
+  BANDA: 'bg-purple-600 text-white',
 }
 
 const fmtFecha = (d: Date | string | null) =>
@@ -25,18 +28,26 @@ export default async function AtletaDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const session = await getSession()
+  const canViewPrivate = session?.rol === 'ADMIN' || session?.id === id
 
-  const [session, atleta] = await Promise.all([
-    getSession(),
-    prisma.atleta.findUnique({
-      where: { id },
-      include: { lesiones: { orderBy: { fechaConsulta: 'desc' } } },
-    }),
-  ])
+  const atleta = await prisma.atleta.findUnique({
+    where: { id },
+    select: {
+      id: true, nombre: true, apellidos: true, matricula: true, genero: true, posicion: true,
+      facultad: true, directorFacultad: true, semestre: true, telefonoPersonal: true,
+      telefonoTutor: true, correo: true, rol: true, rolTecnico: true,
+      fotoUrl: true, estado: true, anioIngreso: true, anioEgreso: true, numUniforme: true,
+      tallaPlayera: true, tallaShort: true, tallaPants: true, tallaChamarra: true,
+      lesiones: { orderBy: { fechaConsulta: 'desc' } },
+      // Sin accesoCompleto, no se hace include de datos sensibles — ni siquiera llegan al componente.
+      privado: canViewPrivate,
+    },
+  })
 
   if (!atleta) notFound()
 
-  const canViewPrivate = session?.rol === 'ADMIN' || session?.id === atleta.id
+  const canEdit = canViewPrivate // mismo criterio: ADMIN o el propio atleta
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
@@ -62,23 +73,28 @@ export default async function AtletaDetailPage({
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
             <span
               className={`text-xs font-bold px-3 py-1 rounded-full ${
-                positionColors[atleta.posicion] ?? 'bg-white/20 text-white'
+                atleta.posicion ? positionColors[atleta.posicion] : 'bg-white/20 text-white'
               }`}
             >
-              {atleta.posicion}
+              {labelPosicion(atleta.posicion)}
             </span>
             <span
               className={`text-xs font-bold px-3 py-1 rounded-full ${
-                atleta.rama === 'Varonil'
+                atleta.genero === 'M'
                   ? 'bg-blue-900/60 text-blue-200'
                   : 'bg-pink-900/60 text-pink-200'
               }`}
             >
-              {atleta.rama === 'Varonil' ? '♂' : '♀'} {atleta.rama}
+              {atleta.genero === 'M' ? '♂' : '♀'} {ramaFromGenero(atleta.genero)}
             </span>
             {atleta.rol === 'ADMIN' && (
               <span className="bg-uady-gold text-uady-blue text-xs font-bold px-3 py-1 rounded-full">
                 Admin
+              </span>
+            )}
+            {atleta.estado === 'EGRESADO' && (
+              <span className="text-uady-gold text-xs font-bold tracking-widest px-3 py-1 rounded-full border border-uady-gold/40">
+                Egresado · {atleta.anioIngreso} – {atleta.anioEgreso}
               </span>
             )}
           </div>
@@ -103,6 +119,12 @@ export default async function AtletaDetailPage({
             Información Académica
           </h2>
           <dl className="space-y-3 text-sm">
+            {atleta.matricula && (
+              <div>
+                <dt className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Matrícula</dt>
+                <dd className="text-gray-700 mt-0.5 font-mono">{atleta.matricula}</dd>
+              </div>
+            )}
             <div>
               <dt className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Facultad</dt>
               <dd className="text-gray-700 mt-0.5">{atleta.facultad}</dd>
@@ -118,56 +140,61 @@ export default async function AtletaDetailPage({
           </dl>
         </div>
 
-        {/* Private: Contact */}
+        {/* Información Deportiva — pública */}
+        <CardDeportiva
+          atletaId={atleta.id}
+          canEdit={canEdit}
+          data={{
+            posicion: atleta.posicion,
+            numUniforme: atleta.numUniforme,
+            anioIngreso: atleta.anioIngreso,
+            anioEgreso: atleta.anioEgreso,
+            tallaPlayera: atleta.tallaPlayera,
+            tallaShort: atleta.tallaShort,
+            tallaPants: atleta.tallaPants,
+            tallaChamarra: atleta.tallaChamarra,
+          }}
+        />
+
+        {/* Información de Contacto — versión completa (ADMIN o el propio atleta,
+            con clave/correo/tel. personal/tel. tutor) o reducida (compañero de
+            equipo: solo correo y tel. personal, sin badge Privado). Cada
+            variante solo recibe los campos que le corresponden. */}
         {canViewPrivate ? (
-          <div className="bg-white rounded-xl border border-uady-blue/10 shadow-sm p-5">
-            <h2 className="font-black text-uady-blue mb-4 flex items-center gap-2">
-              <span className="w-1 h-5 bg-uady-blue rounded-full" />
-              Contacto
-              <span className="text-xs font-normal text-gray-400 ml-1">🔒 Privado</span>
-            </h2>
-            <dl className="space-y-3 text-sm">
-              <div>
-                <dt className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Teléfono Personal</dt>
-                <dd className="text-gray-700 mt-0.5">📱 {atleta.telefonoPersonal}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Teléfono Tutor / Familiar</dt>
-                <dd className="text-gray-700 mt-0.5">📞 {atleta.telefonoTutor}</dd>
-              </div>
-            </dl>
-          </div>
+          <CardContacto
+            atletaId={atleta.id}
+            canEdit={canEdit}
+            variant="completo"
+            data={{
+              correo: atleta.correo,
+              telefonoPersonal: atleta.telefonoPersonal,
+              telefonoTutor: atleta.telefonoTutor,
+            }}
+          />
         ) : (
-          <div className="bg-gray-50 rounded-xl border border-dashed border-gray-200 p-5 flex items-center justify-center text-center">
-            <div>
-              <p className="text-2xl mb-2">🔒</p>
-              <p className="text-sm text-gray-400 font-medium">Sección Privada</p>
-              <p className="text-xs text-gray-300 mt-1">Inicia sesión para ver</p>
-            </div>
-          </div>
+          <CardContacto
+            atletaId={atleta.id}
+            variant="reducido"
+            data={{
+              correo: atleta.correo,
+              telefonoPersonal: atleta.telefonoPersonal,
+            }}
+          />
         )}
 
-        {/* Private: Medical */}
+        {/* Datos Médicos — nunca se renderiza para un compañero de equipo:
+            ausencia total en el DOM, no solo ocultamiento visual. */}
         {canViewPrivate && (
-          <div className="bg-white rounded-xl border border-uady-gold/10 shadow-sm p-5">
-            <h2 className="font-black text-uady-blue mb-4 flex items-center gap-2">
-              <span className="w-1 h-5 bg-uady-gold rounded-full" />
-              Datos Médicos
-              <span className="text-xs font-normal text-gray-400 ml-1">🔒 Privado</span>
-            </h2>
-            <dl className="space-y-3 text-sm">
-              <div>
-                <dt className="text-xs text-gray-400 font-semibold uppercase tracking-wider">NSS</dt>
-                <dd className="text-gray-700 mt-0.5 font-mono">{atleta.nss}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Seguro Privado</dt>
-                <dd className="text-gray-700 mt-0.5">
-                  {atleta.seguroPrivado ?? <span className="text-gray-400 italic">No especificado</span>}
-                </dd>
-              </div>
-            </dl>
-          </div>
+          <CardMedica
+            atletaId={atleta.id}
+            canEdit={canEdit}
+            data={{
+              nss: atleta.privado?.nss ?? null,
+              seguroAseguradora: atleta.privado?.seguroAseguradora ?? null,
+              seguroPoliza: atleta.privado?.seguroPoliza ?? null,
+              seguroTitular: atleta.privado?.seguroTitular ?? null,
+            }}
+          />
         )}
 
         {/* Historial Médico de Lesiones — solo lesiones dadas de alta.
@@ -225,13 +252,17 @@ export default async function AtletaDetailPage({
 
       {/* Admin actions */}
       {session?.rol === 'ADMIN' && (
-        <div className="mt-6 flex gap-3 flex-wrap">
-          <Link
-            href="/atletas/agregar"
-            className="text-sm font-semibold text-uady-blue border border-uady-blue/20 px-4 py-2 rounded-lg hover:bg-uady-blue hover:text-white transition-all"
-          >
-            + Agregar otra atleta
-          </Link>
+        <div className="mt-6 flex gap-3 flex-wrap items-start justify-end">
+          {atleta.estado === 'ACTIVO' ? (
+            <BotonEgresarAtleta atletaId={atleta.id} nombre={`${atleta.nombre} ${atleta.apellidos}`} />
+          ) : (
+            <BotonReactivarAtleta
+              atletaId={atleta.id}
+              nombre={`${atleta.nombre} ${atleta.apellidos}`}
+              anioEgreso={atleta.anioEgreso}
+            />
+          )}
+          <BotonEliminarAtleta atletaId={atleta.id} nombre={`${atleta.nombre} ${atleta.apellidos}`} />
         </div>
       )}
     </div>

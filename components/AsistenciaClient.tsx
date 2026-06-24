@@ -4,6 +4,7 @@ import { useState, useTransition, useMemo } from 'react'
 import { CheckCircle2, Loader2, CalendarDays, ChevronLeft, ChevronRight, Check, Minus } from 'lucide-react'
 import { registrarAsistenciaHoy } from '@/actions/asistencia'
 import type { AtletaConAsistencia } from '@/actions/asistencia'
+import { ramaFromGenero } from '@/lib/constants/genero'
 
 // ─── Utilidades ───────────────────────────────────────────────────────────────
 
@@ -264,7 +265,7 @@ export function AdminView({ atletas, registros, mesInicial, anioInicial }: Admin
                     <span className="font-bold">{atleta.apellidos}</span>
                     <span className="text-slate-400 font-normal">, {atleta.nombre}</span>
                   </div>
-                  <div className="text-[10px] text-slate-400 font-normal mt-0.5">{atleta.rama}</div>
+                  <div className="text-[10px] text-slate-400 font-normal mt-0.5">{ramaFromGenero(atleta.genero)}</div>
                 </td>
 
                 {/* Celdas por día */}

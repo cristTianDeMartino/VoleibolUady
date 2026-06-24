@@ -5,12 +5,16 @@ import Image from 'next/image'
 import { User, Pencil, X, Loader2, Check, Camera, Shield } from 'lucide-react'
 import {
   updateSeccionAcademica,
+  updateSeccionDeportiva,
   updateSeccionContacto,
   updateSeccionMedica,
   updatePerfilAdmin,
   updateFotoPerfilPropio,
 } from '@/actions/atletas'
 import type { PerfilFormState } from '@/actions/atletas'
+import { labelPosicion, type PosicionValue } from '@/lib/constants/posiciones'
+import { ramaFromGenero } from '@/lib/constants/genero'
+import { aniosDesde2000 } from '@/lib/validation'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -18,44 +22,61 @@ export interface AtletaPerfilData {
   id: string
   nombre: string
   apellidos: string
+  matricula: string | null
   rol: string
-  posicion: string
-  rama: string
+  posicion: PosicionValue | null
+  genero: string
   facultad: string
   semestre: number
   directorFacultad: string
   telefonoPersonal: string
   telefonoTutor: string
-  nss: string
-  seguroPrivado: string | null
-  email: string | null
+  correo: string | null
   fotoUrl: string | null
   rolTecnico: string | null
+  numUniforme: number | null
+  anioIngreso: number | null
+  anioEgreso: number | null
+  tallaPlayera: string | null
+  tallaShort: string | null
+  tallaPants: string | null
+  tallaChamarra: string | null
+  privado: {
+    nss: string | null
+    seguroAseguradora: string | null
+    seguroPoliza: string | null
+    seguroTitular: string | null
+  } | null
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
+const TALLAS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+
 const FACULTADES = [
-  'Facultad de Medicina', 'Facultad de Ingeniería', 'Facultad de Derecho',
-  'Facultad de Contaduría y Administración', 'Facultad de Psicología',
+  'Facultad de Medicina', 'Facultad de Ingeniería', 'Facultad de Ingeniería Química', 'Facultad de Derecho',
+  'Facultad de Contaduría y Administración', 'Facultad de Economía', 'Facultad de Psicología',
   'Facultad de Arquitectura', 'Facultad de Enfermería', 'Facultad de Nutrición',
   'Facultad de Odontología', 'Facultad de Matemáticas', 'Facultad de Química',
-  'Facultad de Biología', 'Facultad de Educación',
+  'Facultad de Biología', 'Facultad de Educación', 'Facultad de Ciencias Antropológicas',
 ]
 
 const ROLES_TECNICOS = ['Entrenador', 'Auxiliar', 'Médico', 'Psicólogo', 'Fisioterapeuta', 'Nutriólogo']
 
-const ic = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-all bg-white'
+const ic = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-uady-blue focus:ring-1 focus:ring-uady-blue transition-all bg-white'
 const lc = 'block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1'
+const icErr = (hasError?: string) => `${ic} ${hasError ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : ''}`
 
-const POSICION_COLORS: Record<string, string> = {
-  Libero:    'bg-accent-green/20 text-[#0F2540]',
-  Colocador: 'bg-primary-blue/20 text-primary-blue',
-  Armadora:  'bg-primary-blue/20 text-primary-blue',
-  Opuesto:   'bg-emerald-100 text-emerald-800',
-  Opuesta:   'bg-emerald-100 text-emerald-800',
-  Central:   'bg-purple-100 text-purple-800',
-  Banda:     'bg-indigo-100 text-indigo-800',
+function FieldError({ msg }: { msg?: string }) {
+  return msg ? <p className="text-red-500 text-xs mt-1">{msg}</p> : null
+}
+
+const POSICION_COLORS: Record<PosicionValue, string> = {
+  LIBERO:  'bg-uady-gold/20 text-uady-blue',
+  ACOMODO: 'bg-uady-blue/20 text-uady-blue',
+  OPUESTO: 'bg-emerald-100 text-emerald-800',
+  CENTRAL: 'bg-purple-100 text-purple-800',
+  BANDA:   'bg-indigo-100 text-indigo-800',
 }
 
 // ─── InfoRow ──────────────────────────────────────────────────────────────────
@@ -94,15 +115,15 @@ function SectionCard({
     <div
       className={`bg-white rounded-xl overflow-hidden transition-all duration-200 ${
         editing
-          ? 'border border-primary-blue/30 shadow-md ring-1 ring-primary-blue/10'
+          ? 'border border-uady-blue/30 shadow-md ring-1 ring-uady-blue/10'
           : 'border border-gray-100 shadow-sm'
       }`}
     >
       {/* Card header */}
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
         <div className="flex items-center gap-2">
-          <div className={`w-1 h-5 rounded-full ${accent === 'green' ? 'bg-accent-green' : 'bg-primary-blue'}`} />
-          <h2 className="text-sm font-black text-primary-blue">
+          <div className={`w-1 h-5 rounded-full ${accent === 'green' ? 'bg-uady-gold' : 'bg-uady-blue'}`} />
+          <h2 className="text-sm font-black text-uady-blue">
             {title}
             {privateLabel && (
               <span className="text-[10px] font-normal text-gray-400 ml-2">🔒 Privado</span>
@@ -113,7 +134,7 @@ function SectionCard({
           <button
             type="button"
             onClick={onEdit}
-            className="p-1.5 rounded-lg text-gray-300 hover:text-primary-blue hover:bg-primary-blue/5 transition-all"
+            className="p-1.5 rounded-lg text-gray-300 hover:text-uady-blue hover:bg-uady-blue/5 transition-all"
             aria-label={`Editar ${title}`}
           >
             <Pencil className="w-3.5 h-3.5" />
@@ -137,7 +158,7 @@ function SectionCard({
               <button
                 type="submit"
                 disabled={isPending}
-                className="flex items-center gap-1.5 bg-primary-blue text-white text-xs font-bold px-4 py-2 rounded-lg hover:brightness-110 disabled:opacity-60 transition-all"
+                className="flex items-center gap-1.5 bg-uady-blue text-white text-xs font-bold px-4 py-2 rounded-lg hover:brightness-110 disabled:opacity-60 transition-all"
               >
                 {isPending
                   ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Guardando…</>
@@ -170,6 +191,7 @@ function SeccionAcademica({ atleta }: { atleta: AtletaPerfilData }) {
     updateSeccionAcademica, { error: null },
   )
   useEffect(() => { if (state.success) setEditing(false) }, [state.success])
+  const fieldError = (name: string) => (state.field === name ? state.error ?? undefined : undefined)
 
   return (
     <form action={formAction}>
@@ -179,7 +201,7 @@ function SeccionAcademica({ atleta }: { atleta: AtletaPerfilData }) {
         onEdit={() => setEditing(true)}
         onCancel={() => setEditing(false)}
         isPending={isPending}
-        error={state.error}
+        error={state.field ? null : state.error}
         editFields={
           <div className="space-y-3">
             <div>
@@ -190,27 +212,105 @@ function SeccionAcademica({ atleta }: { atleta: AtletaPerfilData }) {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={lc}>Semestre (1–12)</label>
-                <input
-                  type="number" name="semestre" min={1} max={12} required
-                  defaultValue={atleta.semestre} className={ic}
-                />
+                <label className={lc}>Semestre</label>
+                <select
+                  name="semestre" required
+                  defaultValue={atleta.semestre} className={icErr(fieldError('semestre'))}
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((s) => (
+                    <option key={s} value={s}>{s}°</option>
+                  ))}
+                </select>
+                <FieldError msg={fieldError('semestre')} />
               </div>
               <div>
                 <label className={lc}>Director(a) de la Facultad</label>
                 <input
                   type="text" name="directorFacultad" required
-                  defaultValue={atleta.directorFacultad} className={ic}
+                  pattern="[A-Za-záéíóúÁÉÍÓÚüÜñÑ\s]*"
+                  defaultValue={atleta.directorFacultad} className={icErr(fieldError('directorFacultad'))}
                 />
+                <FieldError msg={fieldError('directorFacultad')} />
               </div>
             </div>
           </div>
         }
       >
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <InfoRow label="Matrícula" value={atleta.matricula} />
           <InfoRow label="Facultad" value={atleta.facultad} />
           <InfoRow label="Semestre" value={`${atleta.semestre}°`} />
           <InfoRow label="Director(a)" value={atleta.directorFacultad} />
+        </div>
+      </SectionCard>
+    </form>
+  )
+}
+
+// ─── Section: Deportiva (pública) ─────────────────────────────────────────────
+
+function SeccionDeportiva({ atleta }: { atleta: AtletaPerfilData }) {
+  const [editing, setEditing] = useState(false)
+  const [state, formAction, isPending] = useActionState<PerfilFormState, FormData>(
+    updateSeccionDeportiva, { error: null },
+  )
+  useEffect(() => { if (state.success) setEditing(false) }, [state.success])
+  const fieldError = (name: string) => (state.field === name ? state.error ?? undefined : undefined)
+
+  return (
+    <form action={formAction}>
+      <SectionCard
+        title="Información Deportiva"
+        editing={editing}
+        onEdit={() => setEditing(true)}
+        onCancel={() => setEditing(false)}
+        isPending={isPending}
+        error={state.field ? null : state.error}
+        editFields={
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={lc}>Número de Uniforme</label>
+                <input type="number" name="numUniforme" min={0} defaultValue={atleta.numUniforme ?? ''} className={ic} />
+              </div>
+              <div>
+                <label className={lc}>Año de Ingreso</label>
+                <select
+                  name="anioIngreso" required
+                  defaultValue={atleta.anioIngreso ?? ''} className={icErr(fieldError('anioIngreso'))}
+                >
+                  {aniosDesde2000().map((a) => <option key={a} value={a}>{a}</option>)}
+                </select>
+                <FieldError msg={fieldError('anioIngreso')} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {([
+                ['tallaPlayera', 'Talla Playera', atleta.tallaPlayera],
+                ['tallaShort', 'Talla Short', atleta.tallaShort],
+                ['tallaPants', 'Talla Pants', atleta.tallaPants],
+                ['tallaChamarra', 'Talla Chamarra', atleta.tallaChamarra],
+              ] as const).map(([name, label, value]) => (
+                <div key={name}>
+                  <label className={lc}>{label}</label>
+                  <select name={name} defaultValue={value ?? ''} className={ic}>
+                    <option value="">—</option>
+                    {TALLAS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              ))}
+            </div>
+          </div>
+        }
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <InfoRow label="Número de Uniforme" value={atleta.numUniforme != null ? `#${atleta.numUniforme}` : null} />
+          <InfoRow label="Año de Ingreso" value={atleta.anioIngreso?.toString()} />
+          {atleta.anioEgreso != null && <InfoRow label="Año de Egreso" value={atleta.anioEgreso.toString()} />}
+          <InfoRow label="Talla Playera" value={atleta.tallaPlayera} />
+          <InfoRow label="Talla Short" value={atleta.tallaShort} />
+          <InfoRow label="Talla Pants" value={atleta.tallaPants} />
+          <InfoRow label="Talla Chamarra" value={atleta.tallaChamarra} />
         </div>
       </SectionCard>
     </form>
@@ -225,6 +325,7 @@ function SeccionContacto({ atleta }: { atleta: AtletaPerfilData }) {
     updateSeccionContacto, { error: null },
   )
   useEffect(() => { if (state.success) setEditing(false) }, [state.success])
+  const fieldError = (name: string) => (state.field === name ? state.error ?? undefined : undefined)
 
   return (
     <form action={formAction}>
@@ -234,33 +335,42 @@ function SeccionContacto({ atleta }: { atleta: AtletaPerfilData }) {
         onEdit={() => setEditing(true)}
         onCancel={() => setEditing(false)}
         isPending={isPending}
-        error={state.error}
+        error={state.field ? null : state.error}
         editFields={
           <div className="space-y-3">
             <div>
-              <label className={lc}>Correo Institucional *</label>
+              <label className={lc}>Correo *</label>
               <input
-                type="email" name="email" required
-                defaultValue={atleta.email ?? ''}
+                type="email" name="correo" required
+                defaultValue={atleta.correo ?? ''}
                 placeholder="usuario@correo.uady.mx"
-                className={ic}
+                className={icErr(fieldError('correo'))}
               />
+              <FieldError msg={fieldError('correo')} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={lc}>Teléfono Personal *</label>
-                <input type="tel" name="telefonoPersonal" required defaultValue={atleta.telefonoPersonal} className={ic} />
+                <input
+                  type="tel" name="telefonoPersonal" required maxLength={10} inputMode="numeric"
+                  defaultValue={atleta.telefonoPersonal} className={icErr(fieldError('telefonoPersonal'))}
+                />
+                <FieldError msg={fieldError('telefonoPersonal')} />
               </div>
               <div>
                 <label className={lc}>Teléfono Tutor / Familiar *</label>
-                <input type="tel" name="telefonoTutor" required defaultValue={atleta.telefonoTutor} className={ic} />
+                <input
+                  type="tel" name="telefonoTutor" required maxLength={10} inputMode="numeric"
+                  defaultValue={atleta.telefonoTutor} className={icErr(fieldError('telefonoTutor'))}
+                />
+                <FieldError msg={fieldError('telefonoTutor')} />
               </div>
             </div>
           </div>
         }
       >
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <InfoRow label="Correo Institucional" value={atleta.email} />
+          <InfoRow label="Correo" value={atleta.correo} />
           <InfoRow label="Teléfono Personal" value={atleta.telefonoPersonal} />
           <InfoRow label="Teléfono Tutor / Familiar" value={atleta.telefonoTutor} />
         </div>
@@ -277,6 +387,7 @@ function SeccionMedica({ atleta }: { atleta: AtletaPerfilData }) {
     updateSeccionMedica, { error: null },
   )
   useEffect(() => { if (state.success) setEditing(false) }, [state.success])
+  const fieldError = (name: string) => (state.field === name ? state.error ?? undefined : undefined)
 
   return (
     <form action={formAction}>
@@ -286,28 +397,39 @@ function SeccionMedica({ atleta }: { atleta: AtletaPerfilData }) {
         onEdit={() => setEditing(true)}
         onCancel={() => setEditing(false)}
         isPending={isPending}
-        error={state.error}
+        error={state.field ? null : state.error}
         editFields={
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3">
             <div>
               <label className={lc}>NSS *</label>
-              <input type="text" name="nss" required defaultValue={atleta.nss} className={ic} />
-            </div>
-            <div>
-              <label className={lc}>Seguro Médico Privado</label>
               <input
-                type="text" name="seguroPrivado"
-                defaultValue={atleta.seguroPrivado ?? ''}
-                placeholder="Nombre de aseguradora"
-                className={ic}
+                type="text" name="nss" required maxLength={11} minLength={11} inputMode="numeric"
+                defaultValue={atleta.privado?.nss ?? ''} className={icErr(fieldError('nss'))}
               />
+              <FieldError msg={fieldError('nss')} />
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className={lc}>Aseguradora</label>
+                <input type="text" name="seguroAseguradora" defaultValue={atleta.privado?.seguroAseguradora ?? ''} className={ic} />
+              </div>
+              <div>
+                <label className={lc}>Póliza</label>
+                <input type="text" name="seguroPoliza" defaultValue={atleta.privado?.seguroPoliza ?? ''} className={ic} />
+              </div>
+              <div>
+                <label className={lc}>Titular</label>
+                <input type="text" name="seguroTitular" defaultValue={atleta.privado?.seguroTitular ?? ''} className={ic} />
+              </div>
             </div>
           </div>
         }
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <InfoRow label="NSS" value={atleta.nss} />
-          <InfoRow label="Seguro Médico Privado" value={atleta.seguroPrivado ?? 'No especificado'} />
+          <InfoRow label="NSS" value={atleta.privado?.nss} />
+          <InfoRow label="Aseguradora" value={atleta.privado?.seguroAseguradora ?? 'No especificado'} />
+          <InfoRow label="Póliza" value={atleta.privado?.seguroPoliza} />
+          <InfoRow label="Titular" value={atleta.privado?.seguroTitular} />
         </div>
       </SectionCard>
     </form>
@@ -322,6 +444,7 @@ function SeccionCuerpoTecnico({ atleta }: { atleta: AtletaPerfilData }) {
     updatePerfilAdmin, { error: null },
   )
   useEffect(() => { if (state.success) setEditing(false) }, [state.success])
+  const fieldError = (name: string) => (state.field === name ? state.error ?? undefined : undefined)
 
   return (
     <form action={formAction}>
@@ -331,7 +454,7 @@ function SeccionCuerpoTecnico({ atleta }: { atleta: AtletaPerfilData }) {
         onEdit={() => setEditing(true)}
         onCancel={() => setEditing(false)}
         isPending={isPending}
-        error={state.error}
+        error={state.field ? null : state.error}
         editFields={
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -345,10 +468,10 @@ function SeccionCuerpoTecnico({ atleta }: { atleta: AtletaPerfilData }) {
               </div>
             </div>
             <div>
-              <label className={lc}>Correo Institucional *</label>
+              <label className={lc}>Correo *</label>
               <input
-                type="email" name="email" required
-                defaultValue={atleta.email ?? ''}
+                type="email" name="correo" required
+                defaultValue={atleta.correo ?? ''}
                 placeholder="usuario@correo.uady.mx"
                 className={ic}
               />
@@ -356,7 +479,11 @@ function SeccionCuerpoTecnico({ atleta }: { atleta: AtletaPerfilData }) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={lc}>Teléfono *</label>
-                <input type="tel" name="telefonoPersonal" required defaultValue={atleta.telefonoPersonal} className={ic} />
+                <input
+                  type="tel" name="telefonoPersonal" required maxLength={10} inputMode="numeric"
+                  defaultValue={atleta.telefonoPersonal} className={icErr(fieldError('telefonoPersonal'))}
+                />
+                <FieldError msg={fieldError('telefonoPersonal')} />
               </div>
               <div>
                 <label className={lc}>Función en el Cuerpo Técnico *</label>
@@ -370,7 +497,7 @@ function SeccionCuerpoTecnico({ atleta }: { atleta: AtletaPerfilData }) {
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <InfoRow label="Nombre Completo" value={`${atleta.nombre} ${atleta.apellidos}`} />
-          <InfoRow label="Correo Institucional" value={atleta.email} />
+          <InfoRow label="Correo" value={atleta.correo} />
           <InfoRow label="Teléfono" value={atleta.telefonoPersonal} />
           <InfoRow label="Función" value={atleta.rolTecnico ?? 'No especificado'} />
         </div>
@@ -413,20 +540,20 @@ export default function PerfilClient({ atleta }: { atleta: AtletaPerfilData }) {
     <div className="min-h-screen bg-gray-50">
 
       {/* ── Profile header ── */}
-      <div className="bg-primary-blue text-white">
+      <div className="bg-uady-blue text-white">
         <div className="max-w-4xl mx-auto px-4 py-12 flex flex-col items-center text-center">
 
           {/* Avatar — click to change photo */}
           <label
-            className="relative w-28 h-28 rounded-full border-4 border-accent-green bg-white/10 flex items-center justify-center overflow-hidden cursor-pointer group"
+            className="relative w-28 h-28 rounded-full border-4 border-uady-gold bg-white/10 flex items-center justify-center overflow-hidden cursor-pointer group"
             title="Cambiar foto de perfil"
           >
             {imgSrc ? (
               <Image src={imgSrc} alt={nombreCompleto} fill className="object-cover" sizes="112px" />
             ) : inicial ? (
-              <span className="text-4xl font-black text-accent-green">{inicial}</span>
+              <span className="text-4xl font-black text-uady-gold">{inicial}</span>
             ) : (
-              <User className="w-12 h-12 text-accent-green" />
+              <User className="w-12 h-12 text-uady-gold" />
             )}
             {/* Hover overlay */}
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
@@ -454,7 +581,7 @@ export default function PerfilClient({ atleta }: { atleta: AtletaPerfilData }) {
           <div className="mt-2 flex items-center gap-2 flex-wrap justify-center">
             {isAdmin ? (
               <>
-                <span className="bg-accent-green/20 text-accent-green text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
+                <span className="bg-uady-gold/20 text-uady-gold text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
                   <Shield className="w-3 h-3" />
                   Administrador
                 </span>
@@ -468,19 +595,19 @@ export default function PerfilClient({ atleta }: { atleta: AtletaPerfilData }) {
               <>
                 <span
                   className={`text-xs font-bold px-3 py-1 rounded-full ${
-                    POSICION_COLORS[atleta.posicion] ?? 'bg-white/20 text-white'
+                    atleta.posicion ? POSICION_COLORS[atleta.posicion] : 'bg-white/20 text-white'
                   }`}
                 >
-                  {atleta.posicion}
+                  {labelPosicion(atleta.posicion)}
                 </span>
                 <span
                   className={`text-xs font-bold px-3 py-1 rounded-full ${
-                    atleta.rama === 'Varonil'
+                    atleta.genero === 'M'
                       ? 'bg-blue-900/60 text-blue-200'
                       : 'bg-pink-900/60 text-pink-200'
                   }`}
                 >
-                  {atleta.rama === 'Varonil' ? '♂' : '♀'} {atleta.rama}
+                  {atleta.genero === 'M' ? '♂' : '♀'} {ramaFromGenero(atleta.genero)}
                 </span>
               </>
             )}
@@ -499,6 +626,7 @@ export default function PerfilClient({ atleta }: { atleta: AtletaPerfilData }) {
         ) : (
           <>
             <SeccionAcademica atleta={atleta} />
+            <SeccionDeportiva atleta={atleta} />
             <SeccionContacto atleta={atleta} />
             <SeccionMedica atleta={atleta} />
           </>

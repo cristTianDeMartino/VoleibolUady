@@ -1,35 +1,55 @@
 'use server'
 
+import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
+import { ramaFromGenero } from '@/lib/constants/genero'
 
+// codigoAcceso siempre se guarda hasheado — no se puede buscar/upsert por
+// igualdad de texto plano, así que primero se resuelve el atletaId vía
+// ClaveAtleta.clavePlana (única fuente recuperable de la clave en texto plano).
 export async function crearAdminMaestro(): Promise<{ error?: string; ok?: boolean; codigo?: string }> {
   if (process.env.NODE_ENV === 'production') {
     return { error: 'No disponible en producción.' }
   }
 
+  const codigoPlano = 'ADMIN001'
+
   try {
-    await prisma.atleta.upsert({
-      where: { codigoAcceso: 'ADMIN001' },
-      update: { rol: 'ADMIN', rolTecnico: 'Entrenador' },
-      create: {
-        nombre: 'Admin',
-        apellidos: 'Maestro',
-        genero: 'M',
-        rama: 'Varonil',
-        posicion: 'Entrenador',
-        facultad: 'FMAT',
-        directorFacultad: 'Director General',
-        semestre: 1,
-        telefonoPersonal: '9991234567',
-        telefonoTutor: '9991234567',
-        nss: '00000000000',
-        codigoAcceso: 'ADMIN001',
-        rol: 'ADMIN',
-        rolTecnico: 'Entrenador',
-        email: 'admin@uady.mx',
-      },
+    const existente = await prisma.claveAtleta.findUnique({
+      where: { clavePlana: codigoPlano },
+      select: { atletaId: true },
     })
-    return { ok: true, codigo: 'ADMIN001' }
+
+    if (existente) {
+      await prisma.atleta.update({
+        where: { id: existente.atletaId },
+        data: { rol: 'ADMIN', rolTecnico: 'Entrenador' },
+      })
+    } else {
+      const claveHasheada = await bcrypt.hash(codigoPlano, 10)
+      await prisma.atleta.create({
+        data: {
+          nombre: 'Admin',
+          apellidos: 'Maestro',
+          genero: 'M',
+          rama: 'Varonil',
+          posicion: null, // ADMIN — no tiene posición de juego
+          facultad: 'FMAT',
+          directorFacultad: 'Director General',
+          semestre: 1,
+          telefonoPersonal: '9991234567',
+          telefonoTutor: '9991234567',
+          anioIngreso: 2020,
+          codigoAcceso: claveHasheada,
+          rol: 'ADMIN',
+          rolTecnico: 'Entrenador',
+          correo: 'admin@uady.mx',
+          privado: { create: { nss: '00000000000' } },
+          claveAtleta: { create: { clavePlana: codigoPlano } },
+        },
+      })
+    }
+    return { ok: true, codigo: codigoPlano }
   } catch (e) {
     return { error: (e as Error).message }
   }
@@ -42,72 +62,72 @@ export async function crearAdminMaestro(): Promise<{ error?: string; ok?: boolea
 const JUGADORES = [
   {
     nombre: 'Ana', apellidos: 'García Reyes', genero: 'F', rama: 'Femenil',
-    posicion: 'Líbero', facultad: 'FMAT', directorFacultad: 'Dr. Ramón Espinosa',
+    posicion: 'LIBERO', facultad: 'FMAT', directorFacultad: 'Dr. Ramón Espinosa',
     semestre: 6, telefonoPersonal: '9991110001', telefonoTutor: '9991110002',
-    nss: '11111111101', codigoAcceso: 'ANA001', email: 'ana.garcia@uady.mx',
+    nss: '11111111101', codigoAcceso: 'ANA001', email: 'ana.garcia@uady.mx', anioIngreso: 2023,
     seguroPrivado: 'IMSS',
   },
   {
     nombre: 'María', apellidos: 'López Cervantes', genero: 'F', rama: 'Femenil',
-    posicion: 'Armadora', facultad: 'FMAT', directorFacultad: 'Dr. Ramón Espinosa',
+    posicion: 'ACOMODO', facultad: 'FMAT', directorFacultad: 'Dr. Ramón Espinosa',
     semestre: 4, telefonoPersonal: '9992220001', telefonoTutor: '9992220002',
-    nss: '11111111102', codigoAcceso: 'MARIA001', email: 'maria.lopez@uady.mx',
+    nss: '11111111102', codigoAcceso: 'MARIA001', email: 'maria.lopez@uady.mx', anioIngreso: 2024,
     seguroPrivado: null,
   },
   {
     nombre: 'Carmen', apellidos: 'Pérez Dzul', genero: 'F', rama: 'Femenil',
-    posicion: 'Central', facultad: 'Ingeniería', directorFacultad: 'Dra. Silvia Méndez',
+    posicion: 'CENTRAL', facultad: 'Ingeniería', directorFacultad: 'Dra. Silvia Méndez',
     semestre: 8, telefonoPersonal: '9993330001', telefonoTutor: '9993330002',
-    nss: '11111111103', codigoAcceso: 'CARMEN001', email: 'carmen.perez@uady.mx',
+    nss: '11111111103', codigoAcceso: 'CARMEN001', email: 'carmen.perez@uady.mx', anioIngreso: 2022,
     seguroPrivado: 'Seguro Popular',
   },
   {
     nombre: 'Laura', apellidos: 'Martínez Cab', genero: 'F', rama: 'Femenil',
-    posicion: 'Receptora-Atacante', facultad: 'Medicina', directorFacultad: 'Dr. Jorge Trejo',
+    posicion: 'BANDA', facultad: 'Medicina', directorFacultad: 'Dr. Jorge Trejo',
     semestre: 5, telefonoPersonal: '9994440001', telefonoTutor: '9994440002',
-    nss: '11111111104', codigoAcceso: 'LAURA001', email: 'laura.martinez@uady.mx',
+    nss: '11111111104', codigoAcceso: 'LAURA001', email: 'laura.martinez@uady.mx', anioIngreso: 2023,
     seguroPrivado: 'IMSS',
   },
   {
     nombre: 'Sofía', apellidos: 'Jiménez Chan', genero: 'F', rama: 'Femenil',
-    posicion: 'Opuesta', facultad: 'Arquitectura', directorFacultad: 'Arq. Marcos Uh',
+    posicion: 'OPUESTO', facultad: 'Arquitectura', directorFacultad: 'Arq. Marcos Uh',
     semestre: 3, telefonoPersonal: '9995550001', telefonoTutor: '9995550002',
-    nss: '11111111105', codigoAcceso: 'SOFIA001', email: 'sofia.jimenez@uady.mx',
+    nss: '11111111105', codigoAcceso: 'SOFIA001', email: 'sofia.jimenez@uady.mx', anioIngreso: 2024,
     seguroPrivado: null,
   },
   {
     nombre: 'Diego', apellidos: 'Hernández Pool', genero: 'M', rama: 'Varonil',
-    posicion: 'Opuesto', facultad: 'FMAT', directorFacultad: 'Dr. Ramón Espinosa',
+    posicion: 'OPUESTO', facultad: 'FMAT', directorFacultad: 'Dr. Ramón Espinosa',
     semestre: 7, telefonoPersonal: '9996660001', telefonoTutor: '9996660002',
-    nss: '11111111106', codigoAcceso: 'DIEGO001', email: 'diego.hernandez@uady.mx',
+    nss: '11111111106', codigoAcceso: 'DIEGO001', email: 'diego.hernandez@uady.mx', anioIngreso: 2022,
     seguroPrivado: 'IMSS',
   },
   {
     nombre: 'Carlos', apellidos: 'Ramírez Tzuc', genero: 'M', rama: 'Varonil',
-    posicion: 'Armador', facultad: 'Ingeniería', directorFacultad: 'Dra. Silvia Méndez',
+    posicion: 'ACOMODO', facultad: 'Ingeniería', directorFacultad: 'Dra. Silvia Méndez',
     semestre: 6, telefonoPersonal: '9997770001', telefonoTutor: '9997770002',
-    nss: '11111111107', codigoAcceso: 'CARLOS001', email: 'carlos.ramirez@uady.mx',
+    nss: '11111111107', codigoAcceso: 'CARLOS001', email: 'carlos.ramirez@uady.mx', anioIngreso: 2023,
     seguroPrivado: null,
   },
   {
     nombre: 'Miguel', apellidos: 'Torres Kantún', genero: 'M', rama: 'Varonil',
-    posicion: 'Central', facultad: 'Derecho', directorFacultad: 'Lic. Patricia Cano',
+    posicion: 'CENTRAL', facultad: 'Derecho', directorFacultad: 'Lic. Patricia Cano',
     semestre: 9, telefonoPersonal: '9998880001', telefonoTutor: '9998880002',
-    nss: '11111111108', codigoAcceso: 'MIGUEL001', email: 'miguel.torres@uady.mx',
+    nss: '11111111108', codigoAcceso: 'MIGUEL001', email: 'miguel.torres@uady.mx', anioIngreso: 2021,
     seguroPrivado: 'Seguro Popular',
   },
   {
     nombre: 'Valeria', apellidos: 'Castillo May', genero: 'F', rama: 'Femenil',
-    posicion: 'Receptora-Atacante', facultad: 'Psicología', directorFacultad: 'Dra. Rosa Cetina',
+    posicion: 'BANDA', facultad: 'Psicología', directorFacultad: 'Dra. Rosa Cetina',
     semestre: 2, telefonoPersonal: '9999990001', telefonoTutor: '9999990002',
-    nss: '11111111109', codigoAcceso: 'VALE001', email: 'valeria.castillo@uady.mx',
+    nss: '11111111109', codigoAcceso: 'VALE001', email: 'valeria.castillo@uady.mx', anioIngreso: 2025,
     seguroPrivado: null,
   },
   {
     nombre: 'Roberto', apellidos: 'Soberanis Balam', genero: 'M', rama: 'Varonil',
-    posicion: 'Líbero', facultad: 'Contaduría', directorFacultad: 'Lic. Ernesto Uc',
+    posicion: 'LIBERO', facultad: 'Contaduría', directorFacultad: 'Lic. Ernesto Uc',
     semestre: 4, telefonoPersonal: '9990000001', telefonoTutor: '9990000002',
-    nss: '11111111110', codigoAcceso: 'ROBERTO001', email: 'roberto.soberanis@uady.mx',
+    nss: '11111111110', codigoAcceso: 'ROBERTO001', email: 'roberto.soberanis@uady.mx', anioIngreso: 2024,
     seguroPrivado: 'IMSS',
   },
 ] as const
@@ -360,11 +380,24 @@ export async function sembrarDatosDemo(): Promise<{ error?: string; ok?: boolean
     let totalCitas = 0
 
     for (const j of JUGADORES) {
-      const atleta = await prisma.atleta.upsert({
-        where: { codigoAcceso: j.codigoAcceso },
-        update: {},
-        create: { ...j, rol: 'JUGADOR' },
+      const { nss, email, seguroPrivado, codigoAcceso: codigoPlano, ...resto } = j
+      const existente = await prisma.claveAtleta.findUnique({
+        where: { clavePlana: codigoPlano },
+        select: { atletaId: true },
       })
+
+      const atleta = existente
+        ? { id: existente.atletaId }
+        : await prisma.atleta.create({
+            data: {
+              ...resto,
+              correo: email,
+              rol: 'JUGADOR',
+              codigoAcceso: await bcrypt.hash(codigoPlano, 10),
+              privado: { create: { nss, seguroAseguradora: seguroPrivado } },
+              claveAtleta: { create: { clavePlana: codigoPlano } },
+            },
+          })
       totalAtletas++
 
       const lesiones = LESIONES_POR_JUGADOR[j.codigoAcceso] ?? []
@@ -669,25 +702,27 @@ export async function sembrarPlanificacionVoleibol(): Promise<{ error?: string; 
     // 1) Staff técnico (vía Atleta con rol ADMIN + rolTecnico)
     let staffCreado = 0
     for (const s of STAFF_SEED) {
-      const existe = await prisma.atleta.findUnique({ where: { codigoAcceso: s.codigoAcceso } })
+      const existe = await prisma.claveAtleta.findUnique({ where: { clavePlana: s.codigoAcceso } })
       if (existe) continue
       await prisma.atleta.create({
         data: {
           nombre: s.nombre,
           apellidos: s.apellidos,
           genero: s.genero,
-          rama: 'Femenil',
-          posicion: s.rolTecnico,
+          rama: ramaFromGenero(s.genero),
+          posicion: null, // ADMIN — no tiene posición de juego
           facultad: 'Dirección de Deporte Universitario UADY',
           directorFacultad: 'Coordinación General del Deporte',
           semestre: 0,
           telefonoPersonal: s.telefonoPersonal,
           telefonoTutor: s.telefonoPersonal,
-          nss: s.nss,
-          email: s.email,
+          correo: s.email,
           rolTecnico: s.rolTecnico,
-          codigoAcceso: s.codigoAcceso,
+          anioIngreso: 2020,
+          codigoAcceso: await bcrypt.hash(s.codigoAcceso, 10),
           rol: 'ADMIN',
+          privado: { create: { nss: s.nss } },
+          claveAtleta: { create: { clavePlana: s.codigoAcceso } },
         },
       })
       staffCreado++

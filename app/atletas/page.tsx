@@ -1,26 +1,37 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import RosterClient from '@/components/RosterClient'
+import DeletedToast from '@/components/DeletedToast'
 
 export const metadata = { title: 'Roster de Atletas — Sistema de Voleibol' }
 
-export default async function AtletasPage() {
+export default async function AtletasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ estado?: string }>
+}) {
+  const { estado: estadoParam } = await searchParams
+  const estadoFiltro = estadoParam === 'EGRESADO' ? 'EGRESADO' : 'ACTIVO'
+
   const [session, atletas] = await Promise.all([
     getSession(),
     prisma.atleta.findMany({
-      where: { rol: 'JUGADOR' },
+      where: { rol: 'JUGADOR', estado: estadoFiltro },
       orderBy: { apellidos: 'asc' },
       select: {
         id: true,
         nombre: true,
         apellidos: true,
         genero: true,
-        rama: true,
         posicion: true,
         facultad: true,
         semestre: true,
         fotoUrl: true,
+        estado: true,
+        anioIngreso: true,
+        anioEgreso: true,
       },
     }),
   ])
@@ -29,6 +40,10 @@ export default async function AtletasPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
+      <Suspense fallback={null}>
+        <DeletedToast />
+      </Suspense>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
@@ -59,6 +74,29 @@ export default async function AtletasPage() {
               Iniciar Sesión
             </Link>
           )}
+        </div>
+      </div>
+
+      {/* Filtro de estado — search param, sin estado en cliente */}
+      <div className="flex items-center gap-2 mb-5">
+        <span className="text-xs text-gray-400 font-semibold">Estado:</span>
+        <div className="flex gap-1.5 bg-gray-100 p-1 rounded-xl">
+          <Link
+            href="/atletas?estado=ACTIVO"
+            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
+              estadoFiltro === 'ACTIVO' ? 'bg-uady-blue text-white shadow-sm' : 'text-uady-blue'
+            }`}
+          >
+            Activos
+          </Link>
+          <Link
+            href="/atletas?estado=EGRESADO"
+            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
+              estadoFiltro === 'EGRESADO' ? 'bg-uady-blue text-white shadow-sm' : 'text-uady-blue'
+            }`}
+          >
+            Egresados
+          </Link>
         </div>
       </div>
 

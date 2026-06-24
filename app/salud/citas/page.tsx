@@ -16,12 +16,12 @@ export default async function CitasMedicasPage() {
       where: isAdmin ? {} : { atletaId: session.id },
       orderBy: { fechaHora: 'asc' },
       include: {
-        atleta: { select: { id: true, nombre: true, apellidos: true, posicion: true, rama: true } },
+        atleta: { select: { id: true, nombre: true, apellidos: true, posicion: true } },
       },
     }),
     isAdmin
       ? prisma.atleta.findMany({
-          where: { rol: 'JUGADOR' },
+          where: { rol: 'JUGADOR', estado: 'ACTIVO' },
           orderBy: [{ nombre: 'asc' }, { apellidos: 'asc' }],
           select: { id: true, nombre: true, apellidos: true },
         })
@@ -32,8 +32,8 @@ export default async function CitasMedicasPage() {
     <div className="max-w-5xl mx-auto px-4 py-10">
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-1 h-7 bg-accent-green rounded-full" />
-          <h1 className="text-3xl font-black text-primary-blue">Citas Médicas</h1>
+          <div className="w-1 h-7 bg-uady-gold rounded-full" />
+          <h1 className="text-3xl font-black text-uady-blue">Citas Médicas</h1>
         </div>
         <p className="text-gray-500 text-sm ml-3">
           {isAdmin

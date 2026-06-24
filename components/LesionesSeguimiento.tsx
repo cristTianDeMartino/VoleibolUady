@@ -3,6 +3,8 @@
 import { useState, useTransition, useMemo } from 'react'
 import { Search, Filter } from 'lucide-react'
 import { darDeAltaLesion } from '@/actions/lesiones'
+import { POSICIONES, labelPosicion, type PosicionValue } from '@/lib/constants/posiciones'
+import { ramaFromGenero } from '@/lib/constants/genero'
 
 export interface LesionRow {
   id: string
@@ -14,8 +16,8 @@ export interface LesionRow {
   atleta?: {
     nombre: string
     apellidos: string
-    posicion?: string | null
-    rama?: string | null
+    posicion?: PosicionValue | null
+    genero?: string | null
   } | null
 }
 
@@ -23,8 +25,6 @@ interface Props {
   lesiones: LesionRow[]
   isAdmin: boolean
 }
-
-const POSICIONES = ['Libero', 'Colocador', 'Armadora', 'Opuesto', 'Opuesta', 'Central', 'Banda']
 
 const fmtFecha = (d: string | Date | null) =>
   d
@@ -83,7 +83,7 @@ export default function LesionesSeguimiento({ lesiones, isAdmin }: Props) {
   const [tab, setTab]               = useState<'activas' | 'historial'>('activas')
   const [busqueda, setBusqueda]     = useState('')
   const [filtroRama, setFiltroRama] = useState('Todas')
-  const [filtroPosicion, setFiltroPosicion] = useState('Todas')
+  const [filtroPosicion, setFiltroPosicion] = useState<PosicionValue | 'Todas'>('Todas')
 
   const nombreAtleta = (l: LesionRow) =>
     l.atleta ? `${l.atleta.nombre} ${l.atleta.apellidos}` : null
@@ -92,8 +92,8 @@ export default function LesionesSeguimiento({ lesiones, isAdmin }: Props) {
     if (!isAdmin) return rows
     return rows.filter(l => {
       const nombre = nombreAtleta(l)?.toLowerCase() ?? ''
-      const rama = l.atleta?.rama ?? ''
-      const posicion = l.atleta?.posicion ?? ''
+      const rama = ramaFromGenero(l.atleta?.genero)
+      const posicion = l.atleta?.posicion ?? null
 
       const matchBusqueda = !busqueda.trim() || nombre.includes(busqueda.trim().toLowerCase())
       const matchRama     = filtroRama === 'Todas' || rama === filtroRama
@@ -151,11 +151,11 @@ export default function LesionesSeguimiento({ lesiones, isAdmin }: Props) {
             {/* Posición */}
             <select
               value={filtroPosicion}
-              onChange={e => setFiltroPosicion(e.target.value)}
+              onChange={e => setFiltroPosicion(e.target.value as PosicionValue | 'Todas')}
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:border-uady-blue focus:ring-1 focus:ring-uady-blue transition-all text-gray-700"
             >
               <option value="Todas">Todas las posiciones</option>
-              {POSICIONES.map(p => <option key={p} value={p}>{p}</option>)}
+              {POSICIONES.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
             </select>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function LesionesSeguimiento({ lesiones, isAdmin }: Props) {
                     )}
                     {isAdmin && l.atleta?.posicion && (
                       <p className="text-[10px] text-gray-400 mt-0.5">
-                        {l.atleta.posicion} · {l.atleta.rama}
+                        {labelPosicion(l.atleta.posicion)} · {ramaFromGenero(l.atleta.genero)}
                       </p>
                     )}
                     <p className="text-xs text-gray-400 mt-0.5">Consulta: {fmtFecha(l.fechaConsulta)}</p>
@@ -267,7 +267,7 @@ export default function LesionesSeguimiento({ lesiones, isAdmin }: Props) {
                       )}
                       {isAdmin && (
                         <td className="px-5 py-3 text-xs text-gray-500 whitespace-nowrap">
-                          {l.atleta?.posicion ?? '—'} · {l.atleta?.rama ?? '—'}
+                          {labelPosicion(l.atleta?.posicion)} · {ramaFromGenero(l.atleta?.genero)}
                         </td>
                       )}
                       <td className="px-5 py-3 text-gray-500 whitespace-nowrap">

@@ -44,7 +44,7 @@ export default async function LesionesPage() {
       fechaAlta: true,
       // El nombre del atleta solo se muestra en la UI del ADMIN; incluirlo
       // siempre mantiene los tipos limpios y es inocuo para el jugador.
-      atleta: { select: { nombre: true, apellidos: true, posicion: true, rama: true } },
+      atleta: { select: { nombre: true, apellidos: true, posicion: true, genero: true } },
     },
   })
 

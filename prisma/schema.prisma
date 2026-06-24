@@ -6,29 +6,76 @@ datasource db {
   provider = "sqlite"
 }
 
+enum Posicion {
+  ACOMODO
+  CENTRAL
+  BANDA
+  LIBERO
+  OPUESTO
+}
+
+enum EstadoAtleta {
+  ACTIVO
+  EGRESADO
+}
+
 model Atleta {
   id               String       @id @default(cuid())
   nombre           String
   apellidos        String
+  matricula        String?      // solo atletas (JUGADOR); los ADMIN no tienen matrícula
   genero           String       @default("F")
-  rama             String       @default("Femenil")
-  posicion         String
+  rama             String       @default("Femenil") // derivado de genero — no exponer en formularios; ver lib/constants/genero.ts
+  posicion         Posicion?
   facultad         String
   directorFacultad String
   semestre         Int
   telefonoPersonal String
   telefonoTutor    String
-  nss              String
-  seguroPrivado    String?
-  email            String?
+  correo           String?
   rolTecnico       String?
   codigoAcceso     String       @unique
   rol              String       @default("JUGADOR")
+  estado           EstadoAtleta @default(ACTIVO)
   fotoUrl          String?
+
+  // Roster — visibles para todo el equipo
+  anioIngreso      Int
+  anioEgreso       Int?      // gestionado solo por egresarAtleta/reactivarAtleta, nunca editable en UI
+  numUniforme      Int?
+  tallaPlayera     String?   // XS | S | M | L | XL | XXL
+  tallaShort       String?
+  tallaPants       String?
+  tallaChamarra    String?
+
+  privado          AtletaPrivado?
+  claveAtleta      ClaveAtleta?
   lesiones         Lesion[]
   asistencias      Asistencia[]
   citas            CitaMedica[]
   createdAt        DateTime     @default(now())
+}
+
+// Respaldo en texto plano de la clave de acceso generada — única fuente
+// recuperable. codigoAcceso en Atleta siempre guarda el hash (bcrypt).
+model ClaveAtleta {
+  id         String   @id @default(cuid())
+  atletaId   String   @unique
+  atleta     Atleta   @relation(fields: [atletaId], references: [id], onDelete: Cascade)
+  clavePlana String   @unique
+  creadaEn   DateTime @default(now())
+}
+
+model AtletaPrivado {
+  id                String  @id @default(cuid())
+  atletaId          String  @unique
+  atleta            Atleta  @relation(fields: [atletaId], references: [id], onDelete: Cascade)
+
+  nss               String?
+
+  seguroAseguradora String?
+  seguroPoliza      String?
+  seguroTitular     String?
 }
 
 model Partido {
