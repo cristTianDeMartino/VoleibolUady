@@ -227,7 +227,7 @@ function SeccionAcademica({ atleta }: { atleta: AtletaPerfilData }) {
                 <label className={lc}>Director(a) de la Facultad</label>
                 <input
                   type="text" name="directorFacultad" required
-                  pattern="[A-Za-záéíóúÁÉÍÓÚüÜñÑ\s]*"
+                  pattern="[A-Za-záéíóúÁÉÍÓÚüÜñÑ\s.'-]*"
                   defaultValue={atleta.directorFacultad} className={icErr(fieldError('directorFacultad'))}
                 />
                 <FieldError msg={fieldError('directorFacultad')} />

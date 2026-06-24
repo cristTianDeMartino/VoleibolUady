@@ -55,6 +55,51 @@ export async function crearAdminMaestro(): Promise<{ error?: string; ok?: boolea
   }
 }
 
+// Atleta EGRESADO garantizado — para que pruebas (manuales o TestSprite)
+// siempre tengan un código real de un atleta bloqueado por egreso, sin
+// depender de que alguien haya egresado manualmente a otra jugadora.
+export async function crearEgresadoDemo(): Promise<{ error?: string; ok?: boolean; codigo?: string }> {
+  if (process.env.NODE_ENV === 'production') {
+    return { error: 'No disponible en producción.' }
+  }
+
+  const codigoPlano = 'EGRESADA001'
+  const anioEgreso = new Date().getFullYear() - 1
+
+  try {
+    const existente = await prisma.claveAtleta.findUnique({
+      where: { clavePlana: codigoPlano },
+      select: { atletaId: true },
+    })
+
+    if (existente) {
+      await prisma.atleta.update({
+        where: { id: existente.atletaId },
+        data: { estado: 'EGRESADO', anioEgreso },
+      })
+    } else {
+      const claveHasheada = await bcrypt.hash(codigoPlano, 10)
+      await prisma.atleta.create({
+        data: {
+          nombre: 'Egresada', apellidos: 'De Prueba', genero: 'F', rama: 'Femenil',
+          posicion: 'LIBERO', facultad: 'FMAT', directorFacultad: 'Dr. Ramón Espinosa',
+          semestre: 8, telefonoPersonal: '9990001111', telefonoTutor: '9990001112',
+          anioIngreso: 2020, anioEgreso, estado: 'EGRESADO',
+          codigoAcceso: claveHasheada, rol: 'JUGADOR',
+          correo: 'egresada.prueba@uady.mx',
+          privado: { create: { nss: '00000000099' } },
+          claveAtleta: { create: { clavePlana: codigoPlano } },
+        },
+      })
+    }
+
+    console.log(`[seed] Atleta EGRESADO de prueba listo → código: ${codigoPlano}`)
+    return { ok: true, codigo: codigoPlano }
+  } catch (e) {
+    return { error: (e as Error).message }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Demo seed — jugadores, lesiones, citas
 // ---------------------------------------------------------------------------

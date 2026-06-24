@@ -303,7 +303,7 @@ export default function AgregarAtletaForm() {
               name="directorFacultad"
               required
               placeholder="Nombre completo del director"
-              pattern="[A-Za-záéíóúÁÉÍÓÚüÜñÑ\s]*"
+              pattern="[A-Za-záéíóúÁÉÍÓÚüÜñÑ\s.'-]*"
               span2
               error={fieldError('directorFacultad')}
             />

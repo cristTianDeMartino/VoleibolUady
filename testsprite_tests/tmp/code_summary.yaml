@@ -1,0 +1,78 @@
+version: "2"
+type: frontend
+tech_stack:
+  - TypeScript
+  - Next.js 16 (App Router, Server Actions)
+  - React 19
+  - Prisma 7 (better-sqlite3 adapter)
+  - Tailwind CSS
+  - bcryptjs (password hashing)
+routes:
+  - path: /login
+    file: app/login/page.tsx
+    auth_required: false
+    description: "Login with access code; dev-only seed button 'Crear Admin Maestro (ADMIN001)' creates an admin test account with code ADMIN001"
+  - path: /atletas/agregar
+    file: app/atletas/agregar/page.tsx
+    auth_required: true
+    description: "ADMIN-only athlete creation form; redirects to /login if the session is missing or not ADMIN"
+features:
+  - name: "Formulario Agregar Atleta - validaciones de campo"
+    description: "Field-level client validation via HTML5 pattern, inputMode, maxLength, minLength attributes, plus authoritative server-side validation in lib/validation.ts inside the createAtleta server action"
+    files:
+      - components/AgregarAtletaForm.tsx
+      - actions/atletas.ts
+      - lib/validation.ts
+    entry_route: /atletas/agregar
+    user_interactions:
+      - "Type letters into the Matricula field (name=matricula, pattern=[0-9]*, inputMode=numeric) - the browser blocks non-digit characters from being typed; if bypassed, server validarMatricula returns 'La matricula solo puede contener digitos numericos.' and the field is highlighted with that error, nothing is saved"
+      - "Type digits into the Director(a) de la Facultad field (name=directorFacultad, pattern allows letters with accents, spaces, hyphens, periods and apostrophes only, no digits) - browser blocks digits; if bypassed, server validarDirector returns 'El nombre del director no puede contener numeros.'"
+      - "Type a 10-digit value into NSS field (name=nss, maxLength=11, minLength=11) - server validarNSS requires exactly 11 digits via regex ^\\d{11}$, returns 'El NSS debe tener exactamente 11 digitos.' for any length other than 11"
+      - "Type a 12-digit value into NSS field - same validarNSS error, exactly 11 digits required, extra digits beyond maxLength=11 are blocked by the browser but server is the authoritative check"
+      - "Type a 9-digit value into Telefono Personal field (name=telefonoPersonal, maxLength=10) - server validarTelefono requires exactly 10 digits via regex ^\\d{10}$, returns an error otherwise; same rule applies to Telefono Tutor / Familiar field for JUGADOR role"
+      - "Type an 11-digit value into Telefono Personal field - same validarTelefono error"
+      - "Submit the form with Semestre left unselected (native <select name=semestre required> with a disabled empty placeholder option, only options 1 through 12 are selectable) - browser required-field validation blocks submit; server also checks isNaN(semestre) || semestre<1 || semestre>12 and returns 'El semestre debe ser un numero entre 1 y 12.' if bypassed"
+      - "Try to type a negative number into Anio de Ingreso - this field is a native <select name=anioIngreso required> populated only with years from 2000 up to the current year via aniosDesde2000(), it is NOT a free-text number input, so negative numbers cannot be typed at all; only listed years are selectable. Confirm this by inspecting the field is a dropdown, not a text/number input, and that no year below 2000 or above the current year appears in the options"
+    api_calls:
+      - method: SERVER_ACTION
+        endpoint: "createAtleta(prevState, formData) in actions/atletas.ts"
+    auth_required: true
+  - name: "Formulario Agregar Atleta - selector de rol ADMINISTRADOR"
+    description: "A 'Paso 1' rol select (name=rol, options JUGADOR default / ADMIN) conditionally shows or hides entire sections of the form via local React state (rol), independent from the server action which also branches its required-field validation by rol"
+    files:
+      - components/AgregarAtletaForm.tsx
+      - actions/atletas.ts
+    entry_route: /atletas/agregar
+    user_interactions:
+      - "Default rol is JUGADOR (Atleta) - form shows Matricula, Posicion select, Foto, Facultad select, Semestre select, Director(a) de la Facultad, Numero de Uniforme, Anio de Ingreso, 4 talla selects, Telefono Personal, Telefono Tutor/Familiar, NSS, Aseguradora, Poliza, Titular de la Poliza - in addition to the always-visible Nombre, Apellidos and Genero"
+      - "Selecting rol = ADMINISTRADOR in the Paso 1 dropdown immediately and completely removes from the DOM (not just visually hides): Matricula, Posicion select, Foto upload, the whole 'Datos Academicos' section (Facultad, Semestre, Director), the whole 'Roster y Uniforme' section (Numero de Uniforme, Anio de Ingreso, 4 talla selects), Telefono Tutor/Familiar, and the whole 'Informacion Medica' section (NSS, Aseguradora, Poliza, Titular)"
+      - "After selecting ADMINISTRADOR, the only fields that remain visible are: Nombre(s), Apellidos, Genero (radio Femenino/Masculino), Telefono Personal, and Correo (required for ADMIN per server validation, optional/absent for JUGADOR in the always-visible Contacto section logic) - confirm the exact remaining field set"
+      - "Switching back to JUGADOR restores all the previously hidden sections with their inputs reset to defaults (this is a controlled re-render driven by the rol state, not a separate page)"
+    api_calls:
+      - method: SERVER_ACTION
+        endpoint: "createAtleta(prevState, formData) in actions/atletas.ts - branches on rol: ADMIN requires only nombre, apellidos, telefonoPersonal, correo; JUGADOR additionally requires matricula, posicion, facultad, directorFacultad, telefonoTutor, nss, anioIngreso, semestre"
+    auth_required: true
+  - name: "Formulario Agregar Atleta - flujo completo de creacion y modal de clave"
+    description: "On successful submit, createAtleta generates a unique 6-digit numeric access code (generarClaveAcceso: 2-digit gender prefix + 2-digit year + 2-digit random suffix), hashes it for storage, and returns it once in component state for display in a blocking modal; the form supports creating multiple athletes in one visit"
+    files:
+      - components/AgregarAtletaForm.tsx
+      - actions/atletas.ts
+      - lib/utils/generarClave.ts
+    entry_route: /atletas/agregar
+    user_interactions:
+      - "Fill every required field for rol=JUGADOR with valid data (Nombre, Apellidos, Matricula digits-only, Posicion, Genero, Facultad, Semestre 1-12, Director letters-only, Numero de Uniforme optional, Anio de Ingreso from dropdown, tallas optional, Telefono Personal 10 digits, Telefono Tutor 10 digits, NSS exactly 11 digits) and click 'Guardar'"
+      - "On success, a blocking modal appears titled 'Atleta registrado - guarda esta clave' showing the athlete's name and a 6-digit numeric access code in large monospace text, with a warning that the code will not be shown again, plus 'Copiar clave' and 'Entendido, cerrar' buttons"
+      - "Click 'Entendido, cerrar' to close the modal - the entire form resets to its initial empty state (formRef.current.reset()), rol selector returns to JUGADOR, photo preview clears, and focus moves back to the rol select"
+      - "After closing the modal for the first time, a new button 'Terminar y salir' (linking to /atletas) appears next to 'Cancelar' and the submit button - it is NOT present before the first successful save in the current session"
+      - "Fill and submit the now-empty, reset form with a second athlete's valid data without navigating away from /atletas/agregar - the second save must succeed independently, show the modal with a new distinct 6-digit code, and the 'Terminar y salir' button must remain visible afterward"
+    api_calls:
+      - method: SERVER_ACTION
+        endpoint: "createAtleta(prevState, formData) in actions/atletas.ts - returns { error: null, success: true, nombreGuardado, claveGenerada } on success"
+    auth_required: true
+known_limitations:
+  - issue: "Admin test account is created via a dev-only seed button on /login labeled 'Crear Admin Maestro (ADMIN001)', only rendered when NODE_ENV is not production"
+    location: app/login/page.tsx
+    impact: "Use access code ADMIN001 to log in as ADMIN directly (already seeded in this dev database); click the seed button only if that account does not yet exist"
+  - issue: "Anio de Ingreso is a native select dropdown, not a free-text number input"
+    location: components/AgregarAtletaForm.tsx
+    impact: "A test expecting to literally type a negative number into this field will find it is not a text field at all; the correct assertion is that no out-of-range year option exists in the dropdown"

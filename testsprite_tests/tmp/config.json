@@ -1,0 +1,19 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "loginUser": "ADMIN001",
+  "loginPassword": "ADMIN001A",
+  "executionArgs": {
+    "projectName": "uady-volleyball",
+    "projectPath": "C:\\Users\\cdmr9\\Documents\\volleyball\\paginaWeb\\uady-volleyball",
+    "testIds": [],
+    "additionalInstruction": "Usar el código de acceso ADMIN001 para iniciar sesión como ADMIN (ya existe en la BD de desarrollo; si no, hacer clic en \"Crear Admin Maestro (ADMIN001)\" en /login). Enfocarse exclusivamente en el formulario de /atletas/agregar: 1) Validaciones: letras en Matrícula, números en Director(a), NSS con 10 y con 12 dígitos, teléfono con 9 y con 11 dígitos, submit con Semestre vacío bloqueado, y confirmar que Año de Ingreso es un <select> con años de 2000 al actual (no un input de texto donde se puedan escribir negativos). 2) Selector de Rol ADMINISTRADOR: verificar que oculta por completo del DOM Matrícula, Posición, Foto, Facultad, Semestre, Director, Número de Uniforme, tallas, Teléfono Tutor, NSS y campos de seguro, dejando solo Nombre, Apellidos, Género, Teléfono Personal y Correo. 3) Flujo completo: llenar y guardar un atleta JUGADOR válido, verificar que aparece el modal con un código de acceso de 6 dígitos, cerrar el modal y confirmar que el formulario queda completamente limpio, verificar que aparece el botón \"Terminar y salir\" (no estaba antes del primer guardado), y guardar un segundo atleta sin salir de la página para confirmar que también funciona y el botón sigue visible.",
+    "serverMode": "development",
+    "envs": {
+      "API_KEY": "sk-user-6bx-ifp7esO-kolzrvJEuw6kaiNLxsaFT9tHmIOO3gf3njH1u3vlLTuN_U8QVW6IdPJcHsyyGrj6mXlDF3_31y30EhpiHgSw9BOIGTg7fBMnVtV_zWNP9x1BiWifhxnZKL4"
+    }
+  },
+  "serverPort": 63384
+}

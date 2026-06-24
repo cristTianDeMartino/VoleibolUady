@@ -3,7 +3,7 @@
 // única fuente de verdad real: el cliente nunca es de confianza.
 
 const REGEX_SOLO_DIGITOS = /^\d+$/
-const REGEX_SOLO_LETRAS = /^[A-Za-záéíóúÁÉÍÓÚüÜñÑ\s]+$/
+const REGEX_SOLO_LETRAS = /^[A-Za-záéíóúÁÉÍÓÚüÜñÑ\s.'-]+$/
 const REGEX_NSS = /^\d{11}$/
 const REGEX_TELEFONO = /^\d{10}$/
 

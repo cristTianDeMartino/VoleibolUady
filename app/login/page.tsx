@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef, useState, useTransition } from 'reac
 import Link from 'next/link'
 import { GraduationCap } from 'lucide-react'
 import { login } from '@/actions/auth'
-import { crearAdminMaestro, sembrarDatosDemo, sembrarPlanificacionVoleibol, seedVideosFuncionales } from '@/actions/seed'
+import { crearAdminMaestro, crearEgresadoDemo, sembrarDatosDemo, sembrarPlanificacionVoleibol, seedVideosFuncionales } from '@/actions/seed'
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(login, { error: null })
@@ -14,6 +14,8 @@ export default function LoginPage() {
   const [demoing, startDemo] = useTransition()
   const [planMsg, setPlanMsg] = useState<string | null>(null)
   const [planning, startPlan] = useTransition()
+  const [egresadoMsg, setEgresadoMsg] = useState<string | null>(null)
+  const [seedingEgresado, startEgresado] = useTransition()
   const [videosMsg, setVideosMsg] = useState<string | null>(null)
   const [seedingVideos, startVideos] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
@@ -155,6 +157,21 @@ export default function LoginPage() {
               {planning ? 'Sembrando planificación…' : 'Sembrar staff + gimnasio + macrociclo + partidos'}
             </button>
             {planMsg && <p className="font-mono font-bold text-green-700">{planMsg}</p>}
+
+            <button
+              type="button"
+              disabled={seedingEgresado}
+              onClick={() =>
+                startEgresado(async () => {
+                  const res = await crearEgresadoDemo()
+                  setEgresadoMsg(res.ok ? `✅ Egresada lista → ${res.codigo}` : `❌ ${res.error}`)
+                })
+              }
+              className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold px-3 py-1.5 rounded-lg disabled:opacity-60 transition-colors"
+            >
+              {seedingEgresado ? 'Creando…' : 'Crear Egresada de Prueba (EGRESADA001)'}
+            </button>
+            {egresadoMsg && <p className="font-mono font-bold text-green-700">{egresadoMsg}</p>}
 
             <button
               type="button"
