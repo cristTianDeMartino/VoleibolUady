@@ -6,6 +6,7 @@ datasource db {
   provider = "sqlite"
 }
 
+
 enum Posicion {
   ACOMODO
   CENTRAL
@@ -24,6 +25,8 @@ model Atleta {
   nombre           String
   apellidos        String
   matricula        String?      // solo atletas (JUGADOR); los ADMIN no tienen matrícula
+  fechaNacimiento  DateTime?    // pública — visible para compañeros de equipo
+  licenciatura     String?      // pública — visible para compañeros de equipo
   genero           String       @default("F")
   rama             String       @default("Femenil") // derivado de genero — no exponer en formularios; ver lib/constants/genero.ts
   posicion         Posicion?
@@ -72,6 +75,7 @@ model AtletaPrivado {
   atleta            Atleta  @relation(fields: [atletaId], references: [id], onDelete: Cascade)
 
   nss               String?
+  curp              String? // privado — solo admin y propio atleta
 
   seguroAseguradora String?
   seguroPoliza      String?
@@ -191,6 +195,14 @@ model EjercicioAccesorio {
   createdAt DateTime @default(now())
 }
 
+model NotaProgramacion {
+  id        String   @id @default(cuid())
+  contenido String
+  orden     Int // mantiene el orden de despliegue — ver app/actions/notas-programacion.actions.ts
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model CitaMedica {
   id               String   @id @default(cuid())
   atletaId         String
@@ -200,4 +212,23 @@ model CitaMedica {
   motivo           String
   estado           String   @default("Programada") // "Programada" | "Completada" | "Cancelada"
   createdAt        DateTime @default(now())
+}
+
+model Logro {
+  id          String        @id @default(cuid())
+  titulo      String
+  descripcion String
+  anio        Int
+  rama        String // 'Femenil' | 'Varonil' | 'Ambas'
+  categoria   String // '1er Lugar' | '2do Lugar' | '3er Lugar' | 'Campeon' | 'Participacion'
+  imagenes    LogroImagen[]
+  createdAt   DateTime      @default(now())
+}
+
+model LogroImagen {
+  id      String @id @default(cuid())
+  logroId String
+  logro   Logro  @relation(fields: [logroId], references: [id], onDelete: Cascade)
+  url     String
+  orden   Int
 }

@@ -1,8 +1,41 @@
 [
   {
     "id": "TC001",
-    "title": "Log in with a numeric access code",
-    "description": "This verifies that a user can authenticate with a valid numeric access code and enter the application successfully.",
+    "title": "Athlete logs in and opens own profile",
+    "description": "This verifies an athlete can log in, reach their own profile, and see their complete personal information without exposing access code details.",
+    "category": "Private profile visibility for ADMIN and self",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the access code field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the profile link"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the athlete's own academic, sportive, contact, and medical information are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no access code is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC002",
+    "title": "Athlete logs in and reaches the app",
+    "description": "This verifies that a valid athlete access code lets the user enter the authenticated area and continue to athlete-facing pages.",
     "category": "Login with access code",
     "steps": [
       {
@@ -11,7 +44,7 @@
       },
       {
         "type": "action",
-        "description": "Fill in the access code field with a valid numeric access code"
+        "description": "Fill in the access code field with a valid athlete access code"
       },
       {
         "type": "action",
@@ -19,61 +52,20 @@
       },
       {
         "type": "assertion",
-        "description": "Verify the user lands on the dashboard"
-      }
-    ],
-    "priority": "High"
-  },
-  {
-    "id": "TC002",
-    "title": "Log in and create a player athlete successfully",
-    "description": "This verifies that an admin can log in, open athlete onboarding, submit a valid JUGADOR record, and receive a generated access code after creation.",
-    "category": "One-time access code display after creation",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the access code field with ADMIN001"
-      },
-      {
-        "type": "action",
-        "description": "Submit the login form"
-      },
-      {
-        "type": "action",
-        "description": "Click the link to start athlete creation"
-      },
-      {
-        "type": "action",
-        "description": "Select the player role"
-      },
-      {
-        "type": "action",
-        "description": "Fill in all required athlete details with valid values for a player"
-      },
-      {
-        "type": "action",
-        "description": "Submit the athlete form"
+        "description": "Verify the user lands in the authenticated area"
       },
       {
         "type": "assertion",
-        "description": "Verify a blocking access code modal is displayed"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify the created athlete is acknowledged in the success modal"
+        "description": "Verify athlete-facing navigation is available"
       }
     ],
     "priority": "High"
   },
   {
     "id": "TC003",
-    "title": "Create an athlete as ADMIN with the full player profile",
-    "description": "This verifies that an admin can create a new JUGADOR athlete from the full form and receive a generated one-time access code.",
-    "category": "Create athlete as ADMIN",
+    "title": "Admin logs in and reaches the app",
+    "description": "This verifies that a valid admin access code lets staff enter the authenticated area and continue to admin-facing pages.",
+    "category": "Login with access code",
     "steps": [
       {
         "type": "action",
@@ -81,44 +73,28 @@
       },
       {
         "type": "action",
-        "description": "Fill in the access code field with a valid admin access code"
+        "description": "Fill in the access code field with the admin access code"
       },
       {
         "type": "action",
         "description": "Submit the login form"
       },
       {
-        "type": "action",
-        "description": "Click the link to add a new athlete"
-      },
-      {
-        "type": "action",
-        "description": "Select the athlete role"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the required athlete profile fields with valid data"
-      },
-      {
-        "type": "action",
-        "description": "Submit the athlete form"
+        "type": "assertion",
+        "description": "Verify the user lands in the authenticated area"
       },
       {
         "type": "assertion",
-        "description": "Verify a blocking success modal is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify a generated one-time access code is displayed"
+        "description": "Verify roster browsing is available"
       }
     ],
     "priority": "High"
   },
   {
     "id": "TC004",
-    "title": "Redirect non-admin users away from athlete creation",
-    "description": "This verifies that users without admin access cannot open the athlete creation page and are redirected to login.",
-    "category": "Create athlete as ADMIN",
+    "title": "Athlete sees reduced teammate profile data",
+    "description": "This verifies that an athlete viewing a teammate profile only sees public or reduced contact information and no private medical data.",
+    "category": "Roster and teammate profile browsing",
     "steps": [
       {
         "type": "action",
@@ -126,7 +102,7 @@
       },
       {
         "type": "action",
-        "description": "Fill in the access code field with a valid non-admin access code"
+        "description": "Fill in the access code field with a valid athlete access code"
       },
       {
         "type": "action",
@@ -134,24 +110,28 @@
       },
       {
         "type": "action",
-        "description": "Click the link to add a new athlete"
+        "description": "Open the athlete roster page"
+      },
+      {
+        "type": "action",
+        "description": "Open another athlete's profile"
       },
       {
         "type": "assertion",
-        "description": "Verify the login page is visible"
+        "description": "Verify reduced contact information is displayed"
       },
       {
         "type": "assertion",
-        "description": "Verify the athlete creation form is not visible"
+        "description": "Verify private contact fields and medical data are absent"
       }
     ],
     "priority": "High"
   },
   {
     "id": "TC005",
-    "title": "Create an administrator athlete with the reduced form",
-    "description": "This verifies that an admin can switch the form to ADMINISTRADOR, submit valid data with the reduced required fields, and receive a one-time access code.",
-    "category": "One-time access code display after creation",
+    "title": "Admin views an athlete profile with private details",
+    "description": "This verifies an admin can log in, browse athletes, and open a profile that includes private contact and medical information.",
+    "category": "Private profile visibility for ADMIN and self",
     "steps": [
       {
         "type": "action",
@@ -159,7 +139,7 @@
       },
       {
         "type": "action",
-        "description": "Fill in the access code field with ADMIN001"
+        "description": "Fill in the access code field with {{LOGIN_USER}}"
       },
       {
         "type": "action",
@@ -167,36 +147,28 @@
       },
       {
         "type": "action",
-        "description": "Click the link to start athlete creation"
+        "description": "Click the roster link"
       },
       {
         "type": "action",
-        "description": "Select the administrator role"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the required athlete details with valid values for an administrator"
-      },
-      {
-        "type": "action",
-        "description": "Submit the athlete form"
+        "description": "Open an athlete profile from the roster"
       },
       {
         "type": "assertion",
-        "description": "Verify a blocking access code modal is displayed"
+        "description": "Verify the athlete's academic and sportive information are displayed"
       },
       {
         "type": "assertion",
-        "description": "Verify the created athlete is acknowledged in the success modal"
+        "description": "Verify private contact fields and medical data are displayed"
       }
     ],
     "priority": "High"
   },
   {
     "id": "TC006",
-    "title": "Create an administrator profile with reduced required fields",
-    "description": "This verifies that an admin can switch to the administrator role, submit the reduced form, and receive a generated one-time access code.",
-    "category": "Create athlete as ADMIN",
+    "title": "Athlete browses roster and opens a teammate profile",
+    "description": "This verifies that an authenticated athlete can browse the roster and open another athlete's profile from the list.",
+    "category": "Roster and teammate profile browsing",
     "steps": [
       {
         "type": "action",
@@ -204,7 +176,7 @@
       },
       {
         "type": "action",
-        "description": "Fill in the access code field with a valid admin access code"
+        "description": "Fill in the access code field with a valid athlete access code"
       },
       {
         "type": "action",
@@ -212,36 +184,28 @@
       },
       {
         "type": "action",
-        "description": "Click the link to add a new athlete"
+        "description": "Open the athlete roster page"
       },
       {
         "type": "action",
-        "description": "Select the administrator role"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the required administrator profile fields with valid data"
-      },
-      {
-        "type": "action",
-        "description": "Submit the athlete form"
+        "description": "Open another athlete's profile"
       },
       {
         "type": "assertion",
-        "description": "Verify a blocking success modal is visible"
+        "description": "Verify the teammate profile is displayed"
       },
       {
         "type": "assertion",
-        "description": "Verify a generated one-time access code is displayed"
+        "description": "Verify public profile information is displayed"
       }
     ],
     "priority": "High"
   },
   {
     "id": "TC007",
-    "title": "Create two athletes in one session",
-    "description": "This verifies that after closing the success modal, the form resets and a second athlete can be created immediately with a new distinct access code.",
-    "category": "One-time access code display after creation",
+    "title": "Admin marks an athlete as egresado",
+    "description": "This verifies an admin can change an active athlete's status to egresado and see the updated status after confirmation.",
+    "category": "Admin athlete status actions",
     "steps": [
       {
         "type": "action",
@@ -249,7 +213,7 @@
       },
       {
         "type": "action",
-        "description": "Fill in the access code field with ADMIN001"
+        "description": "Fill in the access code field with {{LOGIN_USER}}"
       },
       {
         "type": "action",
@@ -257,44 +221,36 @@
       },
       {
         "type": "action",
-        "description": "Click the link to start athlete creation"
+        "description": "Click the roster link"
       },
       {
         "type": "action",
-        "description": "Fill in all required athlete details with valid values for the first athlete"
+        "description": "Open an active athlete profile from the roster"
       },
       {
         "type": "action",
-        "description": "Submit the athlete form"
+        "description": "Choose to mark the athlete as egresado"
       },
       {
         "type": "action",
-        "description": "Close the success modal"
-      },
-      {
-        "type": "action",
-        "description": "Fill in all required athlete details with valid values for a second athlete"
-      },
-      {
-        "type": "action",
-        "description": "Submit the athlete form"
+        "description": "Confirm the status change"
       },
       {
         "type": "assertion",
-        "description": "Verify a new access code modal is displayed for the second athlete"
+        "description": "Verify the athlete status is shown as egresado"
       },
       {
         "type": "assertion",
-        "description": "Verify the second code is different from the first code"
+        "description": "Verify a success confirmation is visible"
       }
     ],
     "priority": "High"
   },
   {
     "id": "TC008",
-    "title": "Create two athletes back to back on the same page",
-    "description": "This verifies that closing the success modal resets the form so an admin can create a second athlete immediately afterward and receive a new code.",
-    "category": "Create athlete as ADMIN",
+    "title": "Athlete views their own profile details",
+    "description": "This verifies that an authenticated athlete can open their own profile and review academic, sportive, contact, and medical information.",
+    "category": "Own profile view",
     "steps": [
       {
         "type": "action",
@@ -302,7 +258,7 @@
       },
       {
         "type": "action",
-        "description": "Fill in the access code field with a valid admin access code"
+        "description": "Fill in the access code field with a valid athlete access code"
       },
       {
         "type": "action",
@@ -310,48 +266,24 @@
       },
       {
         "type": "action",
-        "description": "Click the link to add a new athlete"
-      },
-      {
-        "type": "action",
-        "description": "Select the athlete role"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the required athlete profile fields with valid data"
-      },
-      {
-        "type": "action",
-        "description": "Submit the athlete form"
-      },
-      {
-        "type": "action",
-        "description": "Close the success modal"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the required athlete profile fields with different valid data"
-      },
-      {
-        "type": "action",
-        "description": "Submit the athlete form"
+        "description": "Open the personal profile page"
       },
       {
         "type": "assertion",
-        "description": "Verify a second blocking success modal is visible"
+        "description": "Verify academic information is displayed"
       },
       {
         "type": "assertion",
-        "description": "Verify a new generated one-time access code is displayed"
+        "description": "Verify sportive, contact, and medical information are displayed"
       }
     ],
     "priority": "High"
   },
   {
     "id": "TC009",
-    "title": "Reset the form after closing the access code modal",
-    "description": "This verifies that after a successful creation, closing the modal returns the form to a blank ready state for another entry.",
-    "category": "One-time access code display after creation",
+    "title": "Athlete profile does not reveal other athletes' private data",
+    "description": "This verifies a teammate profile keeps restricted fields hidden in the page content for an athlete viewer.",
+    "category": "Private profile visibility for ADMIN and self",
     "steps": [
       {
         "type": "action",
@@ -359,7 +291,7 @@
       },
       {
         "type": "action",
-        "description": "Fill in the access code field with ADMIN001"
+        "description": "Fill in the access code field with {{LOGIN_USER}}"
       },
       {
         "type": "action",
@@ -367,36 +299,28 @@
       },
       {
         "type": "action",
-        "description": "Click the link to start athlete creation"
+        "description": "Click the roster link"
       },
       {
         "type": "action",
-        "description": "Fill in all required athlete details with valid values"
-      },
-      {
-        "type": "action",
-        "description": "Submit the athlete form"
-      },
-      {
-        "type": "action",
-        "description": "Close the success modal"
+        "description": "Open a teammate profile from the roster"
       },
       {
         "type": "assertion",
-        "description": "Verify the athlete creation form is reset to a blank state"
+        "description": "Verify private contact fields are not displayed"
       },
       {
         "type": "assertion",
-        "description": "Verify the form is ready for a new entry"
+        "description": "Verify medical data is not displayed"
       }
     ],
     "priority": "High"
   },
   {
     "id": "TC010",
-    "title": "Block invalid athlete input before saving",
-    "description": "This verifies that invalid field values are rejected on the athlete form and validation errors are shown instead of creating the record.",
-    "category": "Create athlete as ADMIN",
+    "title": "Admin views full athlete profile details",
+    "description": "This verifies that admin staff can open an athlete profile and see private contact and medical information.",
+    "category": "Roster and teammate profile browsing",
     "steps": [
       {
         "type": "action",
@@ -404,7 +328,7 @@
       },
       {
         "type": "action",
-        "description": "Fill in the access code field with a valid admin access code"
+        "description": "Fill in the access code field with the admin access code"
       },
       {
         "type": "action",
@@ -412,36 +336,28 @@
       },
       {
         "type": "action",
-        "description": "Click the link to add a new athlete"
+        "description": "Open the athlete roster page"
       },
       {
         "type": "action",
-        "description": "Select the athlete role"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the athlete form with invalid values for required fields"
-      },
-      {
-        "type": "action",
-        "description": "Submit the athlete form"
+        "description": "Open an athlete profile"
       },
       {
         "type": "assertion",
-        "description": "Verify validation errors are visible"
+        "description": "Verify private contact information is displayed"
       },
       {
         "type": "assertion",
-        "description": "Verify the success modal is not visible"
+        "description": "Verify medical information is displayed"
       }
     ],
-    "priority": "Medium"
+    "priority": "High"
   },
   {
     "id": "TC011",
-    "title": "Switch to administrator fields and back to athlete fields",
-    "description": "This verifies that changing the selected role updates the visible form sections and restores the athlete fields when switched back.",
-    "category": "Role-based athlete form fields",
+    "title": "Admin reactivates an egresado athlete",
+    "description": "This verifies an admin can reactivate an egresado athlete and see the updated active status after confirmation.",
+    "category": "Admin athlete status actions",
     "steps": [
       {
         "type": "action",
@@ -449,7 +365,7 @@
       },
       {
         "type": "action",
-        "description": "Fill in the access code field with a valid admin access code"
+        "description": "Fill in the access code field with {{LOGIN_USER}}"
       },
       {
         "type": "action",
@@ -457,32 +373,36 @@
       },
       {
         "type": "action",
-        "description": "Click the link to add a new athlete"
+        "description": "Click the roster link"
       },
       {
         "type": "action",
-        "description": "Select the administrator role"
+        "description": "Open an egresado athlete profile from the roster"
       },
       {
         "type": "action",
-        "description": "Select the athlete role"
+        "description": "Choose to reactivate the athlete"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the status change"
       },
       {
         "type": "assertion",
-        "description": "Verify the athlete-specific form sections are visible"
+        "description": "Verify the athlete status is shown as active"
       },
       {
         "type": "assertion",
-        "description": "Verify the administrator-only reduced section is not visible"
+        "description": "Verify a success confirmation is visible"
       }
     ],
-    "priority": "Medium"
+    "priority": "High"
   },
   {
     "id": "TC012",
-    "title": "Reject invalid NSS length",
-    "description": "This verifies that an NSS value with the wrong length is rejected before the athlete can be saved.",
-    "category": "Field validation for athlete creation",
+    "title": "Admin marks an athlete as egresado and reactivates them",
+    "description": "This verifies that admin staff can change an athlete's status to egresado and then reactivate the athlete with confirmation feedback.",
+    "category": "Roster and teammate profile browsing",
     "steps": [
       {
         "type": "action",
@@ -490,7 +410,7 @@
       },
       {
         "type": "action",
-        "description": "Fill in the access code field with ADMIN001"
+        "description": "Fill in the access code field with the admin access code"
       },
       {
         "type": "action",
@@ -498,35 +418,142 @@
       },
       {
         "type": "action",
-        "description": "Click the link to start athlete creation"
+        "description": "Open the athlete roster page"
       },
       {
         "type": "action",
-        "description": "Select the player role"
+        "description": "Open an athlete profile"
       },
       {
         "type": "action",
-        "description": "Fill in the NSS field with an invalid length"
+        "description": "Mark the athlete as egresado"
       },
       {
         "type": "action",
-        "description": "Submit the athlete form"
+        "description": "Reactivate the athlete"
       },
       {
         "type": "assertion",
-        "description": "Verify an NSS validation error is visible"
+        "description": "Verify success confirmations are visible"
       },
       {
         "type": "assertion",
-        "description": "Verify the athlete is not created"
+        "description": "Verify the athlete remains accessible in the roster"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC013",
+    "title": "Athlete sees own private contact and medical sections on profile",
+    "description": "This verifies the athlete's own profile includes private contact and medical sections when viewed from the personal profile page.",
+    "category": "Private profile visibility for ADMIN and self",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the access code field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the profile link"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify private contact information is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify medical data is displayed"
       }
     ],
     "priority": "Medium"
   },
   {
-    "id": "TC013",
-    "title": "Reject an invalid access code",
-    "description": "This verifies that an invalid access code is blocked and the user remains on the login page with a visible validation error.",
+    "id": "TC014",
+    "title": "Athlete profile hides access code on own page",
+    "description": "This verifies that an authenticated athlete can review their profile without any access code or clave being displayed.",
+    "category": "Own profile view",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the access code field with a valid athlete access code"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the personal profile page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no access code is displayed on the page"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC015",
+    "title": "Admin cancels athlete deletion from the confirmation modal",
+    "description": "This verifies an admin can open the permanent delete confirmation modal, cancel it, and keep the athlete profile unchanged.",
+    "category": "Admin athlete deletion confirmation",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the access code field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the roster link"
+      },
+      {
+        "type": "action",
+        "description": "Open an athlete profile from the roster"
+      },
+      {
+        "type": "action",
+        "description": "Choose to delete the athlete permanently"
+      },
+      {
+        "type": "action",
+        "description": "Cancel the deletion dialog"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the athlete profile remains open"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the athlete is still present"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC016",
+    "title": "Invalid access code is rejected",
+    "description": "This verifies that an invalid access code is not accepted and the user stays out of the authenticated area.",
     "category": "Login with access code",
     "steps": [
       {
@@ -547,139 +574,16 @@
       },
       {
         "type": "assertion",
-        "description": "Verify the login page remains visible"
+        "description": "Verify the user is not signed in"
       }
     ],
-    "priority": "Medium"
-  },
-  {
-    "id": "TC014",
-    "title": "Show the full athlete form by default",
-    "description": "This verifies that the default role is athlete and the full set of athlete-specific sections is visible on the creation form.",
-    "category": "Role-based athlete form fields",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the access code field with a valid admin access code"
-      },
-      {
-        "type": "action",
-        "description": "Submit the login form"
-      },
-      {
-        "type": "action",
-        "description": "Click the link to add a new athlete"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify the athlete-specific form sections are visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify the administrator-only reduced section is not visible"
-      }
-    ],
-    "priority": "Medium"
-  },
-  {
-    "id": "TC015",
-    "title": "Require semestre before saving a player",
-    "description": "This verifies that leaving semestre unselected prevents submission and shows a required-field validation state.",
-    "category": "Field validation for athlete creation",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the access code field with ADMIN001"
-      },
-      {
-        "type": "action",
-        "description": "Submit the login form"
-      },
-      {
-        "type": "action",
-        "description": "Click the link to start athlete creation"
-      },
-      {
-        "type": "action",
-        "description": "Select the player role"
-      },
-      {
-        "type": "action",
-        "description": "Fill in all required athlete details except semestre"
-      },
-      {
-        "type": "action",
-        "description": "Submit the athlete form"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify a semestre required validation error is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify the athlete is not created"
-      }
-    ],
-    "priority": "Medium"
-  },
-  {
-    "id": "TC016",
-    "title": "Reject invalid phone number length",
-    "description": "This verifies that an invalid phone number length is rejected before submission succeeds.",
-    "category": "Field validation for athlete creation",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the access code field with ADMIN001"
-      },
-      {
-        "type": "action",
-        "description": "Submit the login form"
-      },
-      {
-        "type": "action",
-        "description": "Click the link to start athlete creation"
-      },
-      {
-        "type": "action",
-        "description": "Select the player role"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the phone number field with an invalid length"
-      },
-      {
-        "type": "action",
-        "description": "Submit the athlete form"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify a phone number validation error is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify the athlete is not created"
-      }
-    ],
-    "priority": "Medium"
+    "priority": "Low"
   },
   {
     "id": "TC017",
-    "title": "Block non-digit matrícula input",
-    "description": "This verifies that the athlete creation form rejects or blocks letters in the matrícula field before submission.",
-    "category": "Field validation for athlete creation",
+    "title": "Login rejects an invalid access code",
+    "description": "This verifies the login screen prevents entry when an invalid access code is submitted and shows a validation error.",
+    "category": "Private profile visibility for ADMIN and self",
     "steps": [
       {
         "type": "action",
@@ -687,121 +591,19 @@
       },
       {
         "type": "action",
-        "description": "Fill in the access code field with ADMIN001"
+        "description": "Fill in the access code field with an invalid access code"
       },
       {
         "type": "action",
         "description": "Submit the login form"
       },
       {
-        "type": "action",
-        "description": "Click the link to start athlete creation"
-      },
-      {
-        "type": "action",
-        "description": "Select the player role"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the matrícula field with letters"
-      },
-      {
-        "type": "action",
-        "description": "Attempt to continue entering the form"
+        "type": "assertion",
+        "description": "Verify a login validation error is visible"
       },
       {
         "type": "assertion",
-        "description": "Verify non-digit matrícula input is blocked or rejected"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify the matrícula field contains only valid digits"
-      }
-    ],
-    "priority": "Low"
-  },
-  {
-    "id": "TC018",
-    "title": "Require an alphabetic director name",
-    "description": "This verifies that submitting digits in the director name field is rejected with a validation error.",
-    "category": "Field validation for athlete creation",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the access code field with ADMIN001"
-      },
-      {
-        "type": "action",
-        "description": "Submit the login form"
-      },
-      {
-        "type": "action",
-        "description": "Click the link to start athlete creation"
-      },
-      {
-        "type": "action",
-        "description": "Select the player role"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the director name field with digits"
-      },
-      {
-        "type": "action",
-        "description": "Submit the athlete form"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify a director name validation error is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify the athlete is not created"
-      }
-    ],
-    "priority": "Low"
-  },
-  {
-    "id": "TC019",
-    "title": "Show only valid year options for ingreso",
-    "description": "This verifies that the año de ingreso dropdown only presents valid year choices and does not allow out-of-range selection.",
-    "category": "Field validation for athlete creation",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Fill in the access code field with ADMIN001"
-      },
-      {
-        "type": "action",
-        "description": "Submit the login form"
-      },
-      {
-        "type": "action",
-        "description": "Click the link to start athlete creation"
-      },
-      {
-        "type": "action",
-        "description": "Select the player role"
-      },
-      {
-        "type": "action",
-        "description": "Open the año de ingreso dropdown"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify only valid year options are available"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify no out-of-range year option is offered"
+        "description": "Verify the user remains on the login page"
       }
     ],
     "priority": "Low"

@@ -1,18 +1,27 @@
 import { cookies } from 'next/headers'
+import { signSession, verifySessionCookie, type Session } from '@/lib/session'
 
-export interface Session {
-  id: string
-  rol: string
-  nombre: string
-}
+export type { Session }
+
+const COOKIE_NAME = 'uady-session'
 
 export async function getSession(): Promise<Session | null> {
   const cookieStore = await cookies()
-  const raw = cookieStore.get('uady-session')?.value
-  if (!raw) return null
-  try {
-    return JSON.parse(raw) as Session
-  } catch {
-    return null
-  }
+  return verifySessionCookie(cookieStore.get(COOKIE_NAME)?.value)
+}
+
+export async function setSessionCookie(session: Session) {
+  const cookieStore = await cookies()
+  cookieStore.set(COOKIE_NAME, signSession(session), {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7,
+    path: '/',
+  })
+}
+
+export async function clearSessionCookie() {
+  const cookieStore = await cookies()
+  cookieStore.delete(COOKIE_NAME)
 }

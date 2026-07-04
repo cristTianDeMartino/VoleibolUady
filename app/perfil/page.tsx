@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import PerfilClient from '@/components/PerfilClient'
+import { toISODateLocal } from '@/lib/utils/fecha'
 
 export const metadata = { title: 'Mi Perfil — Sistema de Voleibol' }
 
@@ -11,7 +12,15 @@ export default async function PerfilPage() {
 
   const atleta = await prisma.atleta.findUnique({
     where: { id: session.id },
-    include: { privado: true },
+    select: {
+      id: true, nombre: true, apellidos: true, matricula: true, rol: true, posicion: true,
+      genero: true, facultad: true, semestre: true, directorFacultad: true,
+      licenciatura: true, fechaNacimiento: true,
+      telefonoPersonal: true, telefonoTutor: true, correo: true, fotoUrl: true,
+      rolTecnico: true, numUniforme: true, anioIngreso: true, anioEgreso: true,
+      tallaPlayera: true, tallaShort: true, tallaPants: true, tallaChamarra: true,
+      privado: { select: { nss: true, curp: true, seguroAseguradora: true, seguroPoliza: true, seguroTitular: true } },
+    },
   })
   if (!atleta) redirect('/login')
 
@@ -28,6 +37,8 @@ export default async function PerfilPage() {
         facultad: atleta.facultad,
         semestre: atleta.semestre,
         directorFacultad: atleta.directorFacultad,
+        licenciatura: atleta.licenciatura,
+        fechaNacimiento: atleta.fechaNacimiento ? toISODateLocal(atleta.fechaNacimiento) : null,
         telefonoPersonal: atleta.telefonoPersonal,
         telefonoTutor: atleta.telefonoTutor,
         correo: atleta.correo ?? null,
@@ -43,6 +54,7 @@ export default async function PerfilPage() {
         privado: atleta.privado
           ? {
               nss: atleta.privado.nss,
+              curp: atleta.privado.curp,
               seguroAseguradora: atleta.privado.seguroAseguradora,
               seguroPoliza: atleta.privado.seguroPoliza,
               seguroTitular: atleta.privado.seguroTitular,

@@ -6,7 +6,7 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 vi.mock('@/lib/auth', () => ({ getSession: vi.fn() }))
 
 import { getSession } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '../lib/prisma'
 import { createLesion, darDeAltaLesion } from './lesiones'
 import type { Session } from '@/lib/auth'
 
@@ -40,6 +40,7 @@ beforeAll(async () => {
       nombre: 'Test', apellidos: 'Jugador', genero: 'F', rama: 'Femenil',
       posicion: 'LIBERO', facultad: 'Test', directorFacultad: 'Test',
       semestre: 1, telefonoPersonal: '0', telefonoTutor: '0',
+      anioIngreso: 2026,
       codigoAcceso: `TEST_JUGADOR_${Date.now()}`, rol: 'JUGADOR',
     },
   })
@@ -48,6 +49,7 @@ beforeAll(async () => {
       nombre: 'Otro', apellidos: 'Jugador', genero: 'M', rama: 'Varonil',
       posicion: 'CENTRAL', facultad: 'Test', directorFacultad: 'Test',
       semestre: 1, telefonoPersonal: '0', telefonoTutor: '0',
+      anioIngreso: 2026,
       codigoAcceso: `TEST_OTRO_${Date.now()}`, rol: 'JUGADOR',
     },
   })
@@ -56,8 +58,13 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
+  const ids = [jugadorId, otroJugadorId].filter(Boolean)
+  if (ids.length === 0) {
+    await prisma.$disconnect()
+    return
+  }
   await prisma.atleta.deleteMany({
-    where: { id: { in: [jugadorId, otroJugadorId] } },
+    where: { id: { in: ids } },
   })
   await prisma.$disconnect()
 })

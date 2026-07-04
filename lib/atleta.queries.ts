@@ -7,6 +7,8 @@ const PUBLIC_SELECT = {
   id: true,
   nombre: true,
   apellidos: true,
+  fechaNacimiento: true,
+  licenciatura: true,
   genero: true, // rama se deriva de aquí — ver lib/constants/genero.ts
   posicion: true,
   facultad: true,
@@ -51,7 +53,7 @@ export async function getAtletaCompleto(atletaId: string, session: Session) {
 
 export async function updateAtletaPrivado(
   atletaId: string,
-  data: { nss?: string | null; seguroAseguradora?: string | null; seguroPoliza?: string | null; seguroTitular?: string | null },
+  data: { nss?: string | null; seguroAseguradora?: string | null; seguroPoliza?: string | null; seguroTitular?: string | null; curp?: string | null },
   session: Session,
 ) {
   if (!puedeVerCompleto(session, atletaId)) throw new Error('FORBIDDEN')

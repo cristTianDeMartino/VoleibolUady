@@ -9,10 +9,10 @@ import { updateFotoAtleta } from '@/actions/atletas'
 interface Props {
   atletaId: string
   fotoActualUrl: string | null
-  isAdmin: boolean
+  canEdit: boolean // ADMIN o el propio atleta
 }
 
-export default function EditFotoAtleta({ atletaId, fotoActualUrl, isAdmin }: Props) {
+export default function EditFotoAtleta({ atletaId, fotoActualUrl, canEdit }: Props) {
   const [preview, setPreview] = useState<string | null>(fotoActualUrl)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -93,8 +93,8 @@ export default function EditFotoAtleta({ atletaId, fotoActualUrl, isAdmin }: Pro
         </div>
       )}
 
-      {/* Pencil button — admin only, visible on hover/focus */}
-      {isAdmin && !isPending && !errorMsg && (
+      {/* Pencil button — visible on hover/focus para quien puede editar */}
+      {canEdit && !isPending && !errorMsg && (
         <>
           <button
             type="button"

@@ -31,12 +31,11 @@ function isoFecha(anio: number, mes: number, dia: number): string {
 // ─── Componente Jugador ───────────────────────────────────────────────────────
 
 interface JugadorViewProps {
-  atletaId: string
   nombre: string
   yaTieneAsistenciaHoy: boolean
 }
 
-function JugadorView({ atletaId, nombre, yaTieneAsistenciaHoy }: JugadorViewProps) {
+function JugadorView({ nombre, yaTieneAsistenciaHoy }: JugadorViewProps) {
   const [registrada, setRegistrada] = useState(yaTieneAsistenciaHoy)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -45,7 +44,7 @@ function JugadorView({ atletaId, nombre, yaTieneAsistenciaHoy }: JugadorViewProp
   function handleRegistrar() {
     setError(null)
     startTransition(async () => {
-      const result = await registrarAsistenciaHoy(atletaId)
+      const result = await registrarAsistenciaHoy()
       if (result.error) {
         setError(result.error)
       } else {
@@ -339,7 +338,6 @@ export function AdminView({ atletas, registros, mesInicial, anioInicial }: Admin
 
 interface AsistenciaClientProps {
   rol: string
-  atletaId: string
   nombre: string
   yaTieneAsistenciaHoy: boolean
   atletas: AtletaConAsistencia[]
@@ -350,7 +348,6 @@ interface AsistenciaClientProps {
 
 export default function AsistenciaClient({
   rol,
-  atletaId,
   nombre,
   yaTieneAsistenciaHoy,
   atletas,
@@ -361,7 +358,6 @@ export default function AsistenciaClient({
   if (rol === 'JUGADOR') {
     return (
       <JugadorView
-        atletaId={atletaId}
         nombre={nombre}
         yaTieneAsistenciaHoy={yaTieneAsistenciaHoy}
       />

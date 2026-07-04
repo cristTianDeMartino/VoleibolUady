@@ -5,9 +5,10 @@ import { getSession } from '@/lib/auth'
 import EditFotoAtleta from '@/components/EditFotoAtleta'
 import BotonEliminarAtleta from '@/components/BotonEliminarAtleta'
 import { BotonEgresarAtleta, BotonReactivarAtleta } from '@/components/BotonEstadoAtleta'
-import { CardDeportiva, CardContacto, CardMedica } from '@/components/AtletaPublicCards'
+import { CardDeportiva, CardAcademica, CardPersonal, CardMedica } from '@/components/AtletaPublicCards'
 import { labelPosicion, type PosicionValue } from '@/lib/constants/posiciones'
 import { ramaFromGenero } from '@/lib/constants/genero'
+import { toISODateLocal } from '@/lib/utils/fecha'
 
 const positionColors: Record<PosicionValue, string> = {
   LIBERO: 'bg-uady-gold text-uady-blue',
@@ -36,12 +37,14 @@ export default async function AtletaDetailPage({
     select: {
       id: true, nombre: true, apellidos: true, matricula: true, genero: true, posicion: true,
       facultad: true, directorFacultad: true, semestre: true, telefonoPersonal: true,
-      telefonoTutor: true, correo: true, rol: true, rolTecnico: true,
+      fechaNacimiento: true, licenciatura: true,
+      telefonoTutor: canViewPrivate, correo: true, rol: true, rolTecnico: true,
       fotoUrl: true, estado: true, anioIngreso: true, anioEgreso: true, numUniforme: true,
       tallaPlayera: true, tallaShort: true, tallaPants: true, tallaChamarra: true,
       lesiones: { orderBy: { fechaConsulta: 'desc' } },
-      // Sin accesoCompleto, no se hace include de datos sensibles — ni siquiera llegan al componente.
-      privado: canViewPrivate,
+      ...(canViewPrivate && {
+        privado: { select: { nss: true, curp: true, seguroAseguradora: true, seguroPoliza: true, seguroTitular: true } }
+      }),
     },
   })
 
@@ -65,7 +68,7 @@ export default async function AtletaDetailPage({
         <EditFotoAtleta
           atletaId={atleta.id}
           fotoActualUrl={atleta.fotoUrl}
-          isAdmin={session?.rol === 'ADMIN'}
+          canEdit={canViewPrivate}
         />
 
         {/* Info */}
@@ -112,33 +115,18 @@ export default async function AtletaDetailPage({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* Public section */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <h2 className="font-black text-uady-blue mb-4 flex items-center gap-2">
-            <span className="w-1 h-5 bg-uady-gold rounded-full" />
-            Información Académica
-          </h2>
-          <dl className="space-y-3 text-sm">
-            {atleta.matricula && (
-              <div>
-                <dt className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Matrícula</dt>
-                <dd className="text-gray-700 mt-0.5 font-mono">{atleta.matricula}</dd>
-              </div>
-            )}
-            <div>
-              <dt className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Facultad</dt>
-              <dd className="text-gray-700 mt-0.5">{atleta.facultad}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Semestre</dt>
-              <dd className="text-gray-700 mt-0.5">{atleta.semestre}°</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Director(a)</dt>
-              <dd className="text-gray-700 mt-0.5">{atleta.directorFacultad}</dd>
-            </div>
-          </dl>
-        </div>
+        {/* Información Académica — pública, Licenciatura editable */}
+        <CardAcademica
+          atletaId={atleta.id}
+          canEdit={canEdit}
+          data={{
+            matricula: atleta.matricula,
+            facultad: atleta.facultad,
+            semestre: atleta.semestre,
+            directorFacultad: atleta.directorFacultad,
+            licenciatura: atleta.licenciatura,
+          }}
+        />
 
         {/* Información Deportiva — pública */}
         <CardDeportiva
@@ -156,31 +144,21 @@ export default async function AtletaDetailPage({
           }}
         />
 
-        {/* Información de Contacto — versión completa (ADMIN o el propio atleta,
-            con clave/correo/tel. personal/tel. tutor) o reducida (compañero de
-            equipo: solo correo y tel. personal, sin badge Privado). Cada
-            variante solo recibe los campos que le corresponden. */}
-        {canViewPrivate ? (
-          <CardContacto
-            atletaId={atleta.id}
-            canEdit={canEdit}
-            variant="completo"
-            data={{
-              correo: atleta.correo,
-              telefonoPersonal: atleta.telefonoPersonal,
-              telefonoTutor: atleta.telefonoTutor,
-            }}
-          />
-        ) : (
-          <CardContacto
-            atletaId={atleta.id}
-            variant="reducido"
-            data={{
-              correo: atleta.correo,
-              telefonoPersonal: atleta.telefonoPersonal,
-            }}
-          />
-        )}
+        {/* Información Personal — pública (fecha de nacimiento, correo,
+            teléfono personal) para todo el equipo; teléfono tutor/familiar
+            solo llega en `data` cuando canViewPrivate es true. */}
+        <CardPersonal
+          atletaId={atleta.id}
+          canEdit={canEdit}
+          accesoCompleto={canViewPrivate}
+          data={{
+            fechaNacimiento: atleta.fechaNacimiento ? toISODateLocal(atleta.fechaNacimiento) : null,
+            correo: atleta.correo,
+            telefonoPersonal: atleta.telefonoPersonal,
+            telefonoTutor: canViewPrivate ? (atleta.telefonoTutor ?? null) : null,
+            curp: canViewPrivate ? (atleta.privado?.curp ?? null) : null,
+          }}
+        />
 
         {/* Datos Médicos — nunca se renderiza para un compañero de equipo:
             ausencia total en el DOM, no solo ocultamiento visual. */}

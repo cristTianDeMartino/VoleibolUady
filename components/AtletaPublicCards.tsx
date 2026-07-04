@@ -6,16 +6,32 @@ import { actualizarDatosGenerales, actualizarDatosPrivados } from '@/app/actions
 import type { DatosGenerales, DatosPrivados } from '@/app/actions/atleta.actions'
 import { POSICIONES, labelPosicion, type PosicionValue } from '@/lib/constants/posiciones'
 import { aniosDesde2000 } from '@/lib/validation'
+import { parseFechaLocal } from '@/lib/utils/fecha'
+import FechaNacimientoSelector from '@/components/ui/FechaNacimientoSelector'
+import LicenciaturaSelector from '@/components/ui/LicenciaturaSelector'
 
 const TALLAS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+
+const FACULTADES = [
+  'Facultad de Medicina', 'Facultad de Ingeniería', 'Facultad de Ingeniería Química', 'Facultad de Derecho',
+  'Facultad de Contaduría y Administración', 'Facultad de Economía', 'Facultad de Psicología',
+  'Facultad de Arquitectura', 'Facultad de Enfermería', 'Facultad de Nutrición',
+  'Facultad de Odontología', 'Facultad de Matemáticas', 'Facultad de Química',
+  'Facultad de Biología', 'Facultad de Educación', 'Facultad de Ciencias Antropológicas',
+]
 const ic = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-uady-blue focus:ring-1 focus:ring-uady-blue transition-all bg-white'
 const lc = 'block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1'
 
-function Dato({ label, value }: { label: string; value?: string | number | null }) {
+function formatFechaLarga(iso: string | null): string | null {
+  if (!iso) return null
+  return parseFechaLocal(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+function Dato({ label, value, mono }: { label: string; value?: string | number | null; mono?: boolean }) {
   return (
     <div>
       <dt className="text-xs text-gray-400 font-semibold uppercase tracking-wider">{label}</dt>
-      <dd className="text-gray-700 mt-0.5">{value !== null && value !== undefined && value !== '' ? value : <span className="text-gray-300 italic">—</span>}</dd>
+      <dd className={`text-gray-700 mt-0.5 ${mono ? 'font-mono break-all' : ''}`}>{value !== null && value !== undefined && value !== '' ? value : <span className="text-gray-300 italic">—</span>}</dd>
     </div>
   )
 }
@@ -157,51 +173,32 @@ export function CardDeportiva({ atletaId, data, canEdit }: { atletaId: string; d
   )
 }
 
-// ─── Información de Contacto ───────────────────────────────────────────────────
-// 'completo' (ADMIN o el propio atleta): clave/correo/tel. personal/tel. tutor,
-// con badge Privado. 'reducido' (compañero de equipo): solo correo y tel.
-// personal, sin badge — son los únicos datos de contacto públicos dentro del
-// equipo. La forma de los datos en cada variante evita que el cliente reciba
-// campos que no le corresponden (p. ej. teléfono del tutor nunca se serializa
-// para un compañero).
+// ─── Información Académica (pública) ──────────────────────────────────────────
+// Matrícula es de solo lectura (se fija al crear el atleta o vía import).
 
-export interface ContactoDataCompleta {
-  correo: string | null
-  telefonoPersonal: string
-  telefonoTutor: string
+export interface AcademicaData {
+  matricula: string | null
+  facultad: string
+  semestre: number
+  directorFacultad: string
+  licenciatura: string | null
 }
 
-export interface ContactoDataReducida {
-  correo: string | null
-  telefonoPersonal: string
-}
-
-type CardContactoProps =
-  | { atletaId: string; canEdit: boolean; variant: 'completo'; data: ContactoDataCompleta }
-  | { atletaId: string; variant: 'reducido'; data: ContactoDataReducida }
-
-export function CardContacto(props: CardContactoProps) {
-  const { atletaId, variant, data } = props
+export function CardAcademica({
+  atletaId, data, canEdit,
+}: { atletaId: string; data: AcademicaData; canEdit: boolean }) {
   const [editing, setEditing] = useState(false)
+  const [licenciatura, setLicenciatura] = useState(data.licenciatura ?? '')
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
-
-  if (variant === 'reducido') {
-    return (
-      <CardShell title="Información de Contacto" accent="blue" canEdit={false}>
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-          <Dato label="Correo" value={data.correo} />
-          <Dato label="Teléfono Personal" value={data.telefonoPersonal} />
-        </dl>
-      </CardShell>
-    )
-  }
 
   const handleSave = (formData: FormData) => {
     setError(null)
     const payload: DatosGenerales = {
-      correo: (formData.get('correo') as string) || null,
-      telefonoPersonal: (formData.get('telefonoPersonal') as string) || data.telefonoPersonal,
+      facultad: (formData.get('facultad') as string) || data.facultad,
+      semestre: formData.get('semestre') ? parseInt(formData.get('semestre') as string, 10) : data.semestre,
+      directorFacultad: (formData.get('directorFacultad') as string) || data.directorFacultad,
+      licenciatura: (formData.get('licenciatura') as string) || null,
     }
     startTransition(async () => {
       try {
@@ -214,20 +211,35 @@ export function CardContacto(props: CardContactoProps) {
   }
 
   return (
-    <CardShell title="Información de Contacto" accent="blue" privateLabel canEdit={props.canEdit} onEditClick={() => setEditing(true)}>
+    <CardShell
+      title="Información Académica"
+      canEdit={canEdit && !editing}
+      onEditClick={() => { setLicenciatura(data.licenciatura ?? ''); setEditing(true) }}
+    >
       {editing ? (
         <form action={handleSave} className="space-y-3">
           <div>
-            <label className={lc}>Correo</label>
-            <input type="email" name="correo" defaultValue={data.correo ?? ''} className={ic} />
+            <label className={lc}>Facultad</label>
+            <select name="facultad" defaultValue={data.facultad} className={ic}>
+              {FACULTADES.map((f) => <option key={f} value={f}>{f}</option>)}
+            </select>
           </div>
           <div>
-            <label className={lc}>Teléfono Personal</label>
-            <input
-              type="tel" name="telefonoPersonal" maxLength={10} inputMode="numeric"
-              defaultValue={data.telefonoPersonal}
-              className={`${ic} ${error ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : ''}`}
-            />
+            <label className={lc}>Licenciatura</label>
+            <LicenciaturaSelector value={licenciatura} onChange={setLicenciatura} />
+            <input type="hidden" name="licenciatura" value={licenciatura} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={lc}>Semestre</label>
+              <select name="semestre" required defaultValue={data.semestre} className={ic}>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((s) => <option key={s} value={s}>{s}°</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={lc}>Director(a)</label>
+              <input type="text" name="directorFacultad" required defaultValue={data.directorFacultad} className={ic} />
+            </div>
           </div>
           {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
           <div className="flex gap-2">
@@ -240,10 +252,125 @@ export function CardContacto(props: CardContactoProps) {
           </div>
         </form>
       ) : (
+        <dl className="space-y-3 text-sm">
+          {data.matricula && <Dato label="Matrícula" value={data.matricula} />}
+          <Dato label="Facultad" value={data.facultad} />
+          <Dato label="Semestre" value={`${data.semestre}°`} />
+          <Dato label="Director(a)" value={data.directorFacultad} />
+          <Dato label="Licenciatura" value={data.licenciatura} />
+        </dl>
+      )}
+    </CardShell>
+  )
+}
+
+// ─── Información Personal (mixta: pública + privada) ──────────────────────────
+// Fecha de Nacimiento, Correo y Teléfono Personal son públicos (visibles a
+// cualquier compañero de equipo). Teléfono Tutor/Familiar solo llega en `data`
+// cuando accesoCompleto es true — nunca se le pasa a un compañero.
+
+export interface PersonalData {
+  fechaNacimiento: string | null // ISO 'YYYY-MM-DD'
+  correo: string | null
+  telefonoPersonal: string
+  telefonoTutor: string | null
+  curp: string | null // solo llega cuando accesoCompleto es true
+}
+
+export function CardPersonal({
+  atletaId, data, canEdit, accesoCompleto,
+}: { atletaId: string; data: PersonalData; canEdit: boolean; accesoCompleto: boolean }) {
+  const [editing, setEditing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [pending, startTransition] = useTransition()
+
+  const handleSave = (formData: FormData) => {
+    setError(null)
+    const telefonoTutor = (formData.get('telefonoTutor') as string) || ''
+    const payload: DatosGenerales = {
+      fechaNacimiento: (formData.get('fechaNacimiento') as string) || null,
+      correo: (formData.get('correo') as string) || null,
+      telefonoPersonal: (formData.get('telefonoPersonal') as string) || data.telefonoPersonal,
+      // vacío no se envía: el campo es obligatorio en BD y no debe borrarse
+      ...(telefonoTutor && { telefonoTutor }),
+    }
+    startTransition(async () => {
+      try {
+        await actualizarDatosGenerales(atletaId, payload)
+        if (accesoCompleto) {
+          await actualizarDatosPrivados(atletaId, {
+            curp: ((formData.get('curp') as string) || '').toUpperCase() || null,
+          })
+        }
+        setEditing(false)
+      } catch (e) {
+        setError((e as Error).message || 'Error al guardar los cambios.')
+      }
+    })
+  }
+
+  return (
+    <CardShell title="Información Personal" accent="blue" privateLabel={accesoCompleto} canEdit={canEdit} onEditClick={() => setEditing(true)}>
+      {editing ? (
+        <form action={handleSave} className="space-y-3">
+          <div>
+            <label className={lc}>Fecha de Nacimiento</label>
+            <FechaNacimientoSelector name="fechaNacimiento" defaultValue={data.fechaNacimiento} />
+          </div>
+          <div>
+            <label className={lc}>Correo</label>
+            <input type="email" name="correo" defaultValue={data.correo ?? ''} className={ic} />
+          </div>
+          <div>
+            <label className={lc}>Teléfono Personal</label>
+            <input
+              type="tel" name="telefonoPersonal" maxLength={10} inputMode="numeric"
+              defaultValue={data.telefonoPersonal}
+              className={`${ic} ${error ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : ''}`}
+            />
+          </div>
+          {accesoCompleto && (
+            <div>
+              <label className={lc}>Teléfono Tutor / Familiar</label>
+              <input
+                type="tel" name="telefonoTutor" maxLength={10} inputMode="numeric"
+                placeholder="10 dígitos"
+                defaultValue={data.telefonoTutor ?? ''}
+                className={`${ic} ${error ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : ''}`}
+              />
+            </div>
+          )}
+          {accesoCompleto && (
+            <div>
+              <label className={lc}>CURP</label>
+              <input
+                type="text" name="curp" maxLength={18}
+                defaultValue={data.curp ?? ''}
+                className={`${ic} uppercase font-mono`}
+              />
+            </div>
+          )}
+          {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+          <div className="flex gap-2">
+            <button type="submit" disabled={pending} className="flex items-center gap-1.5 bg-uady-blue text-white text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-60">
+              {pending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />} Guardar
+            </button>
+            <button type="button" onClick={() => setEditing(false)} disabled={pending} className="flex items-center gap-1.5 border border-gray-200 text-gray-500 text-xs font-medium px-4 py-2 rounded-lg">
+              <X className="w-3.5 h-3.5" /> Cancelar
+            </button>
+          </div>
+        </form>
+      ) : (
         <dl className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+          <div className="flex flex-col gap-3">
+            <Dato label="Fecha de Nacimiento" value={formatFechaLarga(data.fechaNacimiento)} />
+            {accesoCompleto && <Dato label="CURP" value={data.curp} mono />}
+          </div>
           <Dato label="Correo" value={data.correo} />
-          <Dato label="Teléfono Personal" value={data.telefonoPersonal} />
-          <Dato label="Teléfono Tutor / Familiar" value={data.telefonoTutor} />
+          <div className="flex flex-col gap-3">
+            <Dato label="Teléfono Personal" value={data.telefonoPersonal} />
+            {accesoCompleto && <Dato label="Teléfono Tutor / Familiar" value={data.telefonoTutor} />}
+          </div>
         </dl>
       )}
     </CardShell>

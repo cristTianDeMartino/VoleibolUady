@@ -1,12 +1,13 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { refresh, revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import { updateAtletaPrivado } from '@/lib/atleta.queries'
-import type { PosicionValue } from '@/lib/constants/posiciones'
-import { validarNSS, validarTelefono, validarAnioIngreso } from '@/lib/validation'
+import { POSICIONES, type PosicionValue } from '@/lib/constants/posiciones'
+import { validarNSS, validarTelefono, validarAnioIngreso, validarCurp, validarDirector } from '@/lib/validation'
+import { parseFechaLocal } from '@/lib/utils/fecha'
 
 function revalidateAtleta(atletaId: string) {
   revalidatePath('/perfil')
@@ -24,6 +25,12 @@ export type DatosGenerales = Partial<{
   tallaChamarra: string | null
   correo: string | null
   telefonoPersonal: string
+  telefonoTutor: string
+  fechaNacimiento: string | null // ISO 'YYYY-MM-DD' o null para borrar
+  licenciatura: string | null
+  facultad: string
+  semestre: number
+  directorFacultad: string
 }>
 
 export async function actualizarDatosGenerales(atletaId: string, data: DatosGenerales) {
@@ -36,8 +43,22 @@ export async function actualizarDatosGenerales(atletaId: string, data: DatosGene
     const err = validarTelefono(data.telefonoPersonal)
     if (err) throw new Error(err)
   }
+  if (data.telefonoTutor != null) {
+    const err = validarTelefono(data.telefonoTutor)
+    if (err) throw new Error(err)
+  }
   if (data.anioIngreso != null) {
     const err = validarAnioIngreso(data.anioIngreso)
+    if (err) throw new Error(err)
+  }
+  if (data.posicion != null && !POSICIONES.some((p) => p.value === data.posicion)) {
+    throw new Error('Posición no válida.')
+  }
+  if (data.semestre != null && (isNaN(data.semestre) || data.semestre < 1 || data.semestre > 12)) {
+    throw new Error('El semestre debe ser entre 1 y 12.')
+  }
+  if (data.directorFacultad != null) {
+    const err = validarDirector(data.directorFacultad)
     if (err) throw new Error(err)
   }
 
@@ -53,6 +74,14 @@ export async function actualizarDatosGenerales(atletaId: string, data: DatosGene
       tallaChamarra: data.tallaChamarra,
       correo: data.correo,
       telefonoPersonal: data.telefonoPersonal,
+      telefonoTutor: data.telefonoTutor,
+      fechaNacimiento: data.fechaNacimiento !== undefined
+        ? (data.fechaNacimiento ? parseFechaLocal(data.fechaNacimiento) : null)
+        : undefined,
+      licenciatura: data.licenciatura,
+      facultad: data.facultad,
+      semestre: data.semestre,
+      directorFacultad: data.directorFacultad,
     },
   })
 
@@ -64,6 +93,7 @@ export type DatosPrivados = Partial<{
   seguroAseguradora: string | null
   seguroPoliza: string | null
   seguroTitular: string | null
+  curp: string | null
 }>
 
 export async function actualizarDatosPrivados(atletaId: string, data: DatosPrivados) {
@@ -74,8 +104,13 @@ export async function actualizarDatosPrivados(atletaId: string, data: DatosPriva
     const err = validarNSS(data.nss)
     if (err) throw new Error(err)
   }
+  const curp = data.curp != null ? data.curp.toUpperCase() : data.curp
+  if (curp) {
+    const err = validarCurp(curp)
+    if (err) throw new Error(err)
+  }
 
-  await updateAtletaPrivado(atletaId, data, session)
+  await updateAtletaPrivado(atletaId, { ...data, curp }, session)
   revalidateAtleta(atletaId)
 }
 
@@ -97,28 +132,32 @@ export async function egresarAtleta(atletaId: string) {
   const session = await getSession()
   if (!session || session.rol !== 'ADMIN') throw new Error('FORBIDDEN')
 
-  const atleta = await prisma.atleta.findUnique({ where: { id: atletaId }, select: { estado: true } })
-  if (atleta?.estado !== 'ACTIVO') throw new Error('No es un atleta activo.')
-
-  await prisma.atleta.update({
-    where: { id: atletaId },
+  const result = await prisma.atleta.updateMany({
+    where: { id: atletaId, estado: 'ACTIVO' },
     data: { estado: 'EGRESADO', anioEgreso: new Date().getFullYear() },
   })
 
-  revalidateAtleta(atletaId)
+  if (result.count === 0) {
+    throw new Error('No es un atleta activo.')
+  }
+
+  revalidatePath('/atletas')
+  refresh()
 }
 
 export async function reactivarAtleta(atletaId: string) {
   const session = await getSession()
   if (!session || session.rol !== 'ADMIN') throw new Error('FORBIDDEN')
 
-  const atleta = await prisma.atleta.findUnique({ where: { id: atletaId }, select: { estado: true } })
-  if (atleta?.estado !== 'EGRESADO') throw new Error('No es un atleta egresado.')
-
-  await prisma.atleta.update({
-    where: { id: atletaId },
+  const result = await prisma.atleta.updateMany({
+    where: { id: atletaId, estado: 'EGRESADO' },
     data: { estado: 'ACTIVO', anioEgreso: null },
   })
 
-  revalidateAtleta(atletaId)
+  if (result.count === 0) {
+    throw new Error('No es un atleta egresado.')
+  }
+
+  revalidatePath('/atletas')
+  refresh()
 }

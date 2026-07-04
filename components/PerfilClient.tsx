@@ -15,6 +15,9 @@ import type { PerfilFormState } from '@/actions/atletas'
 import { labelPosicion, type PosicionValue } from '@/lib/constants/posiciones'
 import { ramaFromGenero } from '@/lib/constants/genero'
 import { aniosDesde2000 } from '@/lib/validation'
+import { parseFechaLocal } from '@/lib/utils/fecha'
+import LicenciaturaSelector from '@/components/ui/LicenciaturaSelector'
+import FechaNacimientoSelector from '@/components/ui/FechaNacimientoSelector'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,6 +32,8 @@ export interface AtletaPerfilData {
   facultad: string
   semestre: number
   directorFacultad: string
+  licenciatura: string | null
+  fechaNacimiento: string | null // ISO 'YYYY-MM-DD'
   telefonoPersonal: string
   telefonoTutor: string
   correo: string | null
@@ -43,6 +48,7 @@ export interface AtletaPerfilData {
   tallaChamarra: string | null
   privado: {
     nss: string | null
+    curp: string | null
     seguroAseguradora: string | null
     seguroPoliza: string | null
     seguroTitular: string | null
@@ -81,15 +87,21 @@ const POSICION_COLORS: Record<PosicionValue, string> = {
 
 // ─── InfoRow ──────────────────────────────────────────────────────────────────
 
-function InfoRow({ label, value }: { label: string; value?: string | null }) {
+function InfoRow({ label, value, mono }: { label: string; value?: string | null; mono?: boolean }) {
   return (
     <div>
       <p className={lc}>{label}</p>
-      <p className="text-gray-700 text-sm leading-snug">
+      <p className={`text-gray-700 text-sm leading-snug ${mono ? 'font-mono break-all' : ''}`}>
         {value || <span className="text-gray-300 italic text-xs">Sin registrar</span>}
       </p>
     </div>
   )
+}
+
+function formatFechaLarga(iso: string | null): string | null {
+  if (!iso) return null
+  return new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
+    .format(parseFechaLocal(iso))
 }
 
 // ─── SectionCard ──────────────────────────────────────────────────────────────
@@ -187,6 +199,7 @@ function SectionCard({
 
 function SeccionAcademica({ atleta }: { atleta: AtletaPerfilData }) {
   const [editing, setEditing] = useState(false)
+  const [licenciatura, setLicenciatura] = useState(atleta.licenciatura ?? '')
   const [state, formAction, isPending] = useActionState<PerfilFormState, FormData>(
     updateSeccionAcademica, { error: null },
   )
@@ -198,7 +211,7 @@ function SeccionAcademica({ atleta }: { atleta: AtletaPerfilData }) {
       <SectionCard
         title="Información Académica"
         editing={editing}
-        onEdit={() => setEditing(true)}
+        onEdit={() => { setLicenciatura(atleta.licenciatura ?? ''); setEditing(true) }}
         onCancel={() => setEditing(false)}
         isPending={isPending}
         error={state.field ? null : state.error}
@@ -209,6 +222,11 @@ function SeccionAcademica({ atleta }: { atleta: AtletaPerfilData }) {
               <select name="facultad" defaultValue={atleta.facultad} className={ic}>
                 {FACULTADES.map(f => <option key={f} value={f}>{f}</option>)}
               </select>
+            </div>
+            <div>
+              <label className={lc}>Licenciatura</label>
+              <LicenciaturaSelector value={licenciatura} onChange={setLicenciatura} placeholder="Buscar licenciatura..." />
+              <input type="hidden" name="licenciatura" value={licenciatura} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -241,6 +259,7 @@ function SeccionAcademica({ atleta }: { atleta: AtletaPerfilData }) {
           <InfoRow label="Facultad" value={atleta.facultad} />
           <InfoRow label="Semestre" value={`${atleta.semestre}°`} />
           <InfoRow label="Director(a)" value={atleta.directorFacultad} />
+          <InfoRow label="Licenciatura" value={atleta.licenciatura} />
         </div>
       </SectionCard>
     </form>
@@ -330,7 +349,7 @@ function SeccionContacto({ atleta }: { atleta: AtletaPerfilData }) {
   return (
     <form action={formAction}>
       <SectionCard
-        title="Información de Contacto" accent="blue" privateLabel
+        title="Información Personal" accent="blue" privateLabel
         editing={editing}
         onEdit={() => setEditing(true)}
         onCancel={() => setEditing(false)}
@@ -338,6 +357,19 @@ function SeccionContacto({ atleta }: { atleta: AtletaPerfilData }) {
         error={state.field ? null : state.error}
         editFields={
           <div className="space-y-3">
+            <div>
+              <label className={lc}>Fecha de Nacimiento</label>
+              <FechaNacimientoSelector name="fechaNacimiento" defaultValue={atleta.fechaNacimiento} />
+            </div>
+            <div>
+              <label className={lc}>CURP</label>
+              <input
+                type="text" name="curp" maxLength={18} placeholder="18 caracteres"
+                defaultValue={atleta.privado?.curp ?? ''}
+                className={`${icErr(fieldError('curp'))} font-mono uppercase`}
+              />
+              <FieldError msg={fieldError('curp')} />
+            </div>
             <div>
               <label className={lc}>Correo *</label>
               <input
@@ -370,9 +402,15 @@ function SeccionContacto({ atleta }: { atleta: AtletaPerfilData }) {
         }
       >
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="flex flex-col gap-4">
+            <InfoRow label="Fecha de Nacimiento" value={formatFechaLarga(atleta.fechaNacimiento)} />
+            <InfoRow label="CURP" value={atleta.privado?.curp} mono />
+          </div>
           <InfoRow label="Correo" value={atleta.correo} />
-          <InfoRow label="Teléfono Personal" value={atleta.telefonoPersonal} />
-          <InfoRow label="Teléfono Tutor / Familiar" value={atleta.telefonoTutor} />
+          <div className="flex flex-col gap-4">
+            <InfoRow label="Teléfono Personal" value={atleta.telefonoPersonal} />
+            <InfoRow label="Teléfono Tutor / Familiar" value={atleta.telefonoTutor} />
+          </div>
         </div>
       </SectionCard>
     </form>

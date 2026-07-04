@@ -3,11 +3,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-// La Server Action se mockea: en el cliente solo nos importa que se invoque bien.
-const darDeAltaMock = vi.fn(async () => ({ success: true }))
-vi.mock('@/actions/lesiones', () => ({ darDeAltaLesion: (id: string) => darDeAltaMock(id) }))
-
 import LesionesSeguimiento, { type LesionRow } from './LesionesSeguimiento'
+
+const darDeAltaMock = vi.fn(async () => ({ success: true }))
 
 const activa: LesionRow = {
   id: 'a1',
@@ -40,7 +38,7 @@ describe('LesionesSeguimiento — vista del JUGADOR', () => {
   })
 
   it('NO muestra el nombre del atleta (el jugador solo ve lo suyo)', () => {
-    render(<LesionesSeguimiento lesiones={[activa]} isAdmin={false} />)
+    render(<LesionesSeguimiento lesiones={[activa]} isAdmin={false} altaAction={darDeAltaMock} />)
     expect(screen.queryByText('Ana García')).not.toBeInTheDocument()
   })
 

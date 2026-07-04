@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { getSession } from '@/lib/auth'
 
 export type AsistenciaResult = { error: string | null; yaRegistrada?: boolean }
 
@@ -10,12 +11,17 @@ function normalizarFecha(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
 
-export async function registrarAsistenciaHoy(atletaId: string): Promise<AsistenciaResult> {
+// Sin parámetro atletaId: siempre se registra para el atleta en sesión —
+// de lo contrario cualquiera podría marcar como presente a otro atleta.
+export async function registrarAsistenciaHoy(): Promise<AsistenciaResult> {
+  const session = await getSession()
+  if (!session) return { error: 'Debes iniciar sesión.' }
+
   const hoy = normalizarFecha(new Date())
 
   try {
     await prisma.asistencia.create({
-      data: { atletaId, fecha: hoy },
+      data: { atletaId: session.id, fecha: hoy },
     })
   } catch (e: unknown) {
     // Restricción única: ya registró asistencia hoy
@@ -50,6 +56,9 @@ export async function obtenerMatrizAsistencia(
   mes: number,
   anio: number
 ): Promise<{ atletas: AtletaConAsistencia[]; registros: Record<string, string[]> }> {
+  const session = await getSession()
+  if (!session || session.rol !== 'ADMIN') return { atletas: [], registros: {} }
+
   const inicio = new Date(anio, mes - 1, 1)
   const fin = new Date(anio, mes, 0, 23, 59, 59)
 

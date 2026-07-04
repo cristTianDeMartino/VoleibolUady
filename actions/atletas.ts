@@ -1,6 +1,6 @@
 'use server'
 
-import { writeFile } from 'fs/promises'
+import { mkdir, writeFile } from 'fs/promises'
 import path from 'path'
 import bcrypt from 'bcryptjs'
 import { revalidatePath } from 'next/cache'
@@ -10,10 +10,15 @@ import { actualizarDatosGenerales } from '@/app/actions/atleta.actions'
 import { POSICIONES, type PosicionValue } from '@/lib/constants/posiciones'
 import { ramaFromGenero } from '@/lib/constants/genero'
 import { generarClaveAcceso } from '@/lib/utils/generarClave'
-import { validarMatricula, validarDirector, validarNSS, validarTelefono, validarAnioIngreso } from '@/lib/validation'
+import { validarMatricula, validarDirector, validarNSS, validarTelefono, validarAnioIngreso, validarCurp } from '@/lib/validation'
+import { parseFechaLocal } from '@/lib/utils/fecha'
 
 const isPosicionValida = (v: string): v is PosicionValue =>
   POSICIONES.some((p) => p.value === v)
+
+async function ensureFotoUploadsDir() {
+  await mkdir(path.join(process.cwd(), 'public', 'uploads', 'fotos'), { recursive: true })
+}
 
 export type AtletaFormState = {
   error: string | null
@@ -68,6 +73,9 @@ export async function createAtleta(
   const tallaShort = (formData.get('tallaShort') as string) || null
   const tallaPants = (formData.get('tallaPants') as string) || null
   const tallaChamarra = (formData.get('tallaChamarra') as string) || null
+  const fechaNacimientoRaw = (formData.get('fechaNacimiento') as string)?.trim() || null
+  const licenciatura = (formData.get('licenciatura') as string)?.trim() || null
+  const curp = ((formData.get('curp') as string)?.trim() || '').toUpperCase() || null
 
   if (!nombre) return { error: 'El nombre es obligatorio.', field: 'nombre' }
   if (!apellidos) return { error: 'Los apellidos son obligatorios.', field: 'apellidos' }
@@ -93,6 +101,10 @@ export async function createAtleta(
     if (!nss) return { error: 'El NSS es obligatorio.', field: 'nss' }
     const errNss = validarNSS(nss)
     if (errNss) return { error: errNss, field: 'nss' }
+    if (curp) {
+      const errCurp = validarCurp(curp)
+      if (errCurp) return { error: errCurp, field: 'curp' }
+    }
     if (!anioIngreso) return { error: 'El año de ingreso es obligatorio.', field: 'anioIngreso' }
     const errAnio = validarAnioIngreso(anioIngreso)
     if (errAnio) return { error: errAnio, field: 'anioIngreso' }
@@ -105,6 +117,7 @@ export async function createAtleta(
   const fotoFile = formData.get('foto') as File | null
   if (fotoFile && fotoFile.size > 0) {
     try {
+      await ensureFotoUploadsDir()
       const bytes = await fotoFile.arrayBuffer()
       const buffer = Buffer.from(bytes)
       const ext = (fotoFile.name.split('.').pop() ?? 'jpg').toLowerCase().replace(/[^a-z]/g, '')
@@ -144,8 +157,10 @@ export async function createAtleta(
         correo,
         anioIngreso: anioIngreso ?? new Date().getFullYear(),
         numUniforme, tallaPlayera, tallaShort, tallaPants, tallaChamarra,
+        fechaNacimiento: esAdmin || !fechaNacimientoRaw ? null : parseFechaLocal(fechaNacimientoRaw),
+        licenciatura: esAdmin ? null : licenciatura,
         codigoAcceso: claveHasheada, rol, fotoUrl,
-        privado: { create: { nss, seguroAseguradora, seguroPoliza, seguroTitular } },
+        privado: { create: { nss, seguroAseguradora, seguroPoliza, seguroTitular, curp: esAdmin ? null : curp } },
         claveAtleta: { create: { clavePlana } },
       },
     })
@@ -170,6 +185,7 @@ export async function updateFotoPerfilPropio(
 
   try {
     const record = await prisma.atleta.findUnique({ where: { id: session.id }, select: { nombre: true } })
+    await ensureFotoUploadsDir()
     const bytes = await fotoFile.arrayBuffer()
     const buffer = Buffer.from(bytes)
     const ext = (fotoFile.name.split('.').pop() ?? 'jpg').toLowerCase().replace(/[^a-z]/g, '')
@@ -196,6 +212,7 @@ export async function updateSeccionAcademica(
   const facultad = (formData.get('facultad') as string)?.trim()
   const semestreRaw = (formData.get('semestre') as string)?.trim()
   const directorFacultad = (formData.get('directorFacultad') as string)?.trim()
+  const licenciatura = (formData.get('licenciatura') as string)?.trim() || null
 
   if (!facultad || !semestreRaw || !directorFacultad) return { error: 'Completa todos los campos.' }
   const semestre = parseInt(semestreRaw, 10)
@@ -203,7 +220,7 @@ export async function updateSeccionAcademica(
   const errDirector = validarDirector(directorFacultad)
   if (errDirector) return { error: errDirector, field: 'directorFacultad' }
 
-  await prisma.atleta.update({ where: { id: session.id }, data: { facultad, semestre, directorFacultad } })
+  await prisma.atleta.update({ where: { id: session.id }, data: { facultad, semestre, directorFacultad, licenciatura } })
   revalidatePath('/perfil')
   return { error: null, success: true }
 }
@@ -249,6 +266,8 @@ export async function updateSeccionContacto(
   const correo = (formData.get('correo') as string)?.trim()
   const telefonoPersonal = (formData.get('telefonoPersonal') as string)?.trim()
   const telefonoTutor = (formData.get('telefonoTutor') as string)?.trim()
+  const fechaNacimientoRaw = (formData.get('fechaNacimiento') as string)?.trim() || null
+  const curp = ((formData.get('curp') as string)?.trim() || '').toUpperCase() || null
 
   if (!correo) return { error: 'El correo es obligatorio.', field: 'correo' }
   if (!telefonoPersonal) return { error: 'El teléfono personal es obligatorio.', field: 'telefonoPersonal' }
@@ -257,10 +276,22 @@ export async function updateSeccionContacto(
   if (errTelPersonal) return { error: errTelPersonal, field: 'telefonoPersonal' }
   const errTelTutor = validarTelefono(telefonoTutor)
   if (errTelTutor) return { error: errTelTutor, field: 'telefonoTutor' }
+  if (curp) {
+    const errCurp = validarCurp(curp)
+    if (errCurp) return { error: errCurp, field: 'curp' }
+  }
 
   await prisma.atleta.update({
     where: { id: session.id },
-    data: { correo, telefonoPersonal, telefonoTutor },
+    data: {
+      correo, telefonoPersonal, telefonoTutor,
+      fechaNacimiento: fechaNacimientoRaw ? parseFechaLocal(fechaNacimientoRaw) : null,
+    },
+  })
+  await prisma.atletaPrivado.upsert({
+    where: { atletaId: session.id },
+    update: { curp },
+    create: { atletaId: session.id, curp },
   })
   revalidatePath('/perfil')
   return { error: null, success: true }
@@ -323,7 +354,8 @@ export async function updateFotoAtleta(
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
   const session = await getSession()
-  if (!session || session.rol !== 'ADMIN') {
+  // ADMIN o el propio atleta (mismo criterio que el resto de la edición del perfil)
+  if (!session || (session.rol !== 'ADMIN' && session.id !== atletaId)) {
     return { error: 'Sin permisos para esta acción.' }
   }
 
@@ -333,7 +365,7 @@ export async function updateFotoAtleta(
   }
 
   try {
-    const atleta = await prisma.atleta.findUnique({ where: { id: atletaId } })
+    const atleta = await prisma.atleta.findUnique({ where: { id: atletaId }, select: { nombre: true } })
     if (!atleta) {
       return { error: 'Atleta no encontrado.' }
     }
@@ -344,6 +376,7 @@ export async function updateFotoAtleta(
     const safe = atleta.nombre.toLowerCase().replace(/[^a-z0-9]/g, '-')
     const filename = `${Date.now()}-${safe}.${ext}`
 
+    await ensureFotoUploadsDir()
     await writeFile(path.join(process.cwd(), 'public', 'uploads', 'fotos', filename), buffer)
     const fotoUrl = `/uploads/fotos/${filename}`
 

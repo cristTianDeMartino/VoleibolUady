@@ -6,6 +6,7 @@ const REGEX_SOLO_DIGITOS = /^\d+$/
 const REGEX_SOLO_LETRAS = /^[A-Za-záéíóúÁÉÍÓÚüÜñÑ\s.'-]+$/
 const REGEX_NSS = /^\d{11}$/
 const REGEX_TELEFONO = /^\d{10}$/
+const REGEX_CURP = /^[A-Z0-9]{18}$/
 
 export function validarMatricula(v: string): string | null {
   return REGEX_SOLO_DIGITOS.test(v) ? null : 'La matrícula solo puede contener dígitos numéricos.'
@@ -21,6 +22,11 @@ export function validarNSS(v: string): string | null {
 
 export function validarTelefono(v: string): string | null {
   return REGEX_TELEFONO.test(v) ? null : 'El teléfono debe tener exactamente 10 dígitos.'
+}
+
+// El llamador debe aplicar .toUpperCase() antes de validar/guardar.
+export function validarCurp(v: string): string | null {
+  return REGEX_CURP.test(v) ? null : 'El CURP debe tener exactamente 18 caracteres alfanuméricos.'
 }
 
 export function validarAnioIngreso(anio: number): string | null {

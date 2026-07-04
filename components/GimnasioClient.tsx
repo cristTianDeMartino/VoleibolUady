@@ -3,7 +3,7 @@
 import { useState, useTransition, useMemo } from 'react'
 import {
   Plus, X, Loader2, Trash2, Dumbbell, Video,
-  Pencil, PlayCircle, ChevronDown, ChevronUp, Info, Activity, AlertTriangle,
+  Pencil, PlayCircle, ChevronDown, ChevronUp, Activity, AlertTriangle,
 } from 'lucide-react'
 import {
   obtenerMatriz, obtenerEtapas, obtenerCatalogoEjercicios, obtenerNombresEjercicios,
@@ -17,6 +17,8 @@ import type {
   EjercicioPrincipalData, DetalleSemanaData, AccesorioData, VideoData,
   EtapaData, EjercicioInput, CatalogoData, SemanaSeleccionada,
 } from '@/actions/gimnasio'
+import { obtenerNotasProgramacion, type NotaProgramacionData } from '@/app/actions/notas-programacion.actions'
+import NotasProgramacion from '@/components/gimnasio/NotasProgramacion'
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -31,14 +33,6 @@ const CATEGORIAS_FIJAS = [
 ]
 
 const SUBCATEGORIA_LATERALIDAD = 'Lateralidad'
-
-const NOTAS_INFO = [
-  { id: 1, text: 'RIR: Repeticiones en reserva.' },
-  { id: 2, text: 'El peso que permita llegar a las RPT indicadas con los RIR de reserva propuestos.' },
-  { id: 3, text: 'En todos los ejercicios cuidar que el peso utilizado NO deforme la técnica, pero que sea suficientemente intenso para reproducir un esfuerzo significativo.' },
-  { id: 4, text: 'Los ejercicios accesorios se deberán hacer semanalmente en relación al tiempo con el que dispongan, SIN sobrepasar las 16 series semanales por tren (ejemplo: 4 de Bíceps, 4 de Tríceps, 4 de Dorsal y 4 de Hombro = 16 series).' },
-  { id: 5, text: 'Las series de potencia se ejecutarán con el peso que permita realizar el número de repeticiones indicado, de manera explosiva, sin deformar la técnica.' },
-]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -1081,27 +1075,6 @@ function AccesoriosPanel({
   )
 }
 
-// ─── PanelInformativo ─────────────────────────────────────────────────────────
-
-function PanelInformativo() {
-  return (
-    <div className="bg-uady-blue/5 border border-uady-blue/15 rounded-2xl p-6 h-full">
-      <div className="flex items-center gap-2 mb-5">
-        <Info className="w-5 h-5 text-uady-blue flex-shrink-0" />
-        <h3 className="font-black text-uady-blue text-base">Notas de Programación</h3>
-      </div>
-      <ol className="space-y-4">
-        {NOTAS_INFO.map(nota => (
-          <li key={nota.id} className="flex gap-3">
-            <span className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-uady-gold text-uady-blue text-[11px] font-bold flex items-center justify-center leading-none">{nota.id}</span>
-            <p className="text-slate-700 text-sm leading-relaxed">{nota.text}</p>
-          </li>
-        ))}
-      </ol>
-    </div>
-  )
-}
-
 // ─── VideoModal ───────────────────────────────────────────────────────────────
 
 function VideoModal({
@@ -1266,6 +1239,7 @@ interface GimnasioClientProps {
   etapas: EtapaData[]
   catalogo: CatalogoData[]
   nombresEjercicios: string[]
+  notas: NotaProgramacionData[]
 }
 
 export default function GimnasioClient({
@@ -1276,6 +1250,7 @@ export default function GimnasioClient({
   etapas: etapasInit,
   catalogo: catalogoInit,
   nombresEjercicios: nombresEjerciciosInit,
+  notas: notasInit,
 }: GimnasioClientProps) {
   const [ejercicios, setEjercicios] = useState(ejerciciosInit)
   const [accesorios, setAccesorios] = useState(accesoriosInit)
@@ -1283,6 +1258,7 @@ export default function GimnasioClient({
   const [etapas, setEtapas] = useState(etapasInit)
   const [catalogo, setCatalogo] = useState(catalogoInit)
   const [nombresEjercicios, setNombresEjercicios] = useState(nombresEjerciciosInit)
+  const [notas, setNotas] = useState(notasInit)
 
   const [showEtapaModal, setShowEtapaModal] = useState(false)
   const [showAgregarEjModal, setShowAgregarEjModal] = useState(false)
@@ -1298,6 +1274,7 @@ export default function GimnasioClient({
     setEjercicios(ejs); setEtapas(ets); setCatalogo(cat); setNombresEjercicios(nombres)
   }
   async function handleRefreshAccesorios() { setAccesorios(await obtenerAccesorios()) }
+  async function handleRefreshNotas() { setNotas(await obtenerNotasProgramacion()) }
   async function handleRefreshVideos() { setVideosAgrupados(await obtenerVideosAgrupados()) }
   async function handleEliminarVideo(id: string) {
     if (!window.confirm('¿Eliminar este video?')) return
@@ -1362,7 +1339,7 @@ export default function GimnasioClient({
               <div className="w-1 h-6 bg-uady-gold rounded-full" />
               <h2 className="text-xl font-black text-uady-blue">Notas de Programación</h2>
             </div>
-            <PanelInformativo />
+            <NotasProgramacion notas={notas} isAdmin={isAdmin} onRefresh={handleRefreshNotas} />
           </div>
         </div>
       </section>

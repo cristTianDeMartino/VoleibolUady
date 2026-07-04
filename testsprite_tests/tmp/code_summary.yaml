@@ -2,77 +2,116 @@ version: "2"
 type: frontend
 tech_stack:
   - TypeScript
-  - Next.js 16 (App Router, Server Actions)
+  - Next.js 16 (App Router, Server Components, Server Actions)
   - React 19
   - Prisma 7 (better-sqlite3 adapter)
   - Tailwind CSS
-  - bcryptjs (password hashing)
+  - bcryptjs (access-code hashing)
 routes:
   - path: /login
     file: app/login/page.tsx
     auth_required: false
-    description: "Login with access code; dev-only seed button 'Crear Admin Maestro (ADMIN001)' creates an admin test account with code ADMIN001"
-  - path: /atletas/agregar
-    file: app/atletas/agregar/page.tsx
+    description: "Single-field login: input name=codigoAcceso. ADMIN code is ADMIN001 (dev seed button 'Crear Admin Maestro' creates it if missing). JUGADOR codes are seeded in prisma/seed.ts, e.g. ANA001, LAURA002."
+  - path: /perfil
+    file: app/perfil/page.tsx
     auth_required: true
-    description: "ADMIN-only athlete creation form; redirects to /login if the session is missing or not ADMIN"
+    description: "Own-profile page for the logged-in athlete/admin (PerfilClient.tsx). Redirects to /login if no session."
+  - path: /atletas
+    file: app/atletas/page.tsx
+    auth_required: true
+    description: "Roster list, links to /atletas/[id] for each athlete."
+  - path: /atletas/[id]
+    file: app/atletas/[id]/page.tsx
+    auth_required: true
+    description: "Athlete detail/profile page viewed by another user (admin or teammate). Card visibility depends on session.rol and whether session.id === id."
+known_limitations: []
 features:
-  - name: "Formulario Agregar Atleta - validaciones de campo"
-    description: "Field-level client validation via HTML5 pattern, inputMode, maxLength, minLength attributes, plus authoritative server-side validation in lib/validation.ts inside the createAtleta server action"
+  - name: "Visibilidad de cards en perfil ajeno segun rol (privacidad)"
+    description: >
+      In app/atletas/[id]/page.tsx, canViewPrivate = session.rol === 'ADMIN' || session.id === id.
+      Always rendered: 'Informacion Academica' (inline dl) and CardDeportiva ('Informacion Deportiva').
+      CardContacto is ALWAYS rendered but with two distinct variants: variant='completo' (correo,
+      telefonoPersonal, telefonoTutor + '🔒 Privado' badge) when canViewPrivate is true, vs
+      variant='reducido' (ONLY correo and telefonoPersonal, no badge, no edit button) when false.
+      CardMedica ('Datos Medicos', with '🔒 Privado' badge, shows NSS and 'Seguro Medico Privado')
+      and the 'Historial Medico de Lesiones' table are conditionally rendered with
+      `{canViewPrivate && (...)}` in JSX — when false, these are completely absent from the DOM
+      (not just CSS-hidden), and the server query does not even include the relational `privado`
+      field in that case (`privado: canViewPrivate` in the prisma select).
     files:
-      - components/AgregarAtletaForm.tsx
-      - actions/atletas.ts
-      - lib/validation.ts
-    entry_route: /atletas/agregar
+      - app/atletas/[id]/page.tsx
+      - components/AtletaPublicCards.tsx
+      - lib/auth.ts
+    entry_route: /atletas/[id]
     user_interactions:
-      - "Type letters into the Matricula field (name=matricula, pattern=[0-9]*, inputMode=numeric) - the browser blocks non-digit characters from being typed; if bypassed, server validarMatricula returns 'La matricula solo puede contener digitos numericos.' and the field is highlighted with that error, nothing is saved"
-      - "Type digits into the Director(a) de la Facultad field (name=directorFacultad, pattern allows letters with accents, spaces, hyphens, periods and apostrophes only, no digits) - browser blocks digits; if bypassed, server validarDirector returns 'El nombre del director no puede contener numeros.'"
-      - "Type a 10-digit value into NSS field (name=nss, maxLength=11, minLength=11) - server validarNSS requires exactly 11 digits via regex ^\\d{11}$, returns 'El NSS debe tener exactamente 11 digitos.' for any length other than 11"
-      - "Type a 12-digit value into NSS field - same validarNSS error, exactly 11 digits required, extra digits beyond maxLength=11 are blocked by the browser but server is the authoritative check"
-      - "Type a 9-digit value into Telefono Personal field (name=telefonoPersonal, maxLength=10) - server validarTelefono requires exactly 10 digits via regex ^\\d{10}$, returns an error otherwise; same rule applies to Telefono Tutor / Familiar field for JUGADOR role"
-      - "Type an 11-digit value into Telefono Personal field - same validarTelefono error"
-      - "Submit the form with Semestre left unselected (native <select name=semestre required> with a disabled empty placeholder option, only options 1 through 12 are selectable) - browser required-field validation blocks submit; server also checks isNaN(semestre) || semestre<1 || semestre>12 and returns 'El semestre debe ser un numero entre 1 y 12.' if bypassed"
-      - "Try to type a negative number into Anio de Ingreso - this field is a native <select name=anioIngreso required> populated only with years from 2000 up to the current year via aniosDesde2000(), it is NOT a free-text number input, so negative numbers cannot be typed at all; only listed years are selectable. Confirm this by inspecting the field is a dropdown, not a text/number input, and that no year below 2000 or above the current year appears in the options"
+      - "Log in as ADMIN (codigoAcceso=ADMIN001) and open /atletas/[id] for any JUGADOR athlete (e.g. ANA001's id) — exactly 4 cards must be present: 'Informacion Academica', 'Informacion Deportiva', 'Informacion de Contacto' (with text '🔒 Privado' badge, showing Correo, Telefono Personal, AND Telefono Tutor / Familiar), and 'Datos Medicos' (with '🔒 Privado' badge, showing an NSS value and a 'Seguro Medico Privado' value built from aseguradora/poliza/titular)."
+      - "Log in as an athlete (codigoAcceso=ANA001) and open /perfil (own profile) — verify the same 4 sections of data are present (academic, sportive, contact with telefonoTutor, medical with NSS/seguro), and verify the page nowhere displays the athlete's own access code/clave (search rendered text for any 6-character alphanumeric code or a label like 'Clave' / 'Codigo de Acceso' — none should appear in /perfil)."
+      - "Log in as an athlete (codigoAcceso=ANA001) and navigate to a teammate's profile at /atletas/[id] using a DIFFERENT athlete's id (e.g. LAURA002's id) — verify exactly 3 cards are visible: 'Informacion Academica', 'Informacion Deportiva', and 'Informacion de Contacto' WITHOUT any '🔒 Privado' badge text and showing ONLY Correo and Telefono Personal (the label 'Telefono Tutor / Familiar' must not appear anywhere on the page)."
+      - "On that same teammate page, assert that the heading text 'Datos Medicos' is absent from the entire DOM (not present even in a collapsed/hidden state), and that no NSS-like value, insurance value, or access code appears anywhere on the page."
+    api_calls:
+      - method: SERVER_COMPONENT_QUERY
+        endpoint: "prisma.atleta.findUnique in app/atletas/[id]/page.tsx — select.privado is conditionally set to canViewPrivate (boolean), so the related AtletaPrivado row is never fetched/serialized for unauthorized viewers"
+    auth_required: true
+
+  - name: "Botones de accion administrativa visibles solo para ADMIN"
+    description: >
+      In app/atletas/[id]/page.tsx, the entire admin-actions block (BotonEgresarAtleta /
+      BotonReactivarAtleta + BotonEliminarAtleta) is wrapped in `{session?.rol === 'ADMIN' && (...)}`.
+      Within that block, BotonEgresarAtleta ('Asignar como Egresado') shows when atleta.estado is
+      'ACTIVO', and BotonReactivarAtleta ('Reactivar atleta') shows when atleta.estado is 'EGRESADO'.
+      BotonEliminarAtleta ('Eliminar atleta por completo') always shows alongside whichever of the two.
+    files:
+      - app/atletas/[id]/page.tsx
+      - components/BotonEstadoAtleta.tsx
+      - components/BotonEliminarAtleta.tsx
+    entry_route: /atletas/[id]
+    user_interactions:
+      - "Log in as an athlete (codigoAcceso=ANA001), open a teammate's profile (a different athlete id) — verify none of the buttons 'Asignar como Egresado', 'Reactivar atleta', or 'Eliminar atleta por completo' are present anywhere on the page."
+      - "Log in as ADMIN (codigoAcceso=ADMIN001), open the profile of an athlete currently in estado ACTIVO — verify both 'Asignar como Egresado' and 'Eliminar atleta por completo' buttons are visible, and 'Reactivar atleta' is NOT present."
+      - "As ADMIN, open the profile of an athlete currently in estado EGRESADO (or one egresado via the flow below) — verify 'Reactivar atleta' and 'Eliminar atleta por completo' are visible, and 'Asignar como Egresado' is NOT present."
+    api_calls: []
+    auth_required: true
+
+  - name: "Flujo Egresar / Reactivar atleta (modal de confirmacion + toast)"
+    description: >
+      BotonEgresarAtleta opens a confirmation modal (heading '¿Marcar a {nombre} como egresado?')
+      with Cancelar/'Si, egresar' buttons. Confirming calls server action egresarAtleta(atletaId)
+      (app/actions/atleta.actions.ts), closes the modal, and shows a green-bordered toast
+      '{nombre} ha sido registrado como egresado correctamente' that auto-hides after ~4s.
+      The page then re-renders with estado=EGRESADO, so BotonReactivarAtleta ('Reactivar atleta')
+      replaces the egresar button. Confirming that modal calls reactivarAtleta(atletaId), shows
+      toast '{nombre} ha sido reactivado correctamente', and the athlete returns to estado ACTIVO.
+    files:
+      - components/BotonEstadoAtleta.tsx
+      - app/actions/atleta.actions.ts
+      - app/atletas/[id]/page.tsx
+    entry_route: /atletas/[id]
+    user_interactions:
+      - "As ADMIN, on an ACTIVO athlete's profile (use a teammate other than ANA001/LAURA002 if available, e.g. the athlete with codigoAcceso SOFIA003, to avoid disturbing the other test fixtures), click 'Asignar como Egresado' — a modal appears containing the athlete's full name in the heading text."
+      - "Click 'Si, egresar' in the modal — the modal closes, a success toast with the athlete's name appears, and the page now shows the 'Reactivar atleta' button instead of 'Asignar como Egresado'."
+      - "Click 'Reactivar atleta' — a confirmation modal appears containing the athlete's name; click 'Si, reactivar' — verify a success toast appears and the page reverts to showing 'Asignar como Egresado' (estado is ACTIVO again)."
     api_calls:
       - method: SERVER_ACTION
-        endpoint: "createAtleta(prevState, formData) in actions/atletas.ts"
+        endpoint: "egresarAtleta(atletaId) in app/actions/atleta.actions.ts"
+      - method: SERVER_ACTION
+        endpoint: "reactivarAtleta(atletaId) in app/actions/atleta.actions.ts"
     auth_required: true
-  - name: "Formulario Agregar Atleta - selector de rol ADMINISTRADOR"
-    description: "A 'Paso 1' rol select (name=rol, options JUGADOR default / ADMIN) conditionally shows or hides entire sections of the form via local React state (rol), independent from the server action which also branches its required-field validation by rol"
+
+  - name: "Modal de eliminacion de atleta (sin eliminar al cancelar)"
+    description: >
+      BotonEliminarAtleta renders a button 'Eliminar atleta por completo' that opens a modal
+      dialog (not inline red text) titled '¿Eliminar permanentemente a {nombre}?' with
+      Cancelar / 'Si, eliminar definitivamente' buttons. Clicking Cancelar (or clicking the
+      dark overlay) closes the modal via local state with no server action invoked — the
+      athlete is not deleted. Only confirming calls eliminarAtletaPorCompleto(atletaId).
     files:
-      - components/AgregarAtletaForm.tsx
-      - actions/atletas.ts
-    entry_route: /atletas/agregar
+      - components/BotonEliminarAtleta.tsx
+      - app/actions/atleta.actions.ts
+    entry_route: /atletas/[id]
     user_interactions:
-      - "Default rol is JUGADOR (Atleta) - form shows Matricula, Posicion select, Foto, Facultad select, Semestre select, Director(a) de la Facultad, Numero de Uniforme, Anio de Ingreso, 4 talla selects, Telefono Personal, Telefono Tutor/Familiar, NSS, Aseguradora, Poliza, Titular de la Poliza - in addition to the always-visible Nombre, Apellidos and Genero"
-      - "Selecting rol = ADMINISTRADOR in the Paso 1 dropdown immediately and completely removes from the DOM (not just visually hides): Matricula, Posicion select, Foto upload, the whole 'Datos Academicos' section (Facultad, Semestre, Director), the whole 'Roster y Uniforme' section (Numero de Uniforme, Anio de Ingreso, 4 talla selects), Telefono Tutor/Familiar, and the whole 'Informacion Medica' section (NSS, Aseguradora, Poliza, Titular)"
-      - "After selecting ADMINISTRADOR, the only fields that remain visible are: Nombre(s), Apellidos, Genero (radio Femenino/Masculino), Telefono Personal, and Correo (required for ADMIN per server validation, optional/absent for JUGADOR in the always-visible Contacto section logic) - confirm the exact remaining field set"
-      - "Switching back to JUGADOR restores all the previously hidden sections with their inputs reset to defaults (this is a controlled re-render driven by the rol state, not a separate page)"
+      - "As ADMIN, on any athlete's profile, click 'Eliminar atleta por completo' — verify a modal dialog (overlay + centered white card, not an inline red paragraph) appears containing the athlete's full name in the heading '¿Eliminar permanentemente a {nombre}?'."
+      - "Click 'Cancelar' in that modal — verify the modal closes immediately, no toast/error appears, and reloading or revisiting the athlete's profile shows the athlete still exists with all of their data intact (must NOT actually delete; do not click 'Si, eliminar definitivamente')."
     api_calls:
       - method: SERVER_ACTION
-        endpoint: "createAtleta(prevState, formData) in actions/atletas.ts - branches on rol: ADMIN requires only nombre, apellidos, telefonoPersonal, correo; JUGADOR additionally requires matricula, posicion, facultad, directorFacultad, telefonoTutor, nss, anioIngreso, semestre"
+        endpoint: "eliminarAtletaPorCompleto(atletaId) in app/actions/atleta.actions.ts — ONLY exercise the Cancelar path in this test, never confirm the delete"
     auth_required: true
-  - name: "Formulario Agregar Atleta - flujo completo de creacion y modal de clave"
-    description: "On successful submit, createAtleta generates a unique 6-digit numeric access code (generarClaveAcceso: 2-digit gender prefix + 2-digit year + 2-digit random suffix), hashes it for storage, and returns it once in component state for display in a blocking modal; the form supports creating multiple athletes in one visit"
-    files:
-      - components/AgregarAtletaForm.tsx
-      - actions/atletas.ts
-      - lib/utils/generarClave.ts
-    entry_route: /atletas/agregar
-    user_interactions:
-      - "Fill every required field for rol=JUGADOR with valid data (Nombre, Apellidos, Matricula digits-only, Posicion, Genero, Facultad, Semestre 1-12, Director letters-only, Numero de Uniforme optional, Anio de Ingreso from dropdown, tallas optional, Telefono Personal 10 digits, Telefono Tutor 10 digits, NSS exactly 11 digits) and click 'Guardar'"
-      - "On success, a blocking modal appears titled 'Atleta registrado - guarda esta clave' showing the athlete's name and a 6-digit numeric access code in large monospace text, with a warning that the code will not be shown again, plus 'Copiar clave' and 'Entendido, cerrar' buttons"
-      - "Click 'Entendido, cerrar' to close the modal - the entire form resets to its initial empty state (formRef.current.reset()), rol selector returns to JUGADOR, photo preview clears, and focus moves back to the rol select"
-      - "After closing the modal for the first time, a new button 'Terminar y salir' (linking to /atletas) appears next to 'Cancelar' and the submit button - it is NOT present before the first successful save in the current session"
-      - "Fill and submit the now-empty, reset form with a second athlete's valid data without navigating away from /atletas/agregar - the second save must succeed independently, show the modal with a new distinct 6-digit code, and the 'Terminar y salir' button must remain visible afterward"
-    api_calls:
-      - method: SERVER_ACTION
-        endpoint: "createAtleta(prevState, formData) in actions/atletas.ts - returns { error: null, success: true, nombreGuardado, claveGenerada } on success"
-    auth_required: true
-known_limitations:
-  - issue: "Admin test account is created via a dev-only seed button on /login labeled 'Crear Admin Maestro (ADMIN001)', only rendered when NODE_ENV is not production"
-    location: app/login/page.tsx
-    impact: "Use access code ADMIN001 to log in as ADMIN directly (already seeded in this dev database); click the seed button only if that account does not yet exist"
-  - issue: "Anio de Ingreso is a native select dropdown, not a free-text number input"
-    location: components/AgregarAtletaForm.tsx
-    impact: "A test expecting to literally type a negative number into this field will find it is not a text field at all; the correct assertion is that no out-of-range year option exists in the dropdown"

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { ArrowRight } from 'lucide-react'
 import HeroCarousel from '@/components/HeroCarousel'
+import { prisma } from '@/lib/prisma'
 
 const pillars = [
   {
@@ -30,19 +31,30 @@ const pillars = [
 const quickAccess = [
   { href: '/atletas', icon: '🏃‍♀️', label: 'Roster', sub: '12 atletas activas', bg: 'bg-uady-blue' },
   { href: '/cronograma', icon: '📅', label: 'Cronograma', sub: 'Próx. evento: Martes', bg: 'bg-uady-gold' },
-  { href: '/trabajo-fisico', icon: '💪', label: 'Físico', sub: 'Duela + Gimnasio', bg: 'bg-uady-blue' },
-  { href: '/psicologia', icon: '🧠', label: 'Psicología', sub: '8 videos cargados', bg: 'bg-uady-gold' },
-  { href: '/lesiones', icon: '🩺', label: 'Lesiones', sub: '4 reportes activos', bg: 'bg-uady-gold' },
+  { href: '/gimnasio', icon: '💪', label: 'Gimnasio y Preparación Física', sub: 'Duela + Gimnasio', bg: 'bg-uady-blue' },
+  { href: '/salud/citas', icon: '🩺', label: 'Citas Médicas', sub: 'Agenda y seguimiento', bg: 'bg-uady-gold' },
+  { href: '/lesiones', icon: '🩹', label: 'Lesiones', sub: '4 reportes activos', bg: 'bg-uady-gold' },
 ]
 
-const stats = [
-  { label: 'Atletas Activas', value: '12', icon: '🏐' },
-  { label: 'Eventos este Mes', value: '8', icon: '📅' },
-  { label: 'Ejercicios Cargados', value: '24', icon: '💪' },
-  { label: 'Reportes de Lesión', value: '4', icon: '🩺' },
-]
+export default async function HomePage() {
+  const ahora = new Date()
+  const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
+  const finMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0, 23, 59, 59)
 
-export default function HomePage() {
+  const [atletasActivos, eventosMes, ejerciciosCargados, reportesLesion] = await Promise.all([
+    prisma.atleta.count({ where: { estado: 'ACTIVO', rol: 'JUGADOR' } }),
+    prisma.evento.count({ where: { fechaInicio: { lte: finMes }, fechaFin: { gte: inicioMes } } }).catch(() => 0),
+    prisma.catalogoEjercicio.count().catch(() => 0),
+    prisma.lesion.count().catch(() => 0),
+  ])
+
+  const stats = [
+    { label: 'Atletas Activas', value: atletasActivos, icon: '🏐' },
+    { label: 'Eventos este Mes', value: eventosMes, icon: '📅' },
+    { label: 'Ejercicios Cargados', value: ejerciciosCargados, icon: '💪' },
+    { label: 'Reportes de Lesión', value: reportesLesion, icon: '🩺' },
+  ]
+
   return (
     <div>
       {/* Hero with Carousel */}

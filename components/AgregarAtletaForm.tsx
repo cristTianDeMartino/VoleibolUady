@@ -1,10 +1,12 @@
 'use client'
 
-import { useActionState, useEffect, useRef, useState } from 'react'
+import { useActionState, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createAtleta } from '@/actions/atletas'
 import { POSICIONES } from '@/lib/constants/posiciones'
 import { aniosDesde2000 } from '@/lib/validation'
+import FechaNacimientoSelector from '@/components/ui/FechaNacimientoSelector'
+import LicenciaturaSelector from '@/components/ui/LicenciaturaSelector'
 
 const tallas = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
@@ -78,9 +80,11 @@ export default function AgregarAtletaForm() {
   const [state, formAction, isPending] = useActionState(createAtleta, initialState)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [rol, setRol] = useState<'JUGADOR' | 'ADMIN'>('JUGADOR')
+  const [licenciatura, setLicenciatura] = useState('')
   const [hasSavedOnce, setHasSavedOnce] = useState(false)
-  const [claveModal, setClaveModal] = useState<{ nombre: string; clave: string } | null>(null)
+  const [claveDescartada, setClaveDescartada] = useState<string | null>(null)
   const [copiado, setCopiado] = useState(false)
+  const [formKey, setFormKey] = useState(0)
 
   const formRef = useRef<HTMLFormElement>(null)
   const rolSelectRef = useRef<HTMLSelectElement>(null)
@@ -93,18 +97,19 @@ export default function AgregarAtletaForm() {
   // Tras un guardado exitoso: modal bloqueante con la clave — el reset real
   // del formulario se hace hasta que el admin cierra el modal (la clave no
   // vuelve a mostrarse, así que no debe perderse por un reset prematuro).
-  useEffect(() => {
-    if (!state.success || !state.claveGenerada) return
-    setClaveModal({ nombre: state.nombreGuardado ?? '', clave: state.claveGenerada })
-  }, [state])
+  const claveModal = state.success && state.claveGenerada && claveDescartada !== state.claveGenerada
+    ? { nombre: state.nombreGuardado ?? '', clave: state.claveGenerada }
+    : null
 
   const cerrarModalClave = () => {
-    setClaveModal(null)
+    if (claveModal) setClaveDescartada(claveModal.clave)
     setCopiado(false)
     formRef.current?.reset()
     setRol('JUGADOR')
+    setLicenciatura('')
     setPhotoPreview(null)
     setHasSavedOnce(true)
+    setFormKey((value) => value + 1)
     rolSelectRef.current?.focus()
   }
 
@@ -173,7 +178,7 @@ export default function AgregarAtletaForm() {
         </div>
       )}
 
-      <form ref={formRef} action={formAction} className="space-y-5">
+      <form key={formKey} ref={formRef} action={formAction} className="space-y-5">
 
         {/* Paso 1 — Rol en el Sistema: selector maestro, destacado al inicio */}
         <div className="bg-uady-blue rounded-xl p-5 shadow-sm">
@@ -200,6 +205,9 @@ export default function AgregarAtletaForm() {
           <Field label="Apellidos" name="apellidos" required placeholder="Ej. García Pérez" error={fieldError('apellidos')} />
           {rol === 'JUGADOR' && (
             <>
+              <Field label="Fecha de Nacimiento" name="fechaNacimiento" span2>
+                <FechaNacimientoSelector name="fechaNacimiento" />
+              </Field>
               <Field
                 label="Matrícula"
                 name="matricula"
@@ -282,6 +290,10 @@ export default function AgregarAtletaForm() {
                   <option key={f} value={f}>{f}</option>
                 ))}
               </select>
+            </Field>
+            <Field label="Licenciatura" name="licenciatura">
+              <LicenciaturaSelector value={licenciatura} onChange={setLicenciatura} />
+              <input type="hidden" name="licenciatura" value={licenciatura} />
             </Field>
             <Field label="Semestre" name="semestre" required error={fieldError('semestre')}>
               <select
@@ -402,6 +414,17 @@ export default function AgregarAtletaForm() {
               inputMode="numeric"
               error={fieldError('nss')}
             />
+            <Field label="CURP" name="curp" error={fieldError('curp')}>
+              <input
+                type="text"
+                name="curp"
+                placeholder="18 caracteres"
+                maxLength={18}
+                className={`w-full border rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-1 transition-all ${
+                  fieldError('curp') ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : 'border-gray-200 focus:border-uady-blue focus:ring-uady-blue'
+                }`}
+              />
+            </Field>
             <Field label="Aseguradora (Seguro Privado)" name="seguroAseguradora" placeholder="Opcional" />
             <Field label="Póliza" name="seguroPoliza" placeholder="Opcional" />
             <Field label="Titular de la Póliza" name="seguroTitular" placeholder="Opcional" />

@@ -24,6 +24,7 @@ export interface LesionRow {
 interface Props {
   lesiones: LesionRow[]
   isAdmin: boolean
+  altaAction?: (lesionId: string) => Promise<{ error?: string; success?: boolean }>
 }
 
 const fmtFecha = (d: string | Date | null) =>
@@ -41,14 +42,20 @@ const fmtFechaHora = (d: string | Date | null) =>
 
 // ─── DarDeAltaButton ──────────────────────────────────────────────────────────
 
-function DarDeAltaButton({ lesionId }: { lesionId: string }) {
+function DarDeAltaButton({
+  lesionId,
+  altaAction,
+}: {
+  lesionId: string
+  altaAction: (lesionId: string) => Promise<{ error?: string; success?: boolean }>
+}) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
   const handleAlta = () => {
     setError(null)
     startTransition(async () => {
-      const res = await darDeAltaLesion(lesionId)
+      const res = await altaAction(lesionId)
       if (res?.error) setError(res.error)
     })
   }
@@ -79,7 +86,7 @@ function DarDeAltaButton({ lesionId }: { lesionId: string }) {
 
 // ─── LesionesSeguimiento ──────────────────────────────────────────────────────
 
-export default function LesionesSeguimiento({ lesiones, isAdmin }: Props) {
+export default function LesionesSeguimiento({ lesiones, isAdmin, altaAction = darDeAltaLesion }: Props) {
   const [tab, setTab]               = useState<'activas' | 'historial'>('activas')
   const [busqueda, setBusqueda]     = useState('')
   const [filtroRama, setFiltroRama] = useState('Todas')
@@ -227,7 +234,7 @@ export default function LesionesSeguimiento({ lesiones, isAdmin }: Props) {
                     <p className="text-gray-600 mt-0.5">{l.tratamiento}</p>
                   </div>
                 </div>
-                <DarDeAltaButton lesionId={l.id} />
+                <DarDeAltaButton lesionId={l.id} altaAction={altaAction} />
               </div>
             ))}
           </div>

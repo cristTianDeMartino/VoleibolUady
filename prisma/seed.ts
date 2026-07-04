@@ -1,8 +1,15 @@
+import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import bcrypt from 'bcryptjs'
+import { generarClaveAcceso } from '../lib/utils/generarClave'
 
-const prisma = new PrismaClient()
+const adapter = new PrismaBetterSqlite3({ url: process.env.DATABASE_URL ?? 'file:./dev.db' })
+const prisma = new PrismaClient({ adapter })
 
+// codigoAcceso abajo es solo un placeholder legible — se ignora en runtime;
+// la clave real se genera vía generarClaveAcceso (mismo formato numérico que
+// usa el sistema en producción) y se imprime al final del seed.
 const atletasSeed = [
   // Admin
   {
@@ -201,6 +208,98 @@ const atletasSeed = [
     codigoAcceso: 'RENATA012',
     rol: 'JUGADOR',
   },
+  // Atletas Varoniles ACTIVOS
+  {
+    nombre: 'Diego',
+    apellidos: 'Ramírez López',
+    genero: 'M',
+    posicion: 'ACOMODO',
+    facultad: 'Facultad de Ingeniería',
+    directorFacultad: 'Dr. Carlos Peniche Covas',
+    semestre: 6,
+    telefonoPersonal: '9991020001',
+    telefonoTutor: '9991020002',
+    nss: '445678901234',
+    anioIngreso: 2023,
+    codigoAcceso: 'DIEGO001',
+    rol: 'JUGADOR',
+  },
+  {
+    nombre: 'Carlos',
+    apellidos: 'Mendoza Cervantes',
+    genero: 'M',
+    posicion: 'OPUESTO',
+    facultad: 'Facultad de Derecho',
+    directorFacultad: 'Dr. Arturo Hernández Magaña',
+    semestre: 5,
+    telefonoPersonal: '9992020001',
+    telefonoTutor: '9992020002',
+    nss: '556789012345',
+    anioIngreso: 2023,
+    codigoAcceso: 'CARLOS002',
+    rol: 'JUGADOR',
+  },
+  {
+    nombre: 'Miguel',
+    apellidos: 'Torres Canto',
+    genero: 'M',
+    posicion: 'CENTRAL',
+    facultad: 'Facultad de Medicina',
+    directorFacultad: 'Dr. Jorge Cuevas Alpuche',
+    semestre: 4,
+    telefonoPersonal: '9993020001',
+    telefonoTutor: '9993020002',
+    nss: '667890123456',
+    anioIngreso: 2024,
+    codigoAcceso: 'MIGUEL003',
+    rol: 'JUGADOR',
+  },
+  {
+    nombre: 'Javier',
+    apellidos: 'Pérez Huh',
+    genero: 'M',
+    posicion: 'BANDA',
+    facultad: 'Facultad de Psicología',
+    directorFacultad: 'Dra. María Angélica Verdejo',
+    semestre: 3,
+    telefonoPersonal: '9994020001',
+    telefonoTutor: '9994020002',
+    nss: '778901234567',
+    anioIngreso: 2024,
+    codigoAcceso: 'JAVIER004',
+    rol: 'JUGADOR',
+  },
+  {
+    nombre: 'Roberto',
+    apellidos: 'Jiménez Camal',
+    genero: 'M',
+    posicion: 'LIBERO',
+    facultad: 'Facultad de Contaduría y Administración',
+    directorFacultad: 'Dra. Ligia González Herrera',
+    semestre: 7,
+    telefonoPersonal: '9995020001',
+    telefonoTutor: '9995020002',
+    nss: '889012345678',
+    anioIngreso: 2022,
+    codigoAcceso: 'ROBERTO005',
+    rol: 'JUGADOR',
+  },
+  // Atleta EGRESADO (ejemplo: Femenina)
+  {
+    nombre: 'Catalina',
+    apellidos: 'Esquivel May',
+    genero: 'F',
+    posicion: 'BANDA',
+    facultad: 'Facultad de Arquitectura',
+    directorFacultad: 'Arq. Rosario Ocaña Cetina',
+    semestre: 10, // ya egresó pero data anterior
+    telefonoPersonal: '9996013001',
+    telefonoTutor: '9996013002',
+    nss: '990123456789',
+    anioIngreso: 2021,
+    codigoAcceso: 'CATALINA013',
+    rol: 'JUGADOR',
+  },
 ] as const
 
 // ─── Eventos del Macrociclo ───────────────────────────────────────────────────
@@ -310,37 +409,63 @@ const accesoriosSeed = [
   { nombre: 'Trapecios',               tipo: 'TREN_SUPERIOR' },
 ]
 
+async function generarClaveUnica(genero: 'F' | 'M'): Promise<string> {
+  let clave: string
+  do {
+    clave = generarClaveAcceso(genero)
+  } while (await prisma.claveAtleta.findUnique({ where: { clavePlana: clave } }))
+  return clave
+}
+
 async function main() {
   console.log('🌱 Seeding database...')
 
   let created = 0
   let skipped = 0
+  const resumenClaves: { nombre: string; apellidos: string; clave: string }[] = []
 
   for (const atleta of atletasSeed) {
-    const exists = await prisma.claveAtleta.findUnique({
-      where: { clavePlana: atleta.codigoAcceso },
+    const existente = await prisma.atleta.findFirst({
+      where: { nombre: atleta.nombre, apellidos: atleta.apellidos },
+      include: { claveAtleta: true },
     })
 
-    if (exists) {
+    if (existente) {
       skipped++
+      resumenClaves.push({
+        nombre: atleta.nombre,
+        apellidos: atleta.apellidos,
+        clave: existente.claveAtleta?.clavePlana ?? '(ya existía, clave no recuperable)',
+      })
       continue
     }
 
-    const { nss, codigoAcceso: codigoPlano, ...atletaData } = atleta
+    const { nss, codigoAcceso: _, ...atletaData } = atleta
+    const clavePlana = await generarClaveUnica(atleta.genero)
+    const esEgresado = atleta.nombre === 'Catalina' && atleta.apellidos === 'Esquivel May'
+
     await prisma.atleta.create({
       data: {
         ...atletaData,
-        codigoAcceso: await bcrypt.hash(codigoPlano, 10),
+        ...(esEgresado && { estado: 'EGRESADO', anioEgreso: 2025 }),
+        codigoAcceso: await bcrypt.hash(clavePlana, 10),
         privado: { create: { nss } },
-        claveAtleta: { create: { clavePlana: codigoPlano } },
+        claveAtleta: { create: { clavePlana } },
       },
     })
     created++
-    console.log(`  ✅ ${atleta.nombre} ${atleta.apellidos} (${atleta.codigoAcceso})`)
+    resumenClaves.push({ nombre: atleta.nombre, apellidos: atleta.apellidos, clave: clavePlana })
+    console.log(`  ✅ ${atleta.nombre} ${atleta.apellidos} (${clavePlana})`)
   }
 
+  console.log('\n=== CÓDIGOS DE ACCESO DEL SEED ===')
+  for (const r of resumenClaves) {
+    console.log(`${r.nombre} ${r.apellidos}: ${r.clave}`)
+  }
+  console.log('==================================')
+
   // Add sample lesions for Ana García
-  const ana = await prisma.atleta.findUnique({ where: { codigoAcceso: 'ANA001' } })
+  const ana = await prisma.atleta.findFirst({ where: { nombre: 'Ana', apellidos: 'García Pérez' } })
   if (ana) {
     const lesionExists = await prisma.lesion.findFirst({ where: { atletaId: ana.id } })
     if (!lesionExists) {

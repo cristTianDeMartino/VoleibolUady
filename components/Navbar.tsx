@@ -13,7 +13,7 @@ type NavItem =
   | { label: string; children: NavLink[] }
 
 const navItems: NavItem[] = [
-  { label: 'Inicio', href: '/' },
+  { label: 'Inicio', href: '/inicio' },
   {
     label: 'Plantilla',
     children: [
@@ -82,7 +82,7 @@ export default function Navbar({ user }: NavbarProps) {
 
           {/* Grupo izquierdo: logo + links, pegado al borde izquierdo */}
           <div className="flex items-center gap-6 min-w-0">
-            <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
+            <Link href="/inicio" className="flex items-center gap-2 group flex-shrink-0">
               <span className="text-2xl">🏐</span>
               <span className="font-black text-uady-gold text-base tracking-wider uppercase group-hover:text-white transition-colors">
                 Sistema de Voleibol

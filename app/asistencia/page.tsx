@@ -48,13 +48,15 @@ export default async function AsistenciaPage() {
     yaTieneAsistenciaHoy = registro !== null
   }
 
-  // Para el admin: cargar la matriz completa del mes actual
-  const { atletas, registros } = await obtenerMatrizAsistencia(mesActual, anioActual)
+  // Para el admin: cargar la matriz completa del mes actual. El jugador no
+  // necesita (ni debe recibir) el historial de asistencia de todo el equipo.
+  const { atletas, registros } = isAdmin
+    ? await obtenerMatrizAsistencia(mesActual, anioActual)
+    : { atletas: [], registros: {} }
 
   return (
     <AsistenciaClient
       rol={session.rol}
-      atletaId={session.id}
       nombre={session.nombre}
       yaTieneAsistenciaHoy={yaTieneAsistenciaHoy}
       atletas={atletas}
